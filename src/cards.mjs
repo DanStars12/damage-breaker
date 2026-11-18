@@ -33,9 +33,21 @@ export function card(kind,value,tier=0) {
   const cost=kind==='pow'?(value===3?4:3):kind==='exp'||tier>=3?2:1;
   return {kind,value,tier,cost};
 }
-export function generate(rng,act,boost=0) {
+export const supportKinds=['clean','ward','guard'];
+export const supportCaps={clean:6,ward:6,guard:48};
+export const supportValue=c=>c.value||1;
+const supportTiers={clean:[1,2,3,4,5],ward:[1,2,3,4,5],guard:[6,9,14,21,30]};
+function rollTier(rng,act,boost) {
   const roll=rng()*100+boost+8*(act-1);
-  const tier=roll>=105?4:roll>=88?3:roll>=67?2:roll>=38?1:0;
+  return roll>=105?4:roll>=88?3:roll>=67?2:roll>=38?1:0;
+}
+export function generateSupport(rng,act,boost=0) {
+  const tier=rollTier(rng,act,boost);
+  const kind=supportKinds[Math.floor(rng()*supportKinds.length)];
+  return card(kind,supportTiers[kind][tier],tier);
+}
+export function generate(rng,act,boost=0) {
+  const tier=rollTier(rng,act,boost);
   const kinds=act>=2&&tier>=2?['add','mul','pct','pow','exp']:['add','mul','pct'];
   const kind=kinds[Math.floor(rng()*kinds.length)];
   const [lo,hi]=ranges[kind][tier];
@@ -53,7 +65,13 @@ export function starter() {
   ];
 }
 export function upgraded(c,mode,digit) {
-  if(!['add','mul','pct'].includes(c.kind)||c.upgraded) return null;
+  if(!c||c.upgraded) return null;
+  if(supportKinds.includes(c.kind)) {
+    if(mode==='adjust'&&c.cost>1) return {...c,cost:c.cost-1,upgraded:true};
+    const value=Math.min(supportCaps[c.kind],supportValue(c)+(c.kind==='guard'?6:1));
+    return mode==='power'&&value>supportValue(c)?{...c,value,upgraded:true}:null;
+  }
+  if(!['add','mul','pct'].includes(c.kind)) return null;
   const adjust=c.value+Math.max(1,Math.floor(c.value/5));
   let value=mode==='power'?c.value*2:adjust;
   if(mode==='digit') {
@@ -65,7 +83,13 @@ export function upgraded(c,mode,digit) {
   return {...c,value,upgraded:true};
 }
 export function fused(a,b) {
-  if(!a||!b||a.kind!==b.kind||!['add','mul','pct'].includes(a.kind)) return null;
+  if(!a||!b||a.kind!==b.kind) return null;
+  if(supportKinds.includes(a.kind)) {
+    const value=Math.min(supportCaps[a.kind],supportValue(a)+supportValue(b));
+    if(value<=Math.max(supportValue(a),supportValue(b))) return null;
+    return {...card(a.kind,value,Math.max(a.tier,b.tier)),cost:Math.max(a.cost,b.cost)};
+  }
+  if(!['add','mul','pct'].includes(a.kind)) return null;
   const value=a.kind==='mul'?a.value*b.value:a.value+b.value;
   if(!Number.isSafeInteger(value)||value>99999) return null;
   return {...card(a.kind,value,Math.max(a.tier,b.tier)),cost:Math.min(3,Math.max(a.cost,b.cost)+1)};

@@ -25,7 +25,12 @@ export function apply([n,d], {kind,value}) {
 export function damage([n,d]) {
   return n > 0n ? n/d : 0n;
 }
-const units = ['', '万','億','兆','京','垓','秭','穣','溝','澗','正','載','極','恒河沙','阿僧祇','那由他','不可思議','無量大数'];
+export const numberUnits=[
+  ['万','まん'],['億','おく'],['兆','ちょう'],['京','けい'],['垓','がい'],['秭','じょ'],['穣','じょう'],['溝','こう'],
+  ['澗','かん'],['正','せい'],['載','さい'],['極','ごく／きょく'],['恒河沙','ごうがしゃ／こうがしゃ'],
+  ['阿僧祇','あそうぎ'],['那由他','なゆた'],['不可思議','ふかしぎ'],['無量大数','むりょうたいすう']
+].map(([name,reading],i)=>({name,reading,exponent:(i+1)*4}));
+const units=['',...numberUnits.map(unit=>unit.name)];
 export function format(n, scientific=false, cap=true) {
   if (cap && n>CAP) return '∞';
   const s = n.toString();
@@ -48,6 +53,9 @@ export function label({kind,value,target}) {
     case 'pct': return (value>0?'+':'−')+Math.abs(value)+'%';
     case 'pow': return 'x'+superscript(value);
     case 'exp': return '×10'+superscript(value);
+    case 'clean':return value>1?'浄化 '+value:'浄化';
+    case 'ward':return value>1?'結界 '+value:'結界';
+    case 'guard':return '防御 '+value;
     case 'lock': return operationNames[target]+'封印';
     default: return {clean:'浄化',ward:'結界',seal:'封印'}[kind];
   }

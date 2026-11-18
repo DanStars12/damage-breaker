@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {CAP} from '../src/math.mjs';
 import {evaluate} from '../src/relics.mjs';
 import {card,upgraded} from '../src/cards.mjs';
-import {timeline,magnitude,reelValue,impactForce,relicActivations} from '../src/presentation.mjs';
+import {timeline,magnitude,reelValue,impactForce,relicActivations,boardRelicStates} from '../src/presentation.mjs';
 
 test('timeline preserves resolution order, exact relic value and armored damage',()=>{
   const result=evaluate({board:[card('add',10),card('mul',12),card('add',100),card('mul',101)],
@@ -58,4 +58,16 @@ test('relic feedback follows the real calculation order and respects DIV priorit
   assert.equal(cancelled[0].relic,'key');
   assert.match(cancelled[0].name,/無効/);
   assert.deepEqual([...relicActivations(evaluate({board,owned:['prism','key','furnace']}))],[]);
+});
+
+test('board relic strip differentiates pending, already fired and continuous effects',()=>{
+  const owned=['furnace','key','sum','short','grimoire'];
+  const pending=evaluate({board:[card('add',20)],owned});
+  const previous=evaluate({board:[card('mul',2)],deb:[{kind:'div',value:3,at:0,enemy:true}],owned});
+  assert.deepEqual(boardRelicStates(owned,pending,previous),[
+    {id:'furnace',fixed:true,ready:false,fired:false},
+    {id:'key',fixed:false,ready:false,fired:true},
+    {id:'sum',fixed:false,ready:true,fired:false},
+    {id:'short',fixed:false,ready:true,fired:true}
+  ]);
 });

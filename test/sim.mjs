@@ -1,3 +1,5 @@
+import {supportValue,supportKinds} from '../src/cards.mjs';
+import {attackHits} from '../src/enemies.mjs';
 import {Run} from '../src/run.mjs';
 import {evaluate} from '../src/relics.mjs';
 import {CAP,format} from '../src/math.mjs';
@@ -21,12 +23,12 @@ function plan(run) {
     const seen=new Set();
     for(const s of beam) for(let i=0;i<hand.length;i++) {
       const c=hand[i];
-      if((s.used&(1<<i))||c.cost>s.energy||c.kind==='ward') continue;
+      if((s.used&(1<<i))||c.cost>s.energy||['ward','guard'].includes(c.kind)) continue;
       const clean=c.kind==='clean';
       if(clean?!s.deb.length:s.board.length>=slots) continue;
       for(let at=0;at<=(clean?0:s.board.length);at++) {
         const b=clean?s.board:[...s.board.slice(0,at),c,...s.board.slice(at)];
-        const d=clean?s.deb.slice(1):s.deb;
+        const d=clean?s.deb.slice(supportValue(c)):s.deb;
         const used=s.used|(1<<i);
         const key=used+':'+b.map(c=>c.kind+c.value).join(',')+':'+d.length;
         if(seen.has(key)) continue;
@@ -41,6 +43,7 @@ function plan(run) {
   for(const [c,at] of best.moves) run.play(run.hand.indexOf(c),at);
 }
 function preference(c,id) {
+  if(supportKinds.includes(c.kind)) return {clean:6,ward:7,guard:9}[c.kind]+c.tier*2;
   const weight={pow:id==='power'?18:6,exp:13,mul:9,add:4,pct:3}[c.kind]||0;
   return c.tier*6+weight+(id==='additive'&&c.kind==='add'?24:0)+(id==='grimoire'&&String(c.value)[0]==='1'?11:0);
 }
@@ -97,6 +100,14 @@ function play(seed,id) {
     if(r.enemy.barrier&&r.preview().final>0n) {r.burst();continue;}
     plan(r);
     const p=r.preview();
+    if(p.impact.dealt<r.enemy.hp) {
+      const outcome=r.enemyOutcome();
+      const hits=attackHits(r.next);
+      const support=r.hand.findIndex(c=>r.canPlay(c)&&(
+        (c.kind==='guard'&&hits>0&&r.guardPoints<r.next.value*hits)||
+        (c.kind==='ward'&&!r.wardCharges&&(!hits||outcome.deb!==r.deb||outcome.drawPenalty||outcome.energyPenalty))));
+      if(support>=0) r.play(support);
+    }
     const survive=r.enemyOutcome().hp>0;
     if(p.impact.kind!=='gate'&&p.final<r.enemy.hp&&r.holds<2&&survive&&r.board.length<r.slots) r.hold();
     else r.burst();

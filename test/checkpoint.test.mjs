@@ -179,3 +179,21 @@ test('new boss moves, relics and one-turn penalties survive a reload',()=>{
   assert.equal(copy.drawPenalty,1);
   assert.equal(copy.hand.length,4);
 });
+
+test('new support cards and defenses survive reload while legacy ward remains usable',()=>{
+  const run=new Run('support-save');
+  routeKind(run,'fight');
+  run.hand=[{kind:'guard',value:14,cost:1,tier:2}];
+  assert(run.play(0));
+  run.ward=3;
+  const copy=restore(run).run;
+  assert.equal(copy.guardPoints,14);
+  assert.equal(copy.wardCharges,3);
+  assert.equal(copy.discard.at(-1).kind,'guard');
+  const legacy=JSON.parse(writeCheckpoint({run}));
+  delete legacy.state.guard;
+  legacy.state.ward=true;
+  const old=readCheckpoint(JSON.stringify(legacy)).run;
+  assert.equal(old.guardPoints,0);
+  assert.equal(old.wardCharges,1);
+});

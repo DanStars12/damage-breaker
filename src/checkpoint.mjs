@@ -6,7 +6,7 @@ import {encounterName} from './enemies.mjs';
 const checkpointVersion=1;
 const resumablePhases=['map','battle','reward','facility','clear'];
 const shopKinds=['shop','forge','fuse','relic','remove','event'];
-const savedCardKinds=['add','mul','pct','pow','exp','clean','ward'];
+const savedCardKinds=['add','mul','pct','pow','exp','clean','ward','guard'];
 const integerBetween=(value,min,max)=>Number.isInteger(value)&&value>=min&&value<=max;
 const validCard=c=>c&&savedCardKinds.includes(c.kind)&&Number.isSafeInteger(c.value)&&
   integerBetween(c.cost,1,4)&&integerBetween(c.tier,0,4);
@@ -42,7 +42,9 @@ export function readCheckpoint(serialized) {
       if(!nonnegativeBigInt(e?.hp)||!nonnegativeBigInt(e.max)||e.max===0n||
         !Array.isArray(e.gates)||!e.gates.every(nonnegativeBigInt)||!Array.isArray(e.cycle)||!e.cycle.length||
         !validCards(state.hand)||!validCards(state.board)||!validCards(state.deckDraw)||!validCards(state.discard)||
-        !Array.isArray(state.deb)||!integerBetween(state.maxHp,1,100)) return null;
+        !Array.isArray(state.deb)||!integerBetween(state.maxHp,1,100)||
+        (state.guard!==undefined&&!integerBetween(state.guard,0,48))||
+        (typeof state.ward!=='boolean'&&!integerBetween(state.ward,0,6))) return null;
     }
     if(state.phase==='reward'&&(!validCards(state.offers)||
       ![...rewardDecisions,'none'].includes(state.cardDecision?.status)||

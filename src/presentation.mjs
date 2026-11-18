@@ -20,6 +20,17 @@ export function relicActivations(result) {
   for(const trigger of result.triggers) ids.add(trigger.id);
   return ids;
 }
+export function boardRelicStates(owned,preview,lastBurst) {
+  const ready=relicActivations(preview);
+  const fired=lastBurst?relicActivations(lastBurst):new Set();
+  return owned.flatMap(id=>{
+    const relic=relics[id];
+    if(!relic) return [];
+    const fixed=!relic.effect&&id!=='key'&&id!=='prism';
+    return fixed||ready.has(id)||fired.has(id)?
+      [{id,fixed,ready:ready.has(id),fired:fired.has(id)}]:[];
+  });
+}
 export function timeline(result,armor) {
   let combo=0;
   const steps=result.steps.map((step,index)=>{

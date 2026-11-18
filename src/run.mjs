@@ -1,4 +1,4 @@
-import {random,shuffle,starter,generate,upgraded,fused} from './cards.mjs';
+import {random,shuffle,starter,generate,generateSupport,supportKinds,supportValue,supportCaps,upgraded,fused} from './cards.mjs';
 import {evaluate,relics,drawRelic} from './relics.mjs';
 import {makeEnemy,intent,impact,attackHits,attackPatterns} from './enemies.mjs';
 import {CAP,label} from './math.mjs';
@@ -28,6 +28,8 @@ export class Run {
   get slots(){return Math.min(8,5+this.act)+this.bonus('slots');}
   get capacity(){return Math.max(1,(this.act>=3?4:3)+this.bonus('energy')-(this.energyPenalty??0)+(this.turn===0?this.bonus('firstEnergy'):0));}
   get drawCount(){return Math.max(2,5+this.bonus('draw')-(this.drawPenalty??0)+(this.turn===0?this.bonus('firstDraw'):0));}
+  get wardCharges(){return Number(this.ward)||0;}
+  get guardPoints(){return this.guard??0;}
   get next(){return intent(this.enemy,this.turn,this.act);}
   beginMap(){
     this.phase='map';
@@ -60,6 +62,7 @@ export class Run {
     this.turn=0;
     this.holds=0;
     this.ward=this.bonus('ward')>0;
+    this.guard=0;
     this.refill();
   }
   refill() {
@@ -75,18 +78,24 @@ export class Run {
       this.hand.push(this.deckDraw.pop());
     }
   }
+  canPlay(c) {
+    if(this.phase!=='battle'||!c||c.cost>this.energy) return false;
+    if(c.kind==='clean') return this.deb.length>0;
+    if(c.kind==='ward') return this.wardCharges<supportCaps.ward;
+    if(c.kind==='guard') return this.guardPoints<supportCaps.guard;
+    return this.board.length<this.slots;
+  }
   play(i,at=this.board.length) {
     const c=this.hand[i];
-    if(this.phase!=='battle'||!c||c.cost>this.energy) return false;
-    const auxiliary=['ward','clean'].includes(c.kind);
-    if(!auxiliary&&this.board.length>=this.slots) return false;
-    if(c.kind==='clean'&&!this.deb.length || c.kind==='ward'&&this.ward) return false;
+    if(!this.canPlay(c)) return false;
     this.energy-=c.cost;
     this.hand.splice(i,1);
     this.stats.usage[c.kind]=(this.stats.usage[c.kind]||0)+1;
-    if(auxiliary) {
-      if(c.kind==='ward') this.ward=true;
-      else this.deb.shift();
+    if(supportKinds.includes(c.kind)) {
+      const power=supportValue(c);
+      if(c.kind==='ward') this.ward=Math.min(supportCaps.ward,this.wardCharges+power);
+      else if(c.kind==='guard') this.guard=Math.min(supportCaps.guard,this.guardPoints+power);
+      else this.deb.splice(0,power);
       this.discard.push(c);
     } else {
       this.board.splice(at,0,c);
@@ -120,9 +129,12 @@ export class Run {
     let blocked=false,drawPenalty=0,energyPenalty=0;
     const hits=attackHits(action);
     const penalty=attackPatterns[action.kind]?.penalty;
-    hp=Math.max(0,hp-action.value*hits);
+    const attackDamage=action.value*hits;
+    const absorbed=Math.min(this.guardPoints,attackDamage);
+    const guard=attackDamage>0?0:this.guardPoints;
+    hp=Math.max(0,hp-attackDamage+absorbed);
     if(!hits||penalty) {
-      if(ward) {ward=false;blocked=true;}
+      if(ward) {ward=Number(ward)-1||false;blocked=true;}
       else if(penalty==='jam') drawPenalty=1;
       else if(penalty==='tax') energyPenalty=1;
       else if(penalty==='fracture') deb=[...deb,{...action,kind:'seal'}];
@@ -133,7 +145,7 @@ export class Run {
       } else if(action.kind==='drain') drain=Math.min(65,drain+action.value);
       else deb=[...deb,action];
     }
-    return {hp,maxHp,drain,ward,deb,blocked,drawPenalty,energyPenalty};
+    return {hp,maxHp,drain,ward,guard,deb,blocked,absorbed,drawPenalty,energyPenalty};
   }
   holdPreview(outcome=this.enemyOutcome()) {
     if(this.holds>=2||!outcome.hp||!this.board.length) return null;
@@ -142,8 +154,8 @@ export class Run {
   }
   enemyAction() {
     this.uncommittedCards.clear();
-    const {hp,maxHp,drain,ward,deb,drawPenalty,energyPenalty}=this.enemyOutcome();
-    Object.assign(this,{hp,maxHp,drain,ward,deb,drawPenalty,energyPenalty});
+    const {hp,maxHp,drain,ward,guard,deb,drawPenalty,energyPenalty}=this.enemyOutcome();
+    Object.assign(this,{hp,maxHp,drain,ward,guard,deb,drawPenalty,energyPenalty});
     this.turn++;
     if(!this.hp) this.phase='loss';
     else this.refill();
@@ -204,6 +216,10 @@ export class Run {
   reward() {
     this.phase='reward';
     this.offers=this.act===4?[]:Array.from({length:3},()=>generate(this.rng,this.act,this.enemy.elite?17:5));
+    if(this.offers.length) {
+      const supportRng=random(this.seed+'/support/reward/'+this.stage);
+      if(supportRng()<.34) this.offers[2]=generateSupport(supportRng,this.act,this.enemy.elite?17:5);
+    }
     this.cardDecision={status:this.offers.length?'pending':'none'};
     this.goldReward=this.enemy.kind==='boss'?48:this.enemy.elite?40:24;
     this.goldDecision='pending';
@@ -270,6 +286,8 @@ export class Run {
     this.facility=node.kind;
     if(node.kind==='shop') {
       this.shop=Array.from({length:4},()=>generate(this.rng,this.act,16));
+      const supportRng=random(this.seed+'/support/shop/'+this.stage);
+      this.shop[3]=generateSupport(supportRng,this.act,16);
       const first=drawRelic(this.rng,this.owned,this.act,{shop:true});
       const second=drawRelic(this.rng,[...this.owned,first],this.act,{shop:true});
       this.stockRelics=[first,second].filter(Boolean);

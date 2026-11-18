@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {apply,CAP,format,damage,label} from '../src/math.mjs';
+import {apply,CAP,format,damage,label,numberUnits} from '../src/math.mjs';
 import {evaluate,relics,relicRanks,drawRelic} from '../src/relics.mjs';
 import {Run,prices} from '../src/run.mjs';
 import {makeMap} from '../src/map.mjs';
 import {makeEnemy,intent,attackHits} from '../src/enemies.mjs';
 import {relicIcon} from '../src/relic-art.mjs';
-import {card,fused,generate,random,upgraded} from '../src/cards.mjs';
+import {card,fused,generate,generateSupport,supportKinds,random,upgraded} from '../src/cards.mjs';
 
 const a=(kind,value)=>card(kind,value);
 const d=(kind,value,at)=>({kind,value,at,enemy:true});
@@ -431,4 +431,81 @@ test('ACT bosses each have a different signature attack, and the third hit count
   r.enemy.cycle=['pursuit'];r.hp=100;
   assert.equal(attackHits(r.next),3);
   assert.equal(r.enemyOutcome().hp,100-3*r.next.value);
+});
+
+test('support appears in shops and rewards with all five rarities, and supports forge and fusion',()=>{
+  for(const [tier,roll] of [.10,.40,.70,.89,.99].entries()) {
+    for(const [index,kind] of supportKinds.entries()) {
+      const values=[roll,(index+.1)/3];
+      const c=generateSupport(()=>values.shift(),tier===4?2:1);
+      assert.equal(c.kind,kind);
+      assert.equal(c.tier,tier);
+      assert(c.value>0);
+    }
+  }
+  const r=new Run('support-shop');forceNode(r,'shop');
+  assert(supportKinds.includes(r.shop[3].kind));
+  assert.equal(r.shop.slice(0,3).filter(c=>supportKinds.includes(c.kind)).length,0);
+  r.gold=100;
+  const purchase=r.service({action:'buy',i:3});
+  assert(supportKinds.includes(purchase.result.kind));
+  assert.equal(r.deck.at(-1),purchase.result);
+  r.deck.push(card('guard',6),card('guard',9));
+  assert.equal(r.service({action:'fuse',i:r.deck.length-2,j:r.deck.length-1}).result.value,15);
+  forceNode(r,'rest');
+  assert.equal(r.service({action:'forge',i:r.deck.length-1,mode:'power'}).result.value,21);
+  assert.equal(upgraded(card('ward',4,3),'adjust').cost,1);
+  assert.equal(fused(card('clean',0),card('clean',0)).value,2);
+  assert.equal(fused(card('ward',4),card('ward',5)).value,6);
+  assert.equal(fused(card('guard',48),card('guard',6)),null);
+  let offersWithSupport=0;
+  for(let i=0;i<40;i++) {
+    const sample=new Run('support-reward-'+i);
+    forceNode(sample,'fight');kill(sample);
+    assert.equal(sample.offers.length,3);
+    const support=sample.offers.findIndex(c=>supportKinds.includes(c.kind));
+    if(support>=0) {
+      offersWithSupport++;
+      assert.equal(support,2);
+      assert(sample.takeCard(support));
+    }
+  }
+  assert(offersWithSupport>0&&offersWithSupport<40);
+});
+
+test('guard absorbs HP damage once, ward charges block only penalties, and cleanse removes oldest cards',()=>{
+  const r=new Run('support-effects');forceNode(r,'fight');
+  r.enemy.cycle=['flare','div','attack','sub'];
+  r.hp=100;
+  r.hand=[card('guard',21,3),card('ward',2),card('clean',2)];
+  r.energy=5;
+  r.deb=[d('sub',10,0),d('div',2,1),d('pct',-25,2)];
+  assert(r.play(2));
+  assert.deepEqual(r.deb.map(c=>c.kind),['pct']);
+  assert(r.play(1));
+  assert.equal(r.wardCharges,2);
+  assert(r.play(0));
+  assert.equal(r.guardPoints,21);
+  const first=r.enemyOutcome();
+  assert(first.blocked);
+  assert(first.absorbed>0);
+  assert.equal(first.hp,100);
+  assert.equal(r.guardPoints,21);
+  assert(r.hold());
+  assert.equal(r.guardPoints,0);
+  assert.equal(r.wardCharges,1);
+  assert(r.hold());
+  assert.equal(r.wardCharges,0);
+  assert.equal(r.board.length,0);
+  assert.equal(r.deb.length,1);
+  r.enemyAction();
+  assert.equal(r.hp,100-r.enemy.attack);
+});
+
+test('number unit guide uses the same ten-thousand group boundaries as the formatter',()=>{
+  assert.equal(numberUnits.length,17);
+  for(const {name,exponent,reading} of numberUnits) {
+    assert(reading.length>0);
+    assert.equal(format(10n**BigInt(exponent)),'1'+name);
+  }
 });
