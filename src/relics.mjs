@@ -77,6 +77,22 @@ Object.assign(relics,{
     amplify(own.length>=6&&new Set(own.map(c=>c.kind)).size>=3,120)}
 });
 
+Object.assign(relics,{
+  keystone:{name:'守門の楔',desc:'戦闘開始時に防御+6。',openingGuard:6},
+  lanternHeart:{name:'星灯の心臓',desc:'戦闘勝利時の回復+2。',victoryRecovery:2},
+  twinScribes:{name:'複筆の羽根',desc:'有効な演算が加算1枚、乗算1枚のとき×12。',effect:({own})=>
+    amplify(own.length===2&&effectCount(own,'add')===1&&effectCount(own,'mul')===1,12)},
+  balanceStone:{name:'双皿の錘',desc:'最初と最後の有効パネルが割合で、計3枚以上なら×24。',effect:({own})=>
+    amplify(own.length>=3&&own[0].kind==='pct'&&own.at(-1).kind==='pct',24)},
+  violetSeal:{name:'紫刻の封印',desc:'累乗を1枚だけ使い、有効パネルが4枚以上なら×40。',effect:({own})=>
+    amplify(own.length>=4&&effectCount(own,'pow')===1,40)},
+  lodestone:{name:'磁極の星盤',desc:'有効な乗算のうち偶数の値が3枚以上なら×40。',effect:({own})=>
+    amplify(own.filter(c=>c.kind==='mul'&&c.value%2===0).length>=3,40)},
+  spiralKey:{name:'螺旋門の鍵',desc:'指数を含む4種類以上の有効な演算で×90。',effect:({own})=>
+    amplify(effectCount(own,'exp')>0&&new Set(own.map(c=>c.kind)).size>=4,90)},
+  nightCrown:{name:'夜天の三連環',desc:'有効な加算・乗算・割合が各2枚以上なら×160。',effect:({own})=>
+    amplify(['add','mul','pct'].every(kind=>effectCount(own,kind)>=2),160)}
+});
 export const relicRanks=[
   {name:'コモン',shop:15,drop:10},
   {name:'レア',shop:13,drop:14},
@@ -84,16 +100,16 @@ export const relicRanks=[
   {name:'レジェンド',shop:3,drop:10}
 ];
 const rankedRelics=[
-  ['short','key','reserve','chalk','lens','paper','sealwax','quartette','compass','mirror','ember'],
-  ['tail','order','chain','furnace','rack','spring','mantle','ratio','brazier','anvil','helix','vigil','pulse','bell','lensGuard'],
-  ['prism','codex','sum','lattice','tithe','star','mosaic','comet','crown','rootGem','dam'],
-  ['grimoire','abacus','aurora']
+  ['short','key','reserve','chalk','lens','paper','sealwax','quartette','compass','mirror','ember','keystone','twinScribes'],
+  ['tail','order','chain','furnace','rack','spring','mantle','ratio','brazier','anvil','helix','vigil','pulse','bell','lensGuard','lanternHeart','balanceStone'],
+  ['prism','codex','sum','lattice','tithe','star','mosaic','comet','crown','rootGem','dam','violetSeal','lodestone','spiralKey'],
+  ['grimoire','abacus','aurora','nightCrown']
 ];
 for(const [rank,ids] of rankedRelics.entries()) for(const id of ids) relics[id].rank=rank;
 const originalRelics=new Set(Object.keys(relics).slice(0,20));
 export function drawRelic(rng,owned,act,{shop=false}={}) {
   const available=Object.keys(relics).filter(id=>!owned.includes(id));
-  const eligible=available.filter(id=>(act>=2||!['comet','crown'].includes(id))&&(!shop||relics[id].rank<3||act>=3));
+  const eligible=available.filter(id=>(act>=2||!['comet','crown','violetSeal','spiralKey'].includes(id))&&(!shop||relics[id].rank<3||act>=3));
   const added=eligible.filter(id=>!originalRelics.has(id));
   const original=eligible.filter(id=>originalRelics.has(id));
   const pool=added.length&&rng()<.24?added:original.length?original:eligible;

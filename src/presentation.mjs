@@ -48,21 +48,36 @@ export function timeline(result,armor) {
   return steps;
 }
 // For exact integer endpoints of a similar order, interpolate with integer arithmetic.
-export function reelValue([from,fd],[to,td],tick) {
-  if(tick>=12) return [to,td];
+export function reelValue([from,fd],[to,td],tick,samples=12) {
+  if(tick>=samples) return [to,td];
   if(tick<=0) return [from,fd];
   if(fd!==1n||td!==1n||from<0n||to<0n) return [from,fd];
   const delta=to-from;
-  if(delta<=0n) return [from+delta*BigInt(tick)/12n,1n];
   const digits=to.toString().length-from.toString().length;
-  if(digits>=3) {
-    const shift=Math.ceil(digits*(12-tick)/12);
+  if(delta>0n&&digits>=3) {
+    const shift=Math.ceil((digits+1)*(samples-tick)/samples);
     const candidate=to/10n**BigInt(shift);
     return [candidate>from?candidate:from,1n];
   }
-  return [from+delta*BigInt(tick)/12n,1n];
+  return [from+delta*BigInt(tick)/BigInt(samples),1n];
 }
 
+export function burstVisual(value,infinity=false) {
+  const [n,d]=value;
+  const digits=((n<0n?-n:n)/d).toString().length;
+  return {
+    digits,
+    hue:infinity?174:(43+(digits-1)*39)%360,
+    level:infinity?7:Math.min(6,magnitude(value))
+  };
+}
+
+export function reelTiming(from,to,kind,fast) {
+  const change=Math.max(0,burstVisual(to).digits-burstVisual(from).digits);
+  const samples=Math.min(74,Math.max(12,change+2));
+  const base=kind==='impact'?245:kind==='relic'?335:240;
+  return {samples,duration:fast?Math.min(460,105+change*6):Math.min(1630,base+change*21)};
+}
 
 export function impactForce({final,impact}) {
   if(impact.kind==='miss') return 'none';

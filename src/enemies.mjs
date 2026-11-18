@@ -40,8 +40,8 @@ const eliteFloors=[1800n,6000000n,10n**13n];
 const bossFloors=[32000n,1500000000n];
 const bossAttack=[12,18,25];
 const finalBossBalance=[
-  {floor:4n*10n**18n, scaleDivisor:3n, armor:2, attack:17},
-  {floor:3n*10n**18n, scaleDivisor:4n, armor:2, attack:18}
+  {floor:4n*10n**18n, scaleDivisor:3n, armor:2, attack:16},
+  {floor:3n*10n**18n, scaleDivisor:4n, armor:2, attack:19}
 ];
 export const operationNames={add:'加算',mul:'乗算',pct:'割合',pow:'累乗',exp:'指数'};
 const extraEnemyName='エコー・オブ・インフィニティ';

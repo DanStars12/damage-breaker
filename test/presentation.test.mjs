@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {CAP} from '../src/math.mjs';
 import {evaluate} from '../src/relics.mjs';
 import {card,upgraded} from '../src/cards.mjs';
-import {timeline,magnitude,reelValue,impactForce,relicActivations,boardRelicStates} from '../src/presentation.mjs';
+import {timeline,magnitude,reelValue,impactForce,relicActivations,boardRelicStates,burstVisual,reelTiming} from '../src/presentation.mjs';
 
 test('timeline preserves resolution order, exact relic value and armored damage',()=>{
   const result=evaluate({board:[card('add',10),card('mul',12),card('add',100),card('mul',101)],
@@ -70,4 +70,20 @@ test('board relic strip differentiates pending, already fired and continuous eff
     {id:'sum',fixed:false,ready:true,fired:false},
     {id:'short',fixed:false,ready:true,fired:true}
   ]);
+});
+
+test('BURST passes through every digit on a large rise, using a different hue for each step',()=>{
+  const from=[19n,1n],to=[2n*10n**44n,1n];
+  const {samples,duration}=reelTiming(from,to,'relic',false);
+  const colors=Array.from({length:samples+1},(_,i)=>burstVisual(reelValue(from,to,i,samples)));
+  const digits=[...new Set(colors.map(value=>value.digits))];
+  assert.deepEqual(digits,Array.from({length:44},(_,i)=>i+2));
+  for(let i=1;i<colors.length;i++) {
+    if(colors[i].digits!==colors[i-1].digits) assert.notEqual(colors[i].hue,colors[i-1].hue);
+  }
+  assert(duration>reelTiming(from,to,'relic',true).duration);
+  assert.deepEqual(reelValue(from,to,samples,samples),to);
+  assert.equal(burstVisual([CAP,1n]).level,6);
+  assert.equal(burstVisual([CAP+1n,1n]).level,6); // Intermediate values still display as numbers.
+  assert.equal(burstVisual([CAP+1n,1n],true).level,7);
 });

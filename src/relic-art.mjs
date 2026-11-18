@@ -21,7 +21,11 @@ const relicPixels=[
 '18 18 18 3c 7e 7e 3c 00', '00 07 1e 3c 70 e0 c0 00',
 '81 c3 e7 ff 7e 7e 00 00', '18 3c 3c 3c 7e ff 18 00',
 '18 3c 7e db ff 7e 3c 18', '3c 66 db ff db 66 3c 00',
-'3c 3c 7e ff db 18 18 00', '18 5a 7e 3c 3c 7e 5a 18'
+'3c 3c 7e ff db 18 18 00', '18 5a 7e 3c 3c 7e 5a 18',
+'7e 66 7e 3c 3c 18 18 00','66 ff ff 7e 3c 18 00 00',
+'81 c3 66 3c 18 3c 5a 00','18 18 7e 5a 5a ff 18 00',
+'3c 7e e7 c3 db 7e 18 00','e7 c3 c3 c3 c3 7e 3c 00',
+'7c c6 9e 82 ba c6 7c 08','42 67 7e 99 ff 76 3c 00'
 ];
 const rankInk=['#90d3ad','#85c9ff','#df9df5','#ffd379'];
 const relicIds=Object.keys(relics);

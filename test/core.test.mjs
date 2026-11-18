@@ -295,7 +295,7 @@ test('ACT III boss HP curves preserve dragon gates and the emperor barrier',()=>
 test('boss attack follows the ACT curve and victory healing depends on encounter rank',()=>{
   for(const [i,attack] of [12,18,25].entries()) {
     for(const variant of [0,1]) {
-      assert.equal(makeEnemy(i+1,'boss',variant,9).attack,i===2?[17,18][variant]:attack);
+      assert.equal(makeEnemy(i+1,'boss',variant,9).attack,i===2?[16,19][variant]:attack);
     }
   }
   const r=new Run('recovery-by-rank');
@@ -375,13 +375,13 @@ test('HOLD forecast agrees with the actual enemy response and does not mutate th
   assert.equal(r.holdPreview(),null);
 });
 
-test('40 ranked relics have distinct pixel icons and seeded, ownership-aware rolls',()=>{
+test('48 ranked relics have distinct pixel icons and seeded, ownership-aware rolls',()=>{
   const ids=Object.keys(relics);
-  assert.equal(ids.length,40);
+  assert.equal(ids.length,48);
   assert.deepEqual(new Set(ids.map(id=>relics[id].rank)),new Set([0,1,2,3]));
   assert.equal(relicRanks.length,4);
   const icons=ids.map(relicIcon);
-  assert.equal(new Set(icons).size,40);
+  assert.equal(new Set(icons).size,48);
   assert(icons.every(svg=>svg.includes('shape-rendering="crispEdges"')));
   const roll=()=>Array.from({length:128},(_,i)=>drawRelic(random('rank-'+i),['grimoire','chalk'],1,{shop:true}));
   const stock=roll();
@@ -574,4 +574,17 @@ test('event routing is deterministic and avoids repeats across consecutive visit
   assert.deepEqual(visit('events-30'),first);
   assert.equal(new Set(first).size,first.length);
   assert.notDeepEqual(visit('events-31'),first);
+});
+
+test('new relics reward different boards and provide opening guard and recovery',()=>{
+  const owned=['twinScribes','balanceStone','violetSeal','lodestone','spiralKey','nightCrown'];
+  const effects=board=>evaluate({board,owned}).triggers.map(t=>t.id);
+  assert.deepEqual(effects([a('add',10),a('mul',2)]),['twinScribes']);
+  assert.deepEqual(effects([a('pct',25),a('add',10),a('pct',50)]),['balanceStone']);
+  assert.deepEqual(effects([a('add',10),a('mul',2),a('pow',2),a('exp',2)]),['violetSeal','spiralKey']);
+  assert.deepEqual(effects([a('mul',2),a('mul',4),a('mul',6)]),['lodestone']);
+  assert.deepEqual(effects([a('add',10),a('add',20),a('mul',2),a('mul',3),a('pct',25),a('pct',50)]),['nightCrown']);
+  const r=new Run('new-relics-100');r.owned=['keystone','lanternHeart'];r.hp=50;
+  forceNode(r,'fight');assert.equal(r.guardPoints,6);
+  kill(r);assert.equal(r.hp,59);
 });

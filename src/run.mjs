@@ -62,7 +62,7 @@ export class Run {
     this.turn=0;
     this.holds=0;
     this.ward=this.bonus('ward')>0;
-    this.guard=0;
+    this.guard=this.bonus('openingGuard');
     this.interceptUsed=false;
     this.refill();
   }
@@ -216,7 +216,7 @@ export class Run {
       const boss=this.enemy.kind==='boss', elite=this.enemy.elite;
       if(boss) this.stats.bosses++;
       const hpBefore=this.hp;
-      this.hp=Math.min(100,this.hp+(boss?28:elite?13:7));
+      this.hp=Math.min(100,this.hp+(boss?28:elite?13:7)+this.bonus('victoryRecovery'));
       this.victoryHeal=this.hp-hpBefore;
       if(elite||boss||this.act===4) {
         this.relicDrop=drawRelic(this.rng,this.owned,this.act);
