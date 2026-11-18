@@ -1,0 +1,118 @@
+// Original low-resolution sprites. Forms use distinct silhouettes, weapons and anatomy.
+const beastPalettes=[
+  [23,38],[204,38],[7,55],[37,67],[68,55],[253,42],
+  [181,51],[301,37],[42,53],[78,46],[195,66],[17,61],
+  [267,52],[226,59],[24,71],[321,52],[159,47],[286,67]
+];
+export function paintEnemy(canvas,{form,palette}) {
+  const c=canvas.getContext('2d');
+  const [h,s]=beastPalettes[palette];
+  const ink='#100e1b',shade=`hsl(${h} ${s}% 19%)`,mid=`hsl(${h} ${s}% 37%)`,light=`hsl(${h} ${s}% 64%)`;
+  const glow=`hsl(${(h+24)%360} 88% 79%)`;
+  const box=(color,x,y,w,d)=>{c.fillStyle=color;c.fillRect(x,y,w,d);};
+  const poly=(color,pts)=>{
+    c.fillStyle=color;c.beginPath();
+    pts.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));
+    c.closePath();c.fill();
+  };
+  const gem=(color,x,y,r)=>poly(color,[[x,y-r],[x+r,y],[x,y+r],[x-r,y]]);
+  const mirror=points=>points.map(([x,y])=>[88-x,y]);
+  const pair=(color,points)=>{poly(color,points);poly(color,mirror(points));};
+  const eye=(x,y)=>{box(ink,x-1,y-1,7,4);box(glow,x,y,4,1);};
+  const ring=(x,y,r,color)=>{
+    c.strokeStyle=color;c.lineWidth=1;c.beginPath();c.ellipse(x,y,r,r*.7,0,0,Math.PI*2);c.stroke();
+  };
+  const head=(x,y,r,horns=false)=>{
+    poly(ink,[[x-r-2,y+1],[x-r,y-r],[x+r,y-r],[x+r+2,y+2],[x+r/2,y+r],[x-r/2,y+r]]);
+    poly(mid,[[x-r,y],[x-r+2,y-r+1],[x+r-2,y-r+1],[x+r,y+1],[x+r/2,y+r-2],[x-r/2,y+r-2]]);
+    box(shade,x-r+2,y+3,r*2-4,3);
+    eye(x-r+2,y-1);eye(x+r-6,y-1);
+    if(horns) poly(light,[[x-r,y-r],[x-r-4,y-r-8],[x-r+3,y-r-4],[x+r-3,y-r-4],[x+r+4,y-r-8],[x+r,y-r]]);
+  };
+  const core=(x,y,r)=>{gem(ink,x,y,r+2);gem(light,x,y,r);gem(glow,x,y,r/2);};
+  const wing=[[44,30],[34,14],[22,8],[5,6],[11,13],[3,20],[15,28],[10,44],[24,37],[28,48],[40,37]];
+  const armor=[[44,10],[58,16],[70,27],[77,48],[67,59],[21,59],[11,48],[19,27],[30,16]];
+  c.clearRect(0,0,88,64);
+  box('#120e1b9c',10,57,68,3);box('#201524',18,56,52,2);
+  const big=['golem','hydra','wyrm','behemoth','mantis','idol','titan','leviathan','colossus','moth','dragon','eclipse'].includes(form);
+  if(big) {ring(44,28,31,shade);ring(44,28,36,shade);}
+  switch(form) {
+    case 'hound':
+    case 'behemoth':
+    case 'leviathan': {
+      const huge=form!=='hound', y=huge?20:30;
+      poly(ink,[[7,41],[19,y+4],[30,y],[55,y+4],[72,y+10],[83,y+5],[77,y+19],[71,55],[61,58],[55,48],[33,46],[29,58],[17,58],[21,47]]);
+      poly(mid,[[12,40],[25,y+4],[39,y+2],[59,y+8],[72,y+13],[78,y+10],[70,45],[61,53],[56,43],[27,43]]);
+      poly(shade,[[22,44],[39,y+13],[63,y+12],[68,46],[63,52],[59,46],[33,46],[27,56],[20,56]]);
+      if(form==='leviathan') pair(light,[[39,34],[21,7],[21,23],[9,18],[15,36],[33,39]]);
+      if(huge) for(let i=0;i<5;i++) gem(light,40+i*6,y+7+i,ridge(i));
+      head(21,y+11,huge?12:9,huge);
+      box(glow,14,y+17,3,2);break;
+    }
+    case 'beetle':
+    case 'mantis':
+    case 'moth': {
+      if(form==='moth') {
+        pair(ink,wing);pair(mid,[[44,31],[32,13],[9,9],[20,25],[16,38],[30,32],[34,42]]);
+        pair(light,[[37,30],[17,14],[24,25],[21,34],[31,30]]);
+        for(const x of [16,28,60,72]) core(x,24,3);
+      } else for(let i=0;i<4;i++) {
+        const y=26+i*7;
+        pair(ink,[[39,y],[24,y-6],[form==='mantis'?6:15,y+6],[20,y+8],[29,y],[37,y+4]]);
+        pair(light,[[33,y],[24,y-5],[16,y+5],[25,y+2]]);
+      }
+      poly(shade,[[44,21],[61,33],[57,48],[44,58],[31,48],[27,33]]);
+      poly(mid,[[44,25],[56,32],[55,43],[44,50],[33,43],[32,32]]);
+      if(form==='mantis') pair(light,[[48,40],[74,29],[84,15],[81,31],[66,43]]);
+      head(44,26,9,form!=='beetle');core(44,42,5);break;
+    }
+    case 'dragon':
+    case 'hydra':
+    case 'wyrm': {
+      if(form==='dragon') {pair(ink,wing);pair(shade,[[44,29],[29,13],[8,8],[21,23],[17,37],[32,33],[35,42]]);
+        pair(mid,[[36,31],[29,17],[16,12],[24,24],[22,34],[31,29]]);
+      }
+      poly(ink,[[13,53],[21,39],[33,42],[35,22],[40,12],[51,12],[57,23],[58,40],[75,44],[80,53],[64,59],[25,59]]);
+      poly(mid,[[16,52],[25,43],[39,44],[41,24],[46,18],[54,23],[55,42],[71,47],[74,52],[65,56],[25,56]]);
+      for(let i=0;i<4;i++) box(light,41+i,24+i*5,11,2);
+      if(form==='hydra') {head(22,33,8,true);head(69,32,8,true);}
+      head(46,17,10,true);core(46,41,5);break;
+    }
+    case 'wisp':
+    case 'specter':
+    case 'eclipse': {
+      const abyss=form==='eclipse',r=abyss?23:14;
+      for(let i=0;i<3;i++) ring(44,31,r+4+i*5,i===1?mid:shade);
+      poly(ink,[[44,30-r],[44+r,22],[55,44],[66,58],[48,52],[43,58],[35,50],[23,56],[33,40],[44-r,23]]);
+      poly(mid,[[44,32-r],[42+r,24],[53,43],[58,52],[44,47],[30,52],[36,40],[46-r,26]]);
+      core(44,29,abyss?13:7);box(ink,abyss?33:38,28,abyss?22:12,3);box(glow,42,29,4,1);
+      if(abyss) for(let i=0;i<8;i++) {const ang=i*Math.PI/4;gem(light,44+Math.cos(ang)*33,30+Math.sin(ang)*23,3);}
+      break;
+    }
+    default: {
+      const giant=big?1:.68;
+      c.save();c.translate(44*(1-giant),58*(1-giant));c.scale(giant,giant);
+      poly(ink,armor);
+      poly(shade,[[44,14],[57,18],[66,28],[72,47],[64,55],[24,55],[15,47],[22,28],[31,18]]);
+      pair(mid,[[44,27],[33,22],[22,30],[18,46],[29,43],[38,34]]);
+      pair(light,[[37,23],[29,22],[22,31],[32,28]]);
+      if(['titan','colossus','idol'].includes(form)) {
+        pair(ink,[[32,23],[21,12],[8,19],[10,44],[4,46],[6,56],[21,57],[30,41]]);
+        pair(mid,[[28,24],[21,17],[12,21],[14,43],[9,48],[10,52],[19,53],[26,38]]);
+        pair(light,[[20,17],[13,22],[17,34],[20,29]]);
+      }
+      if(form==='colossus') for(let i=0;i<4;i++) box(light,28+i*8,46,4,4);
+      if(form==='idol') for(let i=0;i<3;i++) core(26+i*18,40,5);
+      else core(44,42,big?8:5);
+      head(44,22,11,form==='titan');
+      if(form==='lantern') {box(ink,18,27,3,23);core(17,43,8);}
+      if(form==='knight') {poly(light,[[59,55],[70,28],[76,19],[75,32],[64,56]]);box(mid,57,49,12,3);}
+      c.restore();
+    }
+  }
+  for(let i=0;i<(big?13:5);i++) {
+    const x=(i*23+12+palette*3)%84,y=(i*11+8)%51;
+    box(i%3?light:glow,x,y,1,1);
+  }
+}
+function ridge(i){return i===2?4:2;}

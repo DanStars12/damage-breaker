@@ -1,0 +1,1841 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1b201b">
+<title>DAMAGE BREAKER</title>
+<style>:root{color-scheme:dark;--ink:#eaddc4;--sub:#b8af98;--gold:#d1b77b;--edge:#766348;--bg:#101512;--paper:#22271f;--jade:#a6d7bb;--red:#ef9d83;font:15px/1.5 Georgia,"Yu Mincho",serif}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% 0,#303a2b,transparent 68%),repeating-linear-gradient(118deg,#ffffff02 0 1px,transparent 1px 5px),var(--bg);color:var(--ink);min-height:100vh}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:#2b3328;border:1px solid var(--edge);padding:.56rem .95rem;border-radius:2px}
+button:hover:not(:disabled),button:focus-visible{background:#424a34;border-color:var(--gold);outline:1px solid var(--gold);outline-offset:2px}
+button:disabled{opacity:.43;cursor:default}
+input,select{background:#151c16;border:1px solid var(--edge);padding:.55rem;max-width:100%}
+h1,h2,h3,p{margin:0}
+header{height:65px;border-bottom:1px solid var(--edge);background:#151b16e8;display:flex;justify-content:space-between;align-items:center;padding:0 clamp(16px,4vw,60px);gap:12px}
+.brand{letter-spacing:.21em;font-size:16px;color:var(--gold);white-space:nowrap}
+header nav,.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+header button{padding:.35rem .65rem}
+main{max-width:1450px;margin:auto;padding:24px clamp(14px,3vw,42px) 32px}
+.frame{border:1px solid var(--edge);background:linear-gradient(150deg,#2b3026,#1a211a 58%);box-shadow:inset 0 0 0 4px #10150f66,0 12px 25px #0003;padding:16px;min-width:0}
+.title{display:grid;grid-template-columns:1.2fr 1fr;align-items:center;min-height:calc(100vh - 124px);padding:clamp(24px,6vw,100px);position:relative;overflow:hidden}
+.title h1{font-size:clamp(49px,8vw,120px);line-height:.9;letter-spacing:-.055em;color:#f1dfb6;text-shadow:0 4px #10150f;position:relative}
+.title p{margin:24px 0;color:var(--sub)}
+.title form{display:flex;flex-wrap:wrap;align-items:end;gap:12px}
+.title label{display:grid;gap:4px}
+.title canvas{width:100%;filter:drop-shadow(0 15px 24px #000);max-height:560px;object-fit:contain}
+.caption,.eyebrow{color:var(--gold);letter-spacing:.18em;font-size:12px}
+.rule{margin:12px 0 22px;width:76px;height:1px;background:var(--gold)}
+.primary{background:#d1b77b;color:#222418;border-color:#e9d199;font-weight:bold}
+.primary:hover:not(:disabled){background:#f0d69a}
+.battle{display:grid;gap:14px;grid-template-columns:minmax(0,1fr) 247px}
+.column,aside{display:grid;gap:12px;align-content:start;min-width:0}
+.enemy{display:grid;grid-template-columns:minmax(180px,40%) 1fr;align-items:center;min-height:210px;padding:0 24px 0 10px;overflow:hidden;background:radial-gradient(ellipse at 24% 50%,#56604555,transparent 49%),#20271e}
+.enemy canvas{width:100%;height:209px;object-fit:contain}
+.enemy h1{font-size:clamp(22px,3vw,40px);line-height:1.2;margin:4px 0 8px}
+.hpBar{height:7px;border:1px solid #8f7961;background:#111713;margin:4px 0}
+.hpBar span{display:block;height:100%;background:linear-gradient(90deg,#a56b4e,#e4a187)}
+.intent{color:var(--red);border-top:1px solid #74634966;margin-top:9px;padding-top:7px}
+.heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:9px}
+.heading h2,aside h2{font-size:17px;font-weight:normal;color:#f0dfba}
+.board{display:flex;align-items:stretch;gap:5px;flex-wrap:wrap;min-height:67px}
+.slot{min-width:59px;min-height:64px;padding:5px 8px;display:grid;place-content:center;text-align:center;max-width:100%;overflow-wrap:anywhere}
+.empty{border:1px dashed #8b7a526f;color:#ad9e7d;background:#161e16;font-size:12px}
+.base{border:1px solid #8e774d;color:#ead4a0;background:#2c2d20}
+.debuff{border:1px solid #a47060;color:var(--red);background:#4a2c29}
+.selected{outline:2px solid #fae7b4;outline-offset:2px}
+.preview{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:8px;border-top:1px solid #79664880;margin-top:12px;padding-top:9px}
+.preview div{min-width:0}
+.preview strong{display:block;font-size:20px;color:var(--jade);overflow-wrap:anywhere;line-height:1.25}
+small,.muted{color:var(--sub)}
+.hand{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.card{position:relative;min-width:0;min-height:86px;background:linear-gradient(145deg,#3a3e2c,#242d23);border-color:var(--tone,var(--edge));padding:6px;overflow-wrap:anywhere}
+.card strong{display:block;font-size:clamp(16px,2vw,27px);line-height:1.2}
+.card small{display:block;font-size:9px;letter-spacing:.08em;color:var(--tone,var(--sub))}
+.card em{font-style:normal;font-size:11px;color:var(--sub)}
+.t0{--tone:#b9ac8b}.t1{--tone:#90c4a0}.t2{--tone:#97c9e5}.t3{--tone:#d5a8dd}.t4{--tone:#f5c06b}
+.controls{display:flex;justify-content:space-between;gap:12px;margin-top:12px;flex-wrap:wrap}
+.energy{color:var(--gold)}
+aside .frame{padding:14px}
+.rune{border:0;border-bottom:1px solid #8b79523d;background:none;text-align:left;padding:8px 0;width:100%;color:#dbc996}
+.rune small{display:block;color:var(--jade)}
+.data{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.data b,.record{color:var(--jade);overflow-wrap:anywhere}
+.chapter{max-width:940px;margin:auto;padding:clamp(18px,4vw,50px)}
+.chapter h1{font-size:clamp(30px,5vw,54px);line-height:1.2;margin:6px 0 14px}
+.chapter h2{margin:18px 0 9px;font-size:18px}
+.choices{display:flex;gap:9px;flex-wrap:wrap;margin:8px 0 15px}
+.choices .card{min-width:115px}
+.choices button{max-width:100%;text-align:left}
+.choices button small{display:block}
+dialog{background:#222a20;color:var(--ink);border:1px solid var(--gold);max-width:min(740px,95vw);width:100%;max-height:82vh;padding:23px;overflow-wrap:anywhere}
+dialog::backdrop{background:#0b110bd9}
+dialog li{margin:6px 0}
+#effect{position:fixed;z-index:5;inset:0;display:none;place-items:center;pointer-events:none;text-align:center;font-weight:bold;font-size:clamp(30px,8vw,105px);color:#ffe2a1;text-shadow:0 0 25px #ff9b39,0 3px #3d271a;overflow:hidden;padding:20px;overflow-wrap:anywhere}
+#effect.flash{display:grid;animation:burst .62s both;background:radial-gradient(ellipse,#e7b76530,transparent 70%)}
+#effect.high{background:radial-gradient(ellipse,#b489dc77,transparent 75%);color:#ffeaff;text-shadow:0 0 26px #e288ff}
+#effect.shake{animation:quake .78s both}
+#effect.fast{animation-duration:.24s}
+@keyframes burst{0%{opacity:0;transform:scale(.96)}25%{opacity:1;transform:scale(1)}100%{opacity:0}}
+@keyframes quake{0%{opacity:0;transform:translateX(-8px) scale(.96)}16%{opacity:1;transform:translateX(8px)}28%{transform:translateX(-5px)}44%{transform:translateX(0)}100%{opacity:0}}
+@media(max-width:850px){.battle{grid-template-columns:1fr}aside{grid-template-columns:repeat(2,1fr)}.title{grid-template-columns:1fr}.title canvas{max-height:250px;grid-row:1}}
+@media(max-width:490px){header{height:auto;padding:10px;flex-wrap:wrap}.hand{gap:4px}.card{padding:3px}.card small{letter-spacing:0;font-size:8px}.enemy{grid-template-columns:90px 1fr;padding:7px;min-height:145px}.enemy canvas{height:120px}.preview strong{font-size:16px}.frame{padding:10px}}
+@media(prefers-reduced-motion:reduce){#effect.flash{animation-duration:.18s}}
+#effect[data-tier="1"]{text-shadow:0 0 30px #ffd999,0 4px #523717}
+#effect[data-tier="2"],#effect[data-tier="3"]{background:radial-gradient(ellipse,#f9c47566,transparent 72%)}
+#effect[data-tier="5"]{background:radial-gradient(ellipse,#b04c6066,transparent 70%);color:#ffe2ce}
+#effect[data-tier="6"],#effect[data-tier="7"]{background:repeating-conic-gradient(from 15deg at center,#c495ed30 0 3deg,transparent 8deg 25deg),radial-gradient(ellipse,#7d4da5b3,transparent 75%)}
+
+/* The spine separates the illuminated chapter from the margin notes. */
+:root{--display:Georgia,"Yu Mincho","Hiragino Mincho ProN",serif;--interface:"Yu Gothic","Hiragino Kaku Gothic ProN",sans-serif}
+body{background:radial-gradient(ellipse at 50% -10%,#4b4841 0,transparent 62%),repeating-linear-gradient(118deg,#ffffff02 0 1px,transparent 1px 5px),#151519}
+header{background:#1e1c22;border-color:#746144}
+.heading h2,aside h2{letter-spacing:.1em}
+main{position:relative;perspective:1300px}
+.battle{grid-template-columns:minmax(0,1fr) 252px}
+.battle .column{position:relative}
+.battle .column::after{content:"";position:absolute;top:0;bottom:0;right:-8px;width:1px;background:linear-gradient(transparent,#967c4a,transparent)}
+.frame{background:linear-gradient(145deg,#34302b,#211f25 72%);border-color:#82694c;box-shadow:inset 0 0 0 4px #14121890,0 8px 20px #0004}
+.eyebrow,.caption{color:#e0bd80}
+.enemy{grid-template-columns:minmax(0,1.55fr) minmax(210px,1fr);min-height:224px;padding:12px 20px 12px 12px;
+  --arena:#825e58;--mist:#e7a770;position:relative;isolation:isolate;gap:18px}
+.enemy[data-act="2"]{--arena:#485f65;--mist:#a0cfbf}
+.enemy[data-act="3"]{--arena:#6b435e;--mist:#eba4bd}
+.enemy[data-act="4"]{--arena:#544279;--mist:#c6a1ff}
+.duel{min-width:0;position:relative;display:grid;grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr);
+  align-items:end;isolation:isolate;border:1px solid #c49b582e;overflow:hidden;padding:5px 10px 9px;
+  background:radial-gradient(ellipse at 50% 60%,var(--arena),transparent 63%),
+    repeating-linear-gradient(90deg,transparent 0 3px,#100f161e 3px 4px),#17151f}
+.duel::before{content:"";z-index:-1;position:absolute;inset:0;background:linear-gradient(transparent 65%,#17121d 65%,#24202a 76%,#130f18 95%);opacity:.72}
+.combatant{min-width:0;margin:0;text-align:center}
+.combatant canvas{width:auto;height:132px;max-width:100%;object-fit:contain;image-rendering:pixelated;display:block;margin:auto;
+  filter:drop-shadow(0 0 9px color-mix(in srgb,var(--mist),transparent 50%))}
+.combatant figcaption{font:600 13px var(--interface);color:#f7e5c0;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.arena-seal{align-self:center;color:var(--mist);font-size:25px;opacity:.55;text-align:center}
+.hpBar span{transition:width .25s ease-out}
+.hero-hp span{background:linear-gradient(90deg,#447e73,#a6ddba)}
+.foe-hp span{background:linear-gradient(90deg,#8d435f,#eea08b)}
+.enemy-info{min-width:0}
+.enemy-info h1{font-size:clamp(24px,2.7vw,44px);letter-spacing:.035em;line-height:1.12}
+.enemy-title{letter-spacing:.12em}
+.enemy .intent{background:#16141ce8;border:1px solid #ac766755;padding:8px 10px;border-left:3px solid #ca8e76}
+.intent small,.intent strong{display:block}
+.intent strong{font:600 14px/1.45 var(--interface);color:#ffc9ad}
+#incoming{opacity:0;position:absolute;z-index:2;left:6%;top:20%;color:#ffd0b0;font:bold 14px var(--interface);text-shadow:0 2px 4px #000;padding:4px;background:#1b1521}
+.enemy-strike #incoming,.enemy-magic #incoming{animation:incoming .75s both}
+@keyframes incoming{0%{transform:translateY(10px);opacity:0}20%,70%{opacity:1}100%{transform:translateY(-10px);opacity:0}}
+.charging .hero canvas{animation:charge .62s ease-in-out infinite alternate}
+@keyframes charge{to{filter:brightness(1.55) drop-shadow(0 0 16px #b4f9dd);transform:translateY(-3px)}}
+.player-strike .hero canvas{animation:lunge-hero .36s both}
+.player-strike .foe canvas,.enemy-strike .hero canvas{animation:recoil .42s both}
+.enemy-strike .foe canvas{animation:lunge-foe .36s both}
+.enemy-strike .hero canvas{animation-name:recoil-hero}
+.enemy-magic .foe canvas{animation:charge .3s ease-in-out 2 alternate}
+@keyframes lunge-hero{35%{transform:translateX(17px) scale(1.06)}}
+@keyframes lunge-foe{35%{transform:translateX(-17px) scale(1.06)}}
+@keyframes recoil{28%{transform:translateX(10px);filter:brightness(3) saturate(.5)}}
+@keyframes recoil-hero{28%{transform:translateX(-10px);filter:brightness(2.7) saturate(.5)}}
+.slash{opacity:0;position:absolute;top:20%;left:57%;width:38%;height:60%;pointer-events:none;
+  background:linear-gradient(133deg,transparent 45%,#fff8d4 49%,#eac89b 51%,transparent 55%);filter:drop-shadow(0 0 7px #ffb870)}
+.player-strike .slash{animation:slash .38s both}
+@keyframes slash{0%{opacity:0;transform:scale(.4) translate(-20px,14px)}28%{opacity:1}100%{opacity:0;transform:scale(1.1) translate(12px,-8px)}}
+.card{--card-land:#31283a;position:relative;isolation:isolate;overflow:hidden;min-height:116px;text-align:center;
+  display:grid;grid-template-rows:22px minmax(40px,1fr) 24px;align-items:center;padding:7px 8px;border:1px solid var(--tone);
+  background:radial-gradient(ellipse at 50% 53%,color-mix(in srgb,var(--tone),transparent 78%),transparent 58%),
+    linear-gradient(145deg,#443746 0%,var(--card-land) 50%,#221c29 100%);
+  box-shadow:inset 0 0 0 3px #160f215e,0 3px 0 #17121c}
+.card:hover:not(:disabled){background-color:#594739;background-blend-mode:screen;box-shadow:inset 0 0 0 3px #d6a35a32,0 3px 0 #17121c}
+.card .card-rank{display:block;color:var(--tone);font:700 10px var(--interface);letter-spacing:.09em;text-align:left;padding-left:4px;padding-right:19px}
+.card .mana{position:absolute;top:7px;right:8px;display:grid;place-items:center;border:1px solid var(--tone);width:22px;height:22px;
+  background:#221a29;color:#fbdfab;font:bold 13px Georgia;border-radius:50%}
+.card .sigil{position:absolute;z-index:-1;inset:13px 0 0;display:grid;place-content:center;color:var(--tone);font-size:76px;line-height:1;opacity:.17}
+.card .card-number{color:#fff0cb;text-shadow:0 2px #110d18;font-size:clamp(24px,3.1vw,38px);font-variant-numeric:lining-nums tabular-nums}
+.card .card-type{color:#e9d6bc;font:600 11px var(--interface)}
+.choices .card{min-width:140px;text-align:center}
+.board .slot{min-width:62px}
+.board-card{border-color:var(--tone);background:linear-gradient(145deg,#52414a,#2e2532)}
+.board-card strong{font-size:22px;color:#fff0cf;font-variant-numeric:tabular-nums}
+.board-card small{font:11px var(--interface)}
+.board .resolving,.rune.resolving{z-index:1;outline:2px solid #ffdf9b;box-shadow:0 0 12px #ffbd55;background:#5c422d;color:#fff1b7}
+.board .debuff.resolving{outline-color:#ffa39b;box-shadow:0 0 12px #fe7059}
+.preview{grid-template-columns:1fr 1fr 1.25fr}
+.preview div{background:#18161eaa;padding:7px 10px;border-left:1px solid #8e7555}
+.preview small{font:600 11px var(--interface)}
+.preview strong{font-variant-numeric:lining-nums tabular-nums}
+.preview div:last-child strong{color:#ffe3a1;font-size:25px}
+.calculating .preview{display:none}
+.reel{--reel-gold:#ffe4a0;--reel-light:#ecb34b;position:relative;margin-top:10px;padding:9px 12px;background:radial-gradient(ellipse at 50% 110%,#94704d45,transparent 62%),#16131f;
+  border:1px solid var(--reel-light);overflow:hidden;box-shadow:inset 0 0 18px #0b0911}
+.reel[data-kind="enemy"]{--reel-gold:#ffb2a4;--reel-light:#a66160}
+.reel[data-kind="relic"]{--reel-gold:#f3d8ff;--reel-light:#bc8beb}
+.reel[data-level="4"],.reel[data-level="5"],.reel[data-level="6"],.reel[data-level="7"]{
+  box-shadow:inset 0 0 25px #b68a6738,0 0 14px #d5aa6480;background:radial-gradient(ellipse at center,#65485d,transparent 82%),#241725}
+.reel[data-level="7"]{--reel-gold:#fff2ff;--reel-light:#e7abff}
+.reel-head,.reel-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--reel-gold);font:700 13px/1.4 var(--interface)}
+#stepCombo{white-space:nowrap;font-family:var(--display);letter-spacing:.12em}
+#reelNumber{display:block;min-height:57px;font:700 clamp(29px,4.6vw,58px)/1.1 var(--display);font-variant-numeric:tabular-nums;text-align:center;
+  color:var(--reel-gold);text-shadow:0 0 20px var(--reel-light);overflow-wrap:anywhere;padding:4px}
+#reelNumber.count-pop{animation:count-pop .32s both}
+@keyframes count-pop{0%{transform:scale(.94);opacity:.55}32%{transform:scale(1.06);opacity:1}100%{transform:scale(1);opacity:1}}
+.reel-foot{display:grid;grid-template-columns:minmax(0,1fr) auto}
+#stepProgress{height:3px;max-width:100%;background:var(--reel-light);box-shadow:0 0 8px var(--reel-light);transition:width .12s}
+.reel-foot button{font-size:11px;padding:5px 8px}
+.chapter,.title{position:relative;border-color:#9a805b;box-shadow:inset 0 0 0 4px #211b2480,0 4px 0 #5b4940,0 8px 0 #2b242b,0 12px 22px #0005}
+.chapter::after,.title::after{content:"";position:absolute;inset:9px;border:1px solid #ceac5e36;pointer-events:none}
+.turn-page{animation:turn-page .43s both;transform-origin:12% 50%}
+.turn-page::after{content:"";position:absolute;inset:12px 2% 9px;pointer-events:none;background:linear-gradient(95deg,transparent,#e4bd883a,transparent);animation:page-light .43s both}
+.turn-fast,.turn-fast::after{animation-duration:.18s}
+@keyframes turn-page{0%{transform:rotateY(-18deg) translateX(-10px);filter:brightness(.72);opacity:.4}53%{filter:brightness(1.11)}100%{transform:none;opacity:1}}
+@keyframes page-light{0%{opacity:.8;transform:scaleX(.58) translateX(-9%)}100%{opacity:0;transform:scaleX(1)}}
+@media(max-width:1000px){.enemy{grid-template-columns:minmax(0,1.1fr) minmax(160px,1fr)}.combatant canvas{height:107px}}
+@media(max-width:850px){.battle{grid-template-columns:1fr}.battle .column::after{display:none}}
+@media(max-width:510px){.enemy{grid-template-columns:1fr;gap:8px}.enemy-info h1{display:none}.enemy-title{display:none}.enemy .intent{margin-top:5px}.combatant canvas{height:84px}.card{padding:4px 3px;min-height:83px;grid-template-rows:19px 36px 18px}.card .mana{width:15px;height:15px;top:4px;right:4px;font-size:10px}.card .card-rank{font-size:7px;padding-left:0;letter-spacing:0}.card .card-number{font-size:17px}.card .card-type{font-size:9px}.card .sigil{font-size:44px}.preview div{padding:5px 3px}.preview div:last-child strong{font-size:19px}.reel-head{font-size:11px}}
+.card::after{content:"";position:absolute;inset:5px;z-index:-1;pointer-events:none;opacity:.55;
+  background:linear-gradient(var(--tone),var(--tone)) left top/13px 1px,
+    linear-gradient(var(--tone),var(--tone)) left top/1px 13px,
+    linear-gradient(var(--tone),var(--tone)) right bottom/13px 1px,
+    linear-gradient(var(--tone),var(--tone)) right bottom/1px 13px;background-repeat:no-repeat}
+.slot.empty{background:#231e27;border-color:#a48a624e}
+.turn-page::after{inset:15px 4% 14px 8%;transform-origin:left center;border-radius:0 9px 20px 0;
+  background:linear-gradient(90deg,#423145,#846653 26%,#dfba85 65%,#ffe8b8 96%,#a7774a);
+  box-shadow:12px 2px 30px #100e17a8;backface-visibility:visible}
+@keyframes page-light{0%{opacity:.64;transform:rotateY(0deg) scaleX(.97)}
+  43%{opacity:.5;transform:rotateY(-67deg) skewY(2deg)}
+  74%,100%{opacity:0;transform:rotateY(-102deg) scaleX(.45)}}
+
+.workshop{--metal:#eab77c;--aura:#a25d40;display:grid;grid-template-columns:minmax(115px,1fr) minmax(0,2.5fr);gap:22px;align-items:center;
+  padding:20px;margin:17px 0;border:1px solid color-mix(in srgb,var(--metal),transparent 56%);background:radial-gradient(ellipse at 15% 51%,color-mix(in srgb,var(--aura),transparent 27%),transparent 55%),#201a25}
+.workshop-shop{--metal:#f3d184;--aura:#7e6535}
+.workshop-fuse{--metal:#d3c2ff;--aura:#624b95}
+.workshop-sigil{width:min(100%,145px);aspect-ratio:1;position:relative;display:grid;place-items:center;margin:auto;border:1px solid var(--metal);border-radius:50%;color:var(--metal)}
+.workshop-sigil i{position:absolute;inset:8%;border:1px dashed var(--metal);border-radius:50%;opacity:.66}
+.workshop-sigil span{font:54px Georgia;text-shadow:0 0 25px var(--metal)}
+.workshop-content .choices{margin:10px 0}
+.workshop-transform{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-bottom:14px}
+.workshop-sources{display:flex;gap:6px;color:var(--metal);font:700 23px var(--display)}
+.workshop-sources span{padding:3px 8px;border:1px solid color-mix(in srgb,var(--metal),transparent 60%)}
+.result-card{min-width:130px;width:min(174px,100%);border-radius:2px}
+.workshop-reveal[data-motion="full"] .result-card{animation:workshop-reveal .7s both}
+.workshop-reveal[data-motion="fast"] .result-card{animation:workshop-reveal .24s both}
+.workshop-reveal:not([data-motion="off"]) .workshop-sigil i{animation:workshop-circle .75s ease-out}
+.workshop-shop.workshop-reveal:not([data-motion="off"]) .workshop-sources{animation:workshop-coin .6s both}
+.workshop-fuse.workshop-reveal:not([data-motion="off"]) .workshop-sources span{animation:workshop-fuse .6s both}
+.workshop-forge.workshop-reveal:not([data-motion="off"]) .workshop-sigil span{animation:workshop-hammer .62s both}
+.relic-drop{display:flex;align-items:center;gap:17px;border:1px solid #a984bc;padding:12px 16px;margin:14px 0;background:radial-gradient(ellipse at 8% 50%,#734c837a,transparent 75%),#231b31}
+.relic-drop>span{color:#f1d3ff;font-size:44px;text-shadow:0 0 14px #d899f7}
+.relic-drop h2{margin:2px 0;font-size:21px;color:#f2d3ff}
+@keyframes workshop-reveal{0%{opacity:.05;filter:brightness(3);transform:rotateY(-50deg) scale(.72)}65%{filter:brightness(1.6);transform:scale(1.06)}100%{opacity:1;filter:none;transform:none}}
+@keyframes workshop-circle{from{transform:rotate(-120deg) scale(.64);opacity:.15}}
+@keyframes workshop-coin{35%{transform:translateY(-12px) rotate(-10deg);filter:brightness(2)}}
+@keyframes workshop-fuse{35%{transform:translateX(8px) scale(.88);filter:brightness(2)}}
+@keyframes workshop-hammer{20%{transform:rotate(-30deg)}50%{transform:rotate(16deg);filter:brightness(2)}}
+@media(max-width:610px){.workshop{grid-template-columns:1fr;padding:12px;gap:10px}.workshop-sigil{width:76px}.workshop-sigil span{font-size:31px}}
+
+.map-heading,.map-legend{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px 18px}
+.map-legend{margin-top:12px;font:13px var(--interface);color:var(--sub)}
+.map-legend b{color:var(--gold)}
+.route-map{height:clamp(390px,62vh,620px);position:relative;margin-top:12px;border:1px solid #907657;
+  background:radial-gradient(ellipse at 50% 48%,#67524d70,transparent 76%),repeating-linear-gradient(12deg,#f2d8a006 0 2px,transparent 2px 8px),#201920}
+.route-map svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.route-map line{stroke:#8c735b;stroke-dasharray:2 5;stroke-width:1.25;vector-effect:non-scaling-stroke}
+.route-map line.live{stroke:#f2d192;stroke-width:3;stroke-dasharray:none}
+.route-map line.traveled{stroke:#b5bc8a;stroke-width:2;stroke-dasharray:none}
+.map-node{position:absolute;top:var(--y);left:var(--x);transform:translate(-50%,-50%);padding:2px 5px;
+  width:min(27%,122px);display:grid;justify-items:center;gap:1px;color:#e0c596;background:#241b25;line-height:1.1}
+.map-node span{font:23px var(--display)}.map-node small{font:11px var(--interface);color:inherit}
+.map-node.elite,.map-node.boss{color:#ffc8aa;border-color:#986660}.map-node.shop{color:#f3cd74}.map-node.rest{color:#bcd8b0}
+.map-node.live{border-color:#edc789;background:#523c33;color:#fff0cb;box-shadow:0 0 13px #c79b5b69}
+.map-node.traveled{border-color:#a7b18b;color:#d7dab5;opacity:.83}
+.map-node.boss{background:#432834}.map-node.boss.live{background:#633a43}
+.enemy-rule{color:#e8d3b8;font:12px/1.45 var(--interface);margin:6px 0}
+#outgoing{opacity:0;position:absolute;right:7%;top:11%;color:#ffe2a0;font:bold clamp(15px,2.3vw,31px) var(--display);
+  text-shadow:0 3px 6px #000,0 0 20px #ffab58;z-index:3;pointer-events:none}
+.player-strike #outgoing{animation:incoming .65s both}
+.player-blocked #outgoing{color:#b8e4ff;text-shadow:0 0 16px #83bdff}
+.player-blocked .foe canvas{animation:ward-flash .45s both}
+@keyframes ward-flash{33%{filter:drop-shadow(0 0 18px #85c7ff) brightness(1.8);transform:scale(.96)}}
+.enemy-strike .duel::after,.enemy-magic .duel::after{content:"";pointer-events:none;position:absolute;inset:0;
+  background:radial-gradient(ellipse at 22% 50%,#f156574f,transparent 53%);animation:enemy-flash .47s both}
+.enemy-magic .duel::after{background:radial-gradient(ellipse at 28% 50%,#9680e451,transparent 48%)}
+@keyframes enemy-flash{0%,100%{opacity:0}28%{opacity:1}}
+.hand{grid-template-columns:repeat(auto-fit,minmax(min(96px,100%),1fr))}
+.sold{padding:15px;color:var(--sub);border:1px dashed var(--edge)}
+.workshop-relic{--metal:#e1b7ff;--aura:#765298}.workshop-remove{--metal:#e1979b;--aura:#813d4a}
+@media(max-width:510px){.hand{grid-template-columns:repeat(auto-fit,minmax(57px,1fr))}.map-node small{font-size:9px}.route-map{height:410px}}
+.enemy-double .hero canvas{animation:double-recoil .45s both}
+@keyframes double-recoil{15%,52%{transform:translateX(-11px);filter:brightness(2.55)}29%,70%{transform:translateX(-2px);filter:none}}
+.turn-fast .workshop-reveal .workshop-sigil span{animation-duration:.24s}
+.map-node.live:focus-visible{outline:2px solid #ffe4a9;outline-offset:3px}
+.map-node:disabled:not(.traveled){opacity:.72;color:#d6bc9b}
+.map-node:disabled.elite,.map-node:disabled.boss{color:#ecb1a1}
+.route-map line:not(.live):not(.traveled){stroke:#9e856d}
+
+/* Bestiary, duel and damage ledger */
+.route-map{height:clamp(530px,76vh,780px)}
+.route-map .map-node{min-height:36px}
+.duel{min-height:174px;background:radial-gradient(ellipse at 74% 50%,var(--arena),transparent 62%),linear-gradient(158deg,#100f1b,#272036)}
+.enemy[data-rank="boss"] .duel,.enemy[data-rank="elite"] .duel,.enemy[data-rank="extra"] .duel{grid-template-columns:minmax(0,1fr) 15px minmax(0,1.8fr)}
+.foe canvas{height:145px}
+.enemy[data-rank="elite"] .foe canvas,.enemy[data-rank="boss"] .foe canvas,.enemy[data-rank="extra"] .foe canvas{height:180px}
+.enemy[data-rank="boss"] .duel,.enemy[data-rank="extra"] .duel{box-shadow:inset 0 0 24px #c0637038;border-color:#bf8e6a78}
+.enemy[data-rank="boss"] .foe figcaption,.enemy[data-rank="extra"] .foe figcaption{color:#ffd4aa}
+.damage-receipt{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#76563d;margin:10px 0;border:1px solid #a57e56}
+.damage-receipt div{padding:6px 11px;min-width:0;background:linear-gradient(105deg,#39293a,#211821)}
+.damage-receipt small{display:block;color:#ddc3a1;font:12px/1.4 var(--interface)}
+.damage-receipt strong{display:block;color:#ffdfa1;font:700 clamp(23px,3.5vw,42px)/1.05 var(--display);overflow-wrap:anywhere}
+.damage-receipt div+div strong{color:#ffd1bd}
+.calculating .damage-receipt{display:none}
+#effect.flash:not(.fast){animation-duration:1.6s}
+#outgoing{max-width:74%;overflow-wrap:anywhere}
+.player-strike #outgoing{animation:impact-number .85s both}
+.player-landed .slash{background:linear-gradient(133deg,transparent 39%,#ffe4aea8 45%,#fff9df 49%,#f4a178 52%,transparent 60%);animation:slash .55s both}
+.player-landed .duel::after,.player-blocked .duel::after{content:"";inset:0;pointer-events:none;position:absolute;background:radial-gradient(ellipse at 73% 47%,#ffd29a60,transparent 59%);animation:enemy-flash .55s both}
+.player-blocked .duel::after{background:radial-gradient(ellipse at 73% 47%,#85bbff75,transparent 52%)}
+.enemy-cast{position:absolute;inset:0;pointer-events:none;opacity:0}
+.enemy-magic .enemy-cast{opacity:1;animation:hex-cast .56s both;background:radial-gradient(ellipse at 27% 53%,#9a7cf0a0,transparent 50%)}
+.enemy-magic[data-move="lock"] .enemy-cast{background:repeating-linear-gradient(125deg,transparent 0 27px,#d595ff88 29px 31px,transparent 33px 53px);animation:seal-cast .53s both}
+.enemy-magic[data-move="div"] .enemy-cast{background:linear-gradient(155deg,transparent 43%,#9edcff 47%,transparent 53%),linear-gradient(28deg,transparent 44%,#93c9ff 49%,transparent 55%);animation:seal-cast .6s both}
+.enemy-magic[data-move="drain"] .enemy-cast,.enemy-magic[data-move="wither"] .enemy-cast{background:radial-gradient(ellipse at 18% 45%,#c55b83d4,#703f7a72 20%,transparent 53%);animation:drain-cast .57s both}
+.enemy-magic[data-move="ward"] .enemy-cast{background:radial-gradient(ellipse at 22% 51%,transparent 14%,#a5f7d6a9 21%,transparent 34%)}
+.enemy-magic[data-move="pct"] .enemy-cast{background:radial-gradient(ellipse at 28% 51%,#e49b6f99,#aa433263 26%,transparent 59%)}
+.enemy-magic[data-move="sub"] .enemy-cast{background:linear-gradient(0deg,transparent 38%,#ffa88785 47%,transparent 58%)}
+.enemy-strike .enemy-cast{opacity:1;background:linear-gradient(37deg,transparent 34%,#ff8b7cb9 39%,transparent 47%);animation:melee-cast .43s both}
+.enemy-double .enemy-cast{animation:melee-twice .59s both}
+.enemy-strike:is([data-form="golem"],[data-form="titan"],[data-form="colossus"],[data-form="idol"]) .foe canvas{animation-name:heavy-foe}
+.enemy-strike:is([data-form="wyrm"],[data-form="dragon"],[data-form="hydra"],[data-form="mantis"]) .foe canvas{animation-name:beast-lunge}
+.dealing .card{animation:draw-card .35s calc(var(--deal)*33ms) ease-out both}
+.relic-drop:has([data-action="relicTake"]){animation:relic-arrival .68s ease-out both}
+@keyframes draw-card{0%{opacity:.06;transform:translate(22px,14px) rotate(7deg) scale(.91)}62%{opacity:1;transform:translateY(-3px) rotate(0)}100%{transform:none}}
+@keyframes impact-number{0%{opacity:0;transform:translateY(9px) scale(.77)}19%{opacity:1;transform:translateY(-4px) scale(1.08)}82%{opacity:1;transform:translateY(-10px)}100%{opacity:0;transform:translateY(-18px)}}
+@keyframes seal-cast{0%{opacity:0;transform:translateX(18%)}31%{opacity:.9;transform:translateX(-6%)}100%{opacity:0;transform:translateX(-15%)}}
+@keyframes drain-cast{0%{opacity:0;transform:scale(.7)}37%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:translateX(32%) scale(.5)}}
+@keyframes hex-cast{0%,100%{opacity:0}38%{opacity:1;transform:scale(1.08)}}
+@keyframes melee-cast{0%,100%{opacity:0}27%{opacity:.9;transform:translateX(-9%)}}
+@keyframes melee-twice{0%,47%,100%{opacity:0}21%,64%{opacity:1;transform:translateX(-9%)}}
+@keyframes heavy-foe{25%{transform:translate(-5px,-14px) scale(1.05)}53%{transform:translate(-15px,5px) scale(1.04)}}
+@keyframes beast-lunge{37%{transform:translate(-23px,-5px) skewX(-8deg) scale(1.07)}}
+@keyframes relic-arrival{0%{filter:brightness(1.7);transform:translateY(7px)}100%{filter:none;transform:none}}
+@media(max-width:510px){.hero canvas{height:78px}.foe canvas{height:106px}.enemy[data-rank] .foe canvas{max-height:132px}.route-map{height:535px}}
+@media(prefers-reduced-motion:reduce){.relic-drop{animation:none!important}}
+.enemy[data-form="moth"].enemy-magic .foe canvas{animation:moth-hover .52s both}
+.enemy[data-form="eclipse"].enemy-magic .foe canvas{animation:eclipse-cast .57s both}
+.enemy[data-form="leviathan"].enemy-strike .foe canvas,.enemy[data-form="behemoth"].enemy-strike .foe canvas{animation:ground-rush .56s both}
+@keyframes moth-hover{43%{transform:translateY(-14px) scaleX(1.1);filter:brightness(1.6)}}
+@keyframes eclipse-cast{20%{transform:rotate(-5deg) scale(.92)}63%{transform:rotate(5deg) scale(1.18);filter:brightness(1.55)}}
+@keyframes ground-rush{28%{transform:translateX(5px)}52%{transform:translate(-20px,5px) scaleY(.91)}}
+
+.reward-block{margin:14px 0;padding:13px 15px;border:1px solid #97754474;background:#241d2b}
+.reward-block h2{margin:0 0 5px;color:#f5d4a0}
+.reward-gold,.reward-result{display:flex;align-items:center;gap:12px 20px;flex-wrap:wrap}
+.reward-gold{justify-content:space-between}
+.reward-gold strong,.loot-receipt strong,.reward-changes strong{color:#ffdfa1}
+.reward-result .result-card{max-width:148px}
+.reward-block>.result-card{margin:12px 0}
+.reward-changes{display:flex;flex-wrap:wrap;gap:8px 16px;margin:8px 0 12px}
+.reward-changes span{padding:3px 8px;background:#382941;border:1px solid #a5835666}
+.loot-receipt{margin:15px 0;padding:12px;background:#392a34;border-left:3px solid #d3a567;word-break:break-word}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<dialog id="dialog"></dialog>
+<div id="effect" aria-live="polite"></div>
+<script>'use strict';
+(()=>{
+const CAP = 9999n * 10n ** 68n;
+const abs = n => n < 0n ? -n : n;
+function gcd(a,b) {
+  while (b) [a,b] = [b,a%b];
+  return abs(a);
+}
+function rational(n,d=1n) {
+  const g = gcd(n,d);
+  return [n/g,d/g];
+}
+function apply([n,d], {kind,value}) {
+  const v = BigInt(value);
+  switch(kind) {
+    case 'add': return rational(n+v*d,d);
+    case 'sub': return rational(n-v*d,d);
+    case 'mul': return rational(n*v,d);
+    case 'div': return rational(n,d*v);
+    case 'pct': return rational(n*(100n+v),d*100n);
+    case 'pow': return [n**v,d**v];
+    case 'exp': return rational(n*10n**v,d);
+    default: return [n,d];
+  }
+}
+function damage([n,d]) {
+  return n > 0n ? n/d : 0n;
+}
+const units = ['', '万','億','兆','京','垓','秭','穣','溝','澗','正','載','極','恒河沙','阿僧祇','那由他','不可思議','無量大数'];
+function format(n, scientific=false, cap=true) {
+  if (cap && n>CAP) return '∞';
+  const s = n.toString();
+  if (n<0n) return '−'+format(-n,scientific,false);
+  if (s.length<=4) return s;
+  if (scientific || s.length>72) return s[0]+'.'+s.slice(1,5)+'e+'+(s.length-1);
+  const groups=[];
+  for(let end=s.length,i=0;end>0;end-=4,i++) {
+    const part=Number(s.slice(Math.max(0,end-4),end));
+    if(part) groups.unshift(part+units[i]);
+  }
+  return groups.join('');
+}
+function label({kind,value,target}) {
+  switch(kind) {
+    case 'add': return '+'+value;
+    case 'sub': return '−'+value;
+    case 'mul': return '×'+value;
+    case 'div': return '÷'+value;
+    case 'pct': return (value>0?'+':'−')+Math.abs(value)+'%';
+    case 'pow': return 'x'+superscript(value);
+    case 'exp': return '×10'+superscript(value);
+    case 'lock': return operationNames[target]+'封印';
+    default: return {clean:'浄化',ward:'結界',seal:'封印'}[kind];
+  }
+}
+function superscript(value) {
+  return String(value).replace(/\d/g,d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[d]);
+}
+
+const numeric = c => !c.enemy && ['add','mul','pct'].includes(c.kind);
+function streak(cards,key) {
+  let last=null, run=0,best=0;
+  for(const c of cards) {
+    const digit=numeric(c)?key(String(c.value)):null;
+    run=digit===null?0:digit===last?run+1:1;
+    best=Math.max(best,run);
+    last=digit;
+  }
+  return best;
+}
+const relics = {
+  grimoire:{name:'同頭累乗の魔導書',desc:'先頭数字が隣接で2枚以上一致。通常結果を最長連続枚数で累乗。', effect:({cards})=>{
+    const n=streak(cards,s=>s[0]);
+    return n>=2?{kind:'pow',value:n}:null;
+  }},
+  tail:{name:'末尾の銀印',desc:'末尾数字が隣接で2枚以上一致すると、連続枚数×12倍。',effect:({cards})=>{
+    const n=streak(cards,s=>s.at(-1));
+    return n>=2?{kind:'mul',value:n*12}:null;
+  }},
+  order:{name:'昇階の羅針盤',desc:'隣接する数字パネル3枚が厳密に昇順なら×72。',effect:({cards})=>
+    cards.some((c,i)=>i>=2 && cards.slice(i-2,i+1).every(numeric) &&
+      cards[i-2].value<cards[i-1].value && cards[i-1].value<c.value)?{kind:'mul',value:72}:null},
+  short:{name:'三刻の指輪',desc:'自分の演算が1〜3枚なら×8。',effect:({count})=>count>0&&count<=3?{kind:'mul',value:8}:null},
+  prism:{name:'反転の水晶',desc:'敵の除算を同じ値の乗算に反転。通常演算中に適用。'},
+  key:{name:'除算封じの鍵',desc:'敵の除算を無効化。通常演算中に適用。'},
+  chain:{name:'連鎖の砂時計',desc:'コンボ5以上のBURSTで×30。',effect:({combo})=>combo>=5?{kind:'mul',value:30}:null},
+  furnace:{name:'炉心の契約',desc:'毎ターンのエナジー+1。ドロー−1。',energy:1,draw:-1},
+  codex:{name:'貪読の書架',desc:'毎ターンのドロー+2。基礎値−35%。',draw:2,base:-35},
+  rack:{name:'拡張の呪箱',desc:'演算枠+1。戦闘開始時にHPを5失う（最低HP1）。',slots:1,entry:5},
+  spring:{name:'初動の砂漏れ',desc:'初ターンだけエナジー+2。初ターンのドロー−2。',firstEnergy:2,firstDraw:-2},
+  mantle:{name:'護符の裏地',desc:'戦闘開始時に結界を張る。毎ターンのエナジー−1（最低1）。',ward:true,energy:-1},
+  sum:{name:'千和の石版',desc:'有効な自分のパネルがすべて加算なら、1枚につき×45（最大×405）。',effect:({own})=>
+    own.length&&own.every(c=>c.kind==='add')?{kind:'mul',value:own.length*45}:null},
+  abacus:{name:'万算の算盤',desc:'有効な自分のパネルが4枚以上で、すべて加算なら演算結果を二乗。',effect:({own})=>
+    own.length>=4&&own.every(c=>c.kind==='add')?{kind:'pow',value:2}:null},
+  lattice:{name:'積算の六面晶',desc:'有効な自分のパネルが2枚以上で、すべて乗算なら×144。',effect:({own})=>
+    own.length>=2&&own.every(c=>c.kind==='mul')?{kind:'mul',value:144}:null},
+  mosaic:{name:'五紋の標本箱',desc:'違う演算を4種類以上使うと×360。',effect:({own})=>
+    new Set(own.map(c=>c.kind)).size>=4?{kind:'mul',value:360}:null},
+  ratio:{name:'比率の天球儀',desc:'割合パネルを2枚以上使うと、1枚につき×48。',effect:({own})=>{
+    const n=own.filter(c=>c.kind==='pct').length;
+    return n>=2?{kind:'mul',value:n*48}:null;
+  }},
+  reserve:{name:'空席の番人',desc:'演算枠−1。毎ターンのドロー+1。',slots:-1,draw:1},
+  tithe:{name:'双刃の燭台',desc:'毎ターンのエナジー+1。戦闘開始時にHPを8失う（最低HP1）。',energy:1,entry:8},
+  star:{name:'千星の象牙盤',desc:'指数を含むBURSTに×100。',effect:({cards})=>cards.some(c=>c.kind==='exp'&&!c.enemy)?{kind:'mul',value:100}:null}
+};
+function evaluate({base=20,board=[],deb=[] ,owned=[],armor=1}) {
+  const cards=[];
+  for(let i=0;i<=board.length;i++) {
+    cards.push(...deb.filter(c=>Math.min(c.at,board.length)===i));
+    if(i<board.length) cards.push(board[i]);
+  }
+  let result=[BigInt(base),1n], sealed=false;
+  const locks=new Set(deb.filter(c=>c.kind==='lock').map(c=>c.target));
+  const steps=[];
+  const factors=[];
+  for(const c of cards) {
+    let op=c;
+    if(c.enemy && c.kind==='div') {
+      if(owned.includes('prism')) op={...c,kind:'mul'};
+      else if(owned.includes('key')) op=null;
+    }
+    if(c.kind==='seal') sealed=true;
+    else if(sealed && !c.enemy) {
+      sealed=false;
+      op=null;
+    }
+    if(!c.enemy&&locks.has(c.kind)) op=null;
+    if(op) result=apply(result,op);
+    if(op && ['mul','pow','exp'].includes(op.kind)) factors.push(op);
+    steps.push({card:c,op,result});
+  }
+  const normal=result, triggers=[];
+  const activeCards=steps.map(({card,op})=>op?card:{kind:'sealed',enemy:true});
+  const own=steps.filter(({card,op})=>op&&!card.enemy).map(({card})=>card);
+  const count=own.length;
+  for(const id of ['grimoire','tail','order','short','chain','star','sum','abacus','lattice','mosaic','ratio']) {
+    if(!owned.includes(id)) continue;
+    const op=relics[id].effect({cards:activeCards,count,combo:count,own});
+    if(!op) continue;
+    result=apply(result,op);
+    factors.push(op);
+    triggers.push({id,op,result});
+  }
+  return {normal,result,final:damage(apply(result,{kind:'div',value:armor})),steps,triggers,factors};
+}
+
+const rarity=['COMMON','UNCOMMON','RARE','EPIC','LEGENDARY'];
+const ranges={
+  add:[[8,29],[30,99],[100,249],[250,749],[750,1600]],
+  mul:[[2,4],[4,9],[10,28],[30,95],[100,175]],
+  pct:[[20,50],[45,79],[75,124],[100,165],[150,240]],
+  pow:[null,null,[2,2],[2,2],[3,3]],
+  exp:[null,null,[2,2],[3,3],[4,5]]
+};
+function random(seed) {
+  let state=2166136261;
+  for(const c of String(seed)) state=Math.imul(state^c.codePointAt(0),16777619);
+  return ()=>{
+    state=(state+0x6D2B79F5)|0;
+    let t=Math.imul(state^(state>>>15),1|state);
+    t^=t+Math.imul(t^(t>>>7),61|t);
+    return ((t^(t>>>14))>>>0)/4294967296;
+  };
+}
+function shuffle(items,rng) {
+  const a=[...items];
+  for(let i=a.length-1;i>0;i--) {
+    const j=Math.floor(rng()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function card(kind,value,tier=0) {
+  const cost=kind==='pow'?(value===3?4:3):kind==='exp'||tier>=3?2:1;
+  return {kind,value,tier,cost};
+}
+function generate(rng,act,boost=0) {
+  const roll=rng()*100+boost+8*(act-1);
+  const tier=roll>=105?4:roll>=88?3:roll>=67?2:roll>=38?1:0;
+  const kinds=act>=2&&tier>=2?['add','mul','pct','pow','exp']:['add','mul','pct'];
+  const kind=kinds[Math.floor(rng()*kinds.length)];
+  const [lo,hi]=ranges[kind][tier];
+  const anchors=[10,15,20,25,50,75,100,101,120,125,150,175,200,250,500,1000,1250]
+    .filter(n=>n>=lo&&n<=hi);
+  const value=rng()<0.35&&anchors.length?anchors[Math.floor(rng()*anchors.length)]:lo+Math.floor(rng()*(hi-lo+1));
+  return card(kind,value,tier);
+}
+function starter() {
+  return [
+    ...[10,12,15,20,25,30,45].map(v=>card('add',v)),
+    ...[2,2,3,3].map(v=>card('mul',v)),
+    ...[25,50].map(v=>card('pct',v)),
+    card('clean',0),card('ward',0)
+  ];
+}
+function upgraded(c,mode,digit) {
+  if(!['add','mul','pct'].includes(c.kind)||c.upgraded) return null;
+  const adjust=c.value+Math.max(1,Math.floor(c.value/5));
+  let value=mode==='power'?c.value*2:adjust;
+  if(mode==='digit') {
+    if(!Number.isInteger(digit)||digit<0||digit>9) return null;
+    const delta=(digit-c.value%10+10)%10;
+    if(delta===0) return null;
+    value=c.value+delta;
+  }
+  return {...c,value,upgraded:true};
+}
+function fused(a,b) {
+  if(!a||!b||a.kind!==b.kind||!['add','mul','pct'].includes(a.kind)) return null;
+  const value=a.kind==='mul'?a.value*b.value:a.value+b.value;
+  if(!Number.isSafeInteger(value)||value>99999) return null;
+  return {...card(a.kind,value,Math.max(a.tier,b.tier)),cost:Math.min(3,Math.max(a.cost,b.cost)+1)};
+}
+
+const events={
+  gold:{story:'封書の中に旅費が残されている。',offer:'28金貨を受け取る',gold:28},
+  health:{story:'癒やしの術式が静かに浮かぶ。',offer:'HPを最大24回復',hp:24},
+  card:{story:'封に演算パネルの紋章が刻まれている。',offer:'秘蔵カードを獲得',card:21},
+  pact:{story:'契約書には、代償を払う者に財貨を与えると記されている。',offer:'HP12を払い50金貨を得る',hp:-12,gold:50},
+  well:{story:'泉の水底に、古い算式が見える。',offer:'8金貨でHPを最大35回復',gold:-8,hp:35},
+  courier:{story:'街道の書記が、書庫から届いた束を開く。',offer:'15金貨で高品質のカードを獲得',gold:-15,card:43},
+  duel:{story:'勝負に敗れた影が、自らの手札を譲ると申し出た。',offer:'HP9を払い高品質のカードを獲得',hp:-9,card:43},
+  caravan:{story:'隊商の主が、一本道の案内料を差し出す。',offer:'16金貨とHP最大10回復',gold:16,hp:10},
+  cache:{story:'宝の匂いとともに、封から細い棘が突き出す。',offer:'HP5を払い42金貨を得る',hp:-5,gold:42},
+  archive:{story:'崩れた書庫の棚に、手付かずの演算書が眠る。',offer:'高品質のカードを獲得',card:35}
+};
+
+const places={
+  fight:{name:'通常戦闘',icon:'⚔',desc:'金貨とカード'},
+  event:{name:'封書の間',icon:'?',desc:'ランダムイベント'},
+  rest:{name:'休憩所',icon:'♨',desc:'回復か鍛冶'},
+  elite:{name:'デフレーション',icon:'◆',desc:'特殊攻撃・レリック'},
+  shop:{name:'旅商人',icon:'⚖',desc:'購入・合成・削除'},
+  boss:{name:'ボス',icon:'♛',desc:'ACTの最終戦'}
+};
+function makeMap(seed,act) {
+  const rng=random(seed+'/map/'+act);
+  const facilities=['event','rest','shop'];
+  const types=[['fight','fight','fight'],facilities,['fight','elite','fight'],
+    ['fight','rest','shop'],['fight','elite','elite'],facilities,
+    ['fight','fight','elite'],['event','shop','rest'],['fight','elite','fight'],['boss']];
+  const rows=types.map((kinds,row)=>shuffle(kinds,rng).map((kind,i)=>({
+    id:row+'-'+i, row, col:kind==='boss'?1:i, kind,
+    variant:Math.floor(rng()*(kind==='boss'?2:kind==='fight'?6:3)),next:[]
+  })));
+  rows.forEach((nodes,row)=>nodes.forEach(node=>{
+    const next=rows[row+1]||[];
+    const neighbors=next.filter(n=>Math.abs(n.col-node.col)<=1);
+    node.next=neighbors.filter((n,i)=>n.col===node.col||next.length===1||row===0||
+      (node.col===1&&i===row%2*2)||rng()<.66).map(n=>n.id);
+  }));
+  return rows;
+}
+
+const normalSpecs=[
+  [['灰の番人','lantern','attack','sub'],['錆びた典礼騎士','knight','attack','div'],['煙墓の猟犬','hound','double','attack'],
+   ['火花の精','wisp','sub','attack'],['黄銅の甲虫','beetle','attack','pct'],['迷路の甲冑霊','specter','pct','attack']],
+  [['割算の巫女','specter','div','attack'],['禁書の近衛','knight','lock:add','attack'],['鉱脈の甲虫','beetle','attack','div'],
+   ['霧裂きの牙獣','hound','double','pct'],['青焔の漂霊','wisp','drain','attack'],['書庫の灯守','lantern','attack','sub']],
+  [['星喰いの司祭','specter','pct','attack'],['虚数の竜騎士','knight','attack','double'],['虚光の散霊','wisp','lock:pct','attack'],
+   ['裂星の大甲虫','beetle','div','attack'],['影渡りの猟獣','hound','double','sub'],['無数灯の門番','lantern','drain','attack']]
+];
+const monsterForms=[['golem','hydra','wyrm'],['behemoth','golem','mantis'],['hydra','idol','wyrm']];
+const bossForms=[['titan','leviathan'],['colossus','moth'],['dragon','eclipse']];
+const eliteSpecs=[
+  [
+    ['鉄槌の巌巨人',1,'衝撃波で二連打。','double','attack','sub'],
+    ['霜印の三頭竜',3,'加算を封じ、基礎値も冷却する。','lock:add','drain','attack'],
+    ['砂刻の大蛇',0,'基礎値を半減し、除算を差し込む。','drain','attack','div']
+  ],[
+    ['欠数の獣',7,'BURSTを1回だけ無効化する。', 'attack','div','double','barrier'],
+    ['虚算の封石巨人',4,'乗算を封じ、基礎値を削ぐ。','lock:mul','drain','attack'],
+    ['赤鏡の大鎌蟷螂',2,'二連撃と割合妨害を交互に使う。','pct','double','attack']
+  ],[
+    ['逆星の三頭竜',6,'累乗を封じ、強い除算を差し込む。','lock:pow','div','double','attack'],
+    ['無価の食人巨像',5,'回復可能な範囲でHPを直接削り、基礎値を弱める。','wither','drain','double','attack'],
+    ['二重影の飛蛇',9,'BURSTを1回無効化し、指数を封じる。','lock:exp','double','attack','barrier']
+  ]
+];
+const bossSpecs=[
+  [
+    ['黒曜の公爵・城喰',2,'開幕バリアが攻撃を2回無効化する。','attack','sub','double','barrier2'],
+    ['喰算の地殻獣',5,'基礎値を半減し、加算を封じる。','drain','attack','lock:add','double']
+  ],[
+    ['天秤の終末巨像',5,'HP半分で耐える。撃破には最低2回の有効BURSTが必要。','pct','attack','drain','double','gate2'],
+    ['白紙の月蛾女王',3,'乗算と割合を交互に封じ、基礎値も削ぐ。','lock:mul','attack','lock:pct','drain','double']
+  ],[
+    ['無量門の王竜',8,'HPの⅔と⅓で耐える。最低3回の有効BURSTが必要。','div','double','drain','attack','gate3'],
+    ['星蝕の虚空皇帝',9,'2回の無効バリアに加え、最大HPを削る吸命と累乗封印を使う。','wither','lock:pow','double','attack','barrier2']
+  ]
+];
+const normalFloors=[330n,320000n,10n**11n];
+const eliteFloors=[1800n,6000000n,10n**13n];
+const bossFloors=[32000n,1500000000n,10n**19n];
+const operationNames={add:'加算',mul:'乗算',pct:'割合',pow:'累乗',exp:'指数'};
+function makeEnemy(act,kind,variant,row,bench=0n) {
+  if(act===4) return {name:'無限の残響',title:'EXTRA',detail:'耐久段階を越えて無限を破る。',art:{form:'eclipse',palette:17},kind:'extra',
+    hp:10n**31n,max:10n**31n,attack:21,armor:5,barrier:0,gates:[5n*10n**30n],cycle:['div','attack','drain','double']};
+  const a=act-1, elite=kind==='elite', boss=kind==='boss';
+  const spec=elite?eliteSpecs[a][variant]:boss?bossSpecs[a][variant]:null;
+  const [normalName,normalForm,...normalMoves]=normalSpecs[a][variant%6];
+  const [name,,detail,...moves]=spec||[normalName,0,'',...normalMoves,'attack'];
+  const form=boss?bossForms[a][variant]:elite?monsterForms[a][variant]:normalForm;
+  const art={form,palette:a*6+variant};
+  const trait=moves.at(-1);
+  if(trait.startsWith('barrier')||trait.startsWith('gate')) moves.pop();
+  const floor=elite?eliteFloors[a]*BigInt(Math.max(1,row-1)):boss?bossFloors[a]:normalFloors[a]*BigInt(1+row*2);
+  const target=bench/(boss?2n:elite?4n:7n);
+  const max=target>floor?(target>floor*400n?floor*400n:target):floor;
+  const gates=trait==='gate2'?[max/2n]:trait==='gate3'?[max*2n/3n,max/3n]:[];
+  return {name,art,detail,kind,elite,title:boss?'ACT BOSS':elite?'DEFLATION ENEMY':'ENCOUNTER',
+    hp:max,max,armor:1+a,attack:5+a*3+(boss?4:elite?3:0),barrier:trait==='barrier2'?2:trait==='barrier'?1:0,gates,cycle:moves};
+}
+function intent(enemy,turn,act) {
+  const [kind,target]=enemy.cycle[turn%enemy.cycle.length].split(':');
+  const values={attack:enemy.attack,double:Math.ceil(enemy.attack*.65),wither:8+act*2,drain:50,
+    div:[2,4,8,10][act-1],pct:-20-act*5,sub:20*act};
+  return {kind,target,value:values[kind]??0,at:1+turn%2,enemy:true};
+}
+function impact(enemy,damage) {
+  if(damage<=0n) return {dealt:0n,kind:'miss'};
+  if(enemy.barrier) return {dealt:0n,kind:'barrier'};
+  const gate=enemy.gates[0];
+  if(gate!==undefined&&enemy.hp-damage<=gate) return {dealt:enemy.hp-gate,kind:'gate'};
+  return {dealt:damage>enemy.hp?enemy.hp:damage,kind:'hit'};
+}
+
+const prices={buy:30,relic:96,fuse:24,remove:30};
+class Run {
+  constructor(seed) {
+    this.seed=seed;
+    this.rng=random(seed);
+    this.stage=0;
+    this.hp=100;
+    this.gold=20;
+    this.deck=starter();
+    this.owned=[];
+    this.history=[];
+    this.stats={max:0n,combo:0,mul:0,pow:0,exp:0,infinity:0,turns:0,formula:'',usage:{},bosses:0};
+    this.act=1;
+    this.recent=[];
+    this.beginMap();
+  }
+  bonus(key){return this.owned.reduce((n,id)=>n+(relics[id][key]||0),0);}
+  get base(){return Math.max(1,Math.floor((20+(this.act-1)*15)*(100+this.bonus('base')-this.drain)/100));}
+  get slots(){return Math.min(8,5+this.act)+this.bonus('slots');}
+  get capacity(){return Math.max(1,(this.act>=3?4:3)+this.bonus('energy')+(this.turn===0?this.bonus('firstEnergy'):0));}
+  get drawCount(){return Math.max(2,5+this.bonus('draw')+(this.turn===0?this.bonus('firstDraw'):0));}
+  get next(){return intent(this.enemy,this.turn,this.act);}
+  beginMap(){
+    this.phase='map';
+    this.map=makeMap(this.seed,this.act);
+    this.node=null;
+    this.visited=[];
+    this.routes=this.map[0].map(node=>node.id);
+  }
+  start(node) {
+    const samples=[...this.recent].sort((a,b)=>a<b?-1:a>b?1:0);
+    const bench=samples[Math.floor((samples.length-1)/2)]??0n;
+    this.phase='battle';
+    this.relicDrop=null;
+    this.relicDecision=null;
+    this.enemy=makeEnemy(this.act,node?.kind,node?.variant,node?.row,bench);
+    this.hp=Math.max(1,this.hp-this.bonus('entry'));
+    this.maxHp=100;
+    this.drain=0;
+    this.battlePeak=0n;
+    this.lastBurst=null;
+    this.deckDraw=shuffle(this.deck,this.rng);
+    this.discard=[];
+    this.hand=[];
+    this.board=[];
+    this.deb=[];
+    this.turn=0;
+    this.holds=0;
+    this.ward=this.bonus('ward')>0;
+    this.refill();
+  }
+  refill() {
+    this.discard.push(...this.hand);
+    this.hand=[];
+    this.energy=this.capacity;
+    while(this.hand.length<this.drawCount) {
+      if(!this.deckDraw.length) {
+        this.deckDraw=shuffle(this.discard,this.rng);
+        this.discard=[];
+      }
+      if(!this.deckDraw.length) break;
+      this.hand.push(this.deckDraw.pop());
+    }
+  }
+  play(i,at=this.board.length) {
+    const c=this.hand[i];
+    if(this.phase!=='battle'||!c||c.cost>this.energy) return false;
+    const auxiliary=['ward','clean'].includes(c.kind);
+    if(!auxiliary&&this.board.length>=this.slots) return false;
+    if(c.kind==='clean'&&!this.deb.length || c.kind==='ward'&&this.ward) return false;
+    this.energy-=c.cost;
+    this.hand.splice(i,1);
+    this.stats.usage[c.kind]=(this.stats.usage[c.kind]||0)+1;
+    if(auxiliary) {
+      if(c.kind==='ward') this.ward=true;
+      else this.deb.shift();
+      this.discard.push(c);
+    } else this.board.splice(at,0,c);
+    return true;
+  }
+  move(from,to) {
+    if(!this.board[from]||to<0||to>=this.board.length) return false;
+    this.board.splice(to,0,this.board.splice(from,1)[0]);
+    return true;
+  }
+  preview(){
+    const result=evaluate({base:this.base,board:this.board,deb:this.deb,owned:this.owned,armor:this.enemy.armor});
+    return {...result,impact:impact(this.enemy,result.final)};
+  }
+  enemyAction() {
+    const action=this.next;
+    if(action.kind==='attack'||action.kind==='double') {
+      this.hp=Math.max(0,this.hp-action.value*(action.kind==='double'?2:1));
+    } else if(this.ward) this.ward=false;
+    else if(action.kind==='wither') {
+      this.maxHp=Math.max(35,this.maxHp-action.value);
+      this.hp=Math.min(this.hp,this.maxHp);
+    } else if(action.kind==='drain') this.drain=Math.min(65,this.drain+action.value);
+    else this.deb.push(action);
+    this.turn++;
+    if(!this.hp) this.phase='loss';
+    else this.refill();
+  }
+  hold() {
+    if(this.phase!=='battle'||this.holds>=2) return false;
+    this.holds++;
+    this.stats.turns++;
+    this.enemyAction();
+    return true;
+  }
+  burst() {
+    if(this.phase!=='battle') return null;
+    this.stats.turns++;
+    const p=this.preview();
+    const formula=[String(this.base),...p.steps.map(s=>s.op?label(s.op):'無効'),...p.triggers.map(t=>relics[t.id].name),
+      ...(this.enemy.armor>1?['装甲 ÷'+this.enemy.armor]:[])].join(' → ');
+    this.lastBurst={...p,formula};
+    this.history.unshift(this.lastBurst);
+    this.history.length=Math.min(this.history.length,50);
+    const s=this.stats;
+    if(p.final>s.max) {s.max=p.final;s.formula=formula;}
+    for(const c of p.factors) s[c.kind]=Math.max(s[c.kind],c.value);
+    s.combo=Math.max(s.combo,this.board.length);
+    s.infinity+=Number(p.final>CAP);
+    if(p.impact.kind==='barrier') this.enemy.barrier--;
+    if(p.impact.kind==='gate') this.enemy.gates.shift();
+    if(p.impact.dealt>0n&&p.final>this.battlePeak) this.battlePeak=p.final;
+    this.enemy.hp-=p.impact.dealt;
+    this.discard.push(...this.board);
+    this.board=[];
+    this.deb=[];
+    this.holds=0;
+    if(!this.enemy.hp) {
+      this.recent.push(this.battlePeak);
+      if(this.recent.length>5) this.recent.shift();
+      const boss=this.enemy.kind==='boss', elite=this.enemy.elite;
+      if(boss) this.stats.bosses++;
+      const hpBefore=this.hp;
+      this.hp=Math.min(100,this.hp+(boss?31:elite?16:10));
+      this.victoryHeal=this.hp-hpBefore;
+      if(elite||boss||this.act===4) {
+        const pool=Object.keys(relics).filter(id=>!this.owned.includes(id));
+        const powerful=pool.filter(id=>!['short','key','mantle'].includes(id));
+        const choices=elite&&powerful.length?powerful:pool;
+        if(choices.length) {
+          this.relicDrop=choices[Math.floor(this.rng()*choices.length)];
+          this.relicDecision='pending';
+        }
+      }
+      this.reward();
+    } else this.enemyAction();
+    return p;
+  }
+  reward() {
+    this.phase='reward';
+    this.offers=this.act===4?[]:Array.from({length:3},()=>generate(this.rng,this.act,this.enemy.elite?17:5));
+    this.cardDecision={status:this.offers.length?'pending':'none'};
+    this.goldReward=this.enemy.kind==='boss'?48:this.enemy.elite?40:24;
+    this.goldDecision='pending';
+  }
+  get rewardPending(){
+    return this.phase==='reward'&&(this.cardDecision.status==='pending'||this.goldDecision==='pending'||this.relicDecision==='pending');
+  }
+  takeCard(i) {
+    if(this.phase!=='reward'||this.cardDecision.status!=='pending'||!this.offers[i]) return false;
+    const card=this.offers[i];
+    this.deck.push(card);
+    this.cardDecision={status:'taken',card};
+    return true;
+  }
+  skipCard() {
+    if(this.phase!=='reward'||this.cardDecision.status!=='pending') return false;
+    this.cardDecision={status:'skipped'};
+    return true;
+  }
+  chooseGold(take) {
+    if(this.phase!=='reward'||this.goldDecision!=='pending') return false;
+    if(take) this.gold+=this.goldReward;
+    this.goldDecision=take?'taken':'skipped';
+    return true;
+  }
+  chooseRelic(take) {
+    if(this.phase!=='reward'||this.relicDecision!=='pending') return false;
+    if(take) this.owned.push(this.relicDrop);
+    this.relicDecision=take?'taken':'skipped';
+    return true;
+  }
+  advance() {
+    if(this.phase!=='reward'||this.rewardPending) return;
+    if(this.act===4) {this.phase='win';return;}
+    if(this.enemy.kind==='boss') {
+      if(this.act===3) {this.phase='clear';return;}
+      this.act++;
+      this.beginMap();
+    } else this.leaveNode();
+  }
+  extra(){
+    if(this.phase!=='clear') return;
+    this.act=4;
+    this.start();
+  }
+  leaveNode(){
+    this.phase='map';
+    this.routes=this.node.next;
+  }
+  route(id) {
+    if(this.phase!=='map'||!this.routes.includes(id)) return false;
+    const node=this.map.flat().find(n=>n.id===id);
+    this.node=node;
+    this.visited.push(id);
+    this.stage++;
+    if(['fight','elite','boss'].includes(node.kind)) {this.start(node);return true;}
+    this.phase='facility';
+    this.facility=node.kind;
+    if(node.kind==='shop') {
+      this.shop=Array.from({length:4},()=>generate(this.rng,this.act,16));
+      this.stockRelics=shuffle(Object.keys(relics).filter(key=>!this.owned.includes(key)),this.rng).slice(0,2);
+      this.shopUsed={relic:false,fuse:false,remove:false};
+    }
+    if(node.kind==='event') this.event=shuffle(Object.keys(events),this.rng)[0];
+    return true;
+  }
+  get eventOffer(){
+    const definition=events[this.event];
+    if(!definition) return null;
+    const hp=Math.min(100-this.hp,definition.hp||0);
+    const gold=definition.gold||0;
+    const eventRng=random(this.seed+'/event/'+this.act+'/'+this.node.id);
+    return {...definition,hp,gold,result:definition.card?generate(eventRng,this.act,definition.card):null,
+      available:this.hp+hp>0&&this.gold+gold>=0};
+  }
+  service({action,i,j,mode,digit}={}) {
+    if(this.phase!=='facility') return null;
+    const facility=this.facility;
+    if(facility==='event'&&['event','decline'].includes(action)) {
+      if(action==='decline') {this.leaveNode();return {message:'封書を閉じた。'};}
+      const {hp,gold,result,available}=this.eventOffer;
+      if(!available) return null;
+      this.hp+=hp;
+      this.gold+=gold;
+      if(result) this.deck.push(result);
+      this.leaveNode();
+      return {kind:'event',hp,gold,result};
+    }
+    if(facility==='rest'&&action==='heal') {
+      this.hp=Math.min(100,this.hp+35);this.leaveNode();return {message:'休息でHPを最大35回復。'};
+    }
+    if(facility==='rest'&&action==='forge') {
+      const original=this.deck[i];
+      const result=original&&upgraded(original,mode,digit);
+      if(!result) return null;
+      this.deck[i]=result;
+      this.leaveNode();
+      return {kind:'forge',sources:[original],result};
+    }
+    if(facility!=='shop'||!Object.hasOwn(prices,action)||this.gold<prices[action]||this.shopUsed[action]) return null;
+    let transaction;
+    if(action==='buy'&&this.shop[i]) {
+      const result=this.shop[i];
+      this.shop[i]=null;
+      this.deck.push(result);
+      transaction={kind:'shop',sources:[],result};
+    } else if(action==='relic'&&this.stockRelics[i]) {
+      const relic=this.stockRelics[i];
+      this.owned.push(relic);
+      transaction={kind:'relic',relic,sources:[]};
+    } else if(action==='fuse'&&i!==j&&this.deck.length>12) {
+      const sources=[this.deck[i],this.deck[j]];
+      const result=fused(...sources);
+      if(!result) return null;
+      this.deck[Math.min(i,j)]=result;
+      this.deck.splice(Math.max(i,j),1);
+      transaction={kind:'fuse',sources,result};
+    } else if(action==='remove'&&this.deck[i]&&this.deck.length>12) {
+      transaction={kind:'remove',sources:this.deck.splice(i,1)};
+    }
+    if(!transaction) return null;
+    this.gold-=prices[action];
+    if(action!=='buy') this.shopUsed[action]=true;
+    return {...transaction,price:prices[action]};
+  }
+  summary() {
+    return {...this.stats,max:String(this.stats.max),stage:this.stage,seed:this.seed,
+      outcome:this.phase,deck:[...this.deck],relics:[...this.owned]};
+  }
+}
+
+const key='damage-breaker.v01';
+function load() {
+  try {
+    const data=JSON.parse(localStorage.getItem(key));
+    if(data&&/^\d+$/.test(data.best?.max??'')&&Array.isArray(data.runs))
+      return {...data,prefs:data.prefs||{}};
+  } catch {}
+  return {best:{max:'0'},runs:[],prefs:{}};
+}
+function save(data) {
+  try {localStorage.setItem(key,JSON.stringify(data));return true;}
+  catch {return false;}
+}
+
+function paint(canvas,shape,act) {
+  const ctx=canvas.getContext('2d');
+  const w=canvas.width,h=canvas.height;
+  ctx.translate(w/2,h/2+5);
+  const gold=['#cbb483','#83beb1','#df9c82','#d5acf0'][act-1];
+  const rng=random('engraving-'+shape+'-'+act);
+  const line=(points,color,width=1,fill)=>{
+    ctx.beginPath();
+    points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));
+    if(fill){ctx.closePath();ctx.fillStyle=fill;ctx.fill();}
+    ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();
+  };
+  const circle=(r,color)=>{
+    ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.strokeStyle=color;ctx.lineWidth=1;ctx.stroke();
+  };
+  const glow=ctx.createRadialGradient(0,0,5,0,0,110);
+  glow.addColorStop(0,gold+'42');glow.addColorStop(1,gold+'00');
+  ctx.fillStyle=glow;ctx.fillRect(-150,-150,300,300);
+  circle(76,gold+'75');circle(88,gold+'55');circle(91,gold+'55');
+  for(let i=0;i<48;i++) {
+    ctx.save();ctx.rotate(i*Math.PI/24);
+    line([[0,-89],[0,-(i%4?84:78)]],gold+'85');
+    ctx.restore();
+  }
+  for(let i=0;i<110;i++) {
+    const x=(rng()-.5)*w,y=(rng()-.5)*h;
+    ctx.fillStyle=gold+(rng()<.15?'ad':'35');
+    ctx.fillRect(x,y,1+rng(),1+rng());
+  }
+  const profile=shape===2?
+    [[0,-46],[15,-51],[36,-74],[31,-38],[57,-56],[48,-21],[36,-4],[47,13],[74,31],[58,67],[0,81]]:
+    shape===1?[[0,-63],[20,-51],[35,-31],[33,3],[52,14],[76,48],[59,70],[0,77]]:
+    [[0,-65],[14,-56],[37,-29],[44,7],[63,28],[74,64],[39,73],[0,77]];
+  const mirror=points=>[...points,...points.slice(1,-1).reverse().map(([x,y])=>[-x,y])];
+  line(mirror(profile),gold,1.6,'#161d19');
+  for(const side of [-1,1]) {
+    ctx.save();ctx.scale(side,1);
+    line([[1,-52],[18,-39],[30,-10],[25,17],[59,39],[43,65],[14,70]],gold+'b0',1,'#323a2c');
+    line([[29,5],[41,24],[60,41],[43,47],[31,65],[17,46]],gold+'a0',1,'#20251f');
+    for(let i=0;i<13;i++) line([[28+i*2,30+i*1.4],[19+i*2,51+i*.75]],gold+'44');
+    line([[3,-18],[23,-23],[19,-12],[5,-10]],gold,1,gold+'a8');
+    ctx.restore();
+  }
+  line([[0,-43],[9,-22],[0,3],[-9,-22]],gold,1,'#101612');
+  line(mirror([[0,16],[18,29],[14,51],[0,68]]),gold,1,'#202921');
+  line([[0,24],[7,36],[0,49],[-7,36],[0,24]],gold,1,gold+'80');
+}
+
+// Coordinates are authored on a 48×44 pixel grid. Each silhouette has its own equipment and palette.
+const creatures=[
+  {palette:['#514451','#a47266','#e9a97e'],head:'hood',body:'robe',gear:'lantern'},
+  {palette:['#454659','#767b92','#e1ae86'],head:'helm',body:'plate',gear:'shield'},
+  {palette:['#482e54','#945e9b','#edb478'],head:'crown',body:'plate',gear:'blade'},
+  {palette:['#294354','#548d9b','#aef3df'],head:'veil',body:'robe',gear:'orb'},
+  {palette:['#473935','#95754c','#f0d493'],head:'helm',body:'plate',gear:'book'},
+  {palette:['#3f4c40','#8d9962','#f2d38a'],head:'mitre',body:'robe',gear:'scales'},
+  {palette:['#3e3865','#806daa','#c5d9ff'],head:'mask',body:'robe',gear:'star'},
+  {palette:['#3d3c66','#6a7ba9','#79e4e1'],head:'dragon',body:'plate',gear:'spear'},
+  {palette:['#59335c','#a85689','#ffcc78'],head:'crown',body:'king',gear:'scepter'},
+  {palette:['#392f58','#8a66bd','#f5caff'],head:'echo',body:'king',gear:'rings'},
+  {palette:['#394e49','#67978a','#e6d99a'],head:'hood',body:'robe',gear:'book'}
+];
+const heads={
+  hood:[[13,23],[15,14],[20,8],[25,7],[32,13],[35,23],[30,27],[18,27]],
+  helm:[[14,23],[14,13],[19,9],[28,9],[33,12],[34,22],[29,27],[18,27]],
+  crown:[[12,22],[12,9],[17,13],[19,6],[24,12],[30,5],[31,13],[36,8],[34,23],[28,27],[17,26]],
+  veil:[[12,24],[16,12],[21,8],[27,8],[33,12],[39,28],[30,26],[18,26]],
+  mitre:[[13,24],[15,11],[24,3],[32,11],[34,24],[29,28],[19,28]],
+  mask:[[14,17],[19,10],[24,8],[30,10],[34,17],[31,24],[25,28],[18,25]],
+  dragon:[[12,15],[10,6],[17,11],[21,8],[28,8],[32,10],[38,4],[35,15],[36,20],[29,28],[18,26]],
+  echo:[[14,18],[20,9],[24,5],[28,9],[35,18],[29,26],[24,30],[18,25]]
+};
+function paintSprite(canvas,id,elite=false) {
+  const {palette:[shade,mid,light],head,body,gear}=creatures[id]||creatures[0];
+  const c=canvas.getContext('2d');
+  const dark='#1b1723';
+  const fill=(color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x,y,w,h);};
+  const poly=(color,points)=>{
+    c.fillStyle=color;c.beginPath();
+    points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));
+    c.closePath();c.fill();
+  };
+  const gem=(x,y,r,color)=>poly(color,[[x,y-r],[x+r,y],[x,y+r],[x-r,y]]);
+  fill('#151520',8,40,32,2);fill('#211e2b',12,39,24,4);
+  if(elite){gem(24,21,20,'#8a64416b');gem(24,21,18,'#28233b');}
+  const wide=body==='king'?4:0;
+  poly(dark,[[24,20],[34,23],[41+wide,30],[42+wide,39],[33,41],[14,41],[5-wide,39],[7-wide,29],[16,23]]);
+  poly(shade,[[24,22],[33,24],[39+wide,30],[39+wide,38],[30,39],[16,39],[8-wide,37],[10-wide,30],[17,25]]);
+  if(body==='robe') {
+    poly(mid,[[17,25],[23,28],[19,38],[11,37]]);
+    poly(mid,[[30,25],[34,28],[36,37],[27,37],[25,30]]);
+    fill(shade,23,29,2,10);
+  } else {
+    poly(mid,[[10-wide,29],[15,24],[21,27],[15,32],[8-wide,33]]);
+    poly(mid,[[28,27],[33,24],[39+wide,27],[41+wide,33],[32,32]]);
+    poly(mid,[[17,30],[30,30],[28,37],[19,37]]);
+  }
+  gem(24,31,3,light);
+  poly(dark,heads[head]);
+  const inset=heads[head].map(([x,y])=>[Math.round(24+(x-24)*.81),Math.round(17+(y-17)*.81)]);
+  poly(mid,inset);
+  poly(shade,[[16,18],[22,15],[26,15],[32,18],[30,23],[26,26],[21,25],[17,22]]);
+  fill(dark,17,18,14,4);fill(light,18,18,4,1);fill(light,26,18,4,1);
+  if(head==='crown'||head==='mitre') {gem(24,12,3,light);fill(shade,24,11,1,2);}
+  if(head==='helm'||head==='dragon') fill(mid,23,18,2,5);
+  switch(gear) {
+    case 'lantern': fill(dark,4,23,2,13);fill(light,2,26,6,7);fill(mid,3,27,4,5);fill(light,4,29,2,2);break;
+    case 'shield': poly(mid,[[34,27],[45,26],[46,34],[40,41],[34,36]]);gem(40,32,4,light);break;
+    case 'blade': poly(light,[[4,33],[8,17],[12,14],[10,29],[7,36]]);fill(mid,4,34,7,2);break;
+    case 'orb': gem(40,12,6,mid);gem(40,12,3,light);fill(light,39,22,2,12);break;
+    case 'book': poly(dark,[[2,28],[12,27],[15,36],[5,38]]);poly(light,[[3,29],[12,28],[13,35],[6,36]]);fill(mid,7,31,4,2);break;
+    case 'scales': fill(light,39,16,2,22);fill(light,34,20,12,1);fill(mid,33,24,5,2);fill(mid,43,24,5,2);break;
+    case 'star': gem(41,13,6,light);gem(41,13,3,mid);gem(6,15,3,light);break;
+    case 'spear': fill(mid,43,16,2,23);poly(light,[[42,18],[44,7],[47,15],[45,19]]);break;
+    case 'scepter': fill(light,43,13,2,25);gem(44,10,4,light);gem(44,10,2,mid);break;
+    case 'rings': for(const [x,y] of [[6,14],[41,14],[7,32],[41,32]]) {gem(x,y,5,light);gem(x,y,3,shade);} break;
+  }
+}
+
+// Original low-resolution sprites. Forms use distinct silhouettes, weapons and anatomy.
+const beastPalettes=[
+  [23,38],[204,38],[7,55],[37,67],[68,55],[253,42],
+  [181,51],[301,37],[42,53],[78,46],[195,66],[17,61],
+  [267,52],[226,59],[24,71],[321,52],[159,47],[286,67]
+];
+function paintEnemy(canvas,{form,palette}) {
+  const c=canvas.getContext('2d');
+  const [h,s]=beastPalettes[palette];
+  const ink='#100e1b',shade=`hsl(${h} ${s}% 19%)`,mid=`hsl(${h} ${s}% 37%)`,light=`hsl(${h} ${s}% 64%)`;
+  const glow=`hsl(${(h+24)%360} 88% 79%)`;
+  const box=(color,x,y,w,d)=>{c.fillStyle=color;c.fillRect(x,y,w,d);};
+  const poly=(color,pts)=>{
+    c.fillStyle=color;c.beginPath();
+    pts.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));
+    c.closePath();c.fill();
+  };
+  const gem=(color,x,y,r)=>poly(color,[[x,y-r],[x+r,y],[x,y+r],[x-r,y]]);
+  const mirror=points=>points.map(([x,y])=>[88-x,y]);
+  const pair=(color,points)=>{poly(color,points);poly(color,mirror(points));};
+  const eye=(x,y)=>{box(ink,x-1,y-1,7,4);box(glow,x,y,4,1);};
+  const ring=(x,y,r,color)=>{
+    c.strokeStyle=color;c.lineWidth=1;c.beginPath();c.ellipse(x,y,r,r*.7,0,0,Math.PI*2);c.stroke();
+  };
+  const head=(x,y,r,horns=false)=>{
+    poly(ink,[[x-r-2,y+1],[x-r,y-r],[x+r,y-r],[x+r+2,y+2],[x+r/2,y+r],[x-r/2,y+r]]);
+    poly(mid,[[x-r,y],[x-r+2,y-r+1],[x+r-2,y-r+1],[x+r,y+1],[x+r/2,y+r-2],[x-r/2,y+r-2]]);
+    box(shade,x-r+2,y+3,r*2-4,3);
+    eye(x-r+2,y-1);eye(x+r-6,y-1);
+    if(horns) poly(light,[[x-r,y-r],[x-r-4,y-r-8],[x-r+3,y-r-4],[x+r-3,y-r-4],[x+r+4,y-r-8],[x+r,y-r]]);
+  };
+  const core=(x,y,r)=>{gem(ink,x,y,r+2);gem(light,x,y,r);gem(glow,x,y,r/2);};
+  const wing=[[44,30],[34,14],[22,8],[5,6],[11,13],[3,20],[15,28],[10,44],[24,37],[28,48],[40,37]];
+  const armor=[[44,10],[58,16],[70,27],[77,48],[67,59],[21,59],[11,48],[19,27],[30,16]];
+  c.clearRect(0,0,88,64);
+  box('#120e1b9c',10,57,68,3);box('#201524',18,56,52,2);
+  const big=['golem','hydra','wyrm','behemoth','mantis','idol','titan','leviathan','colossus','moth','dragon','eclipse'].includes(form);
+  if(big) {ring(44,28,31,shade);ring(44,28,36,shade);}
+  switch(form) {
+    case 'hound':
+    case 'behemoth':
+    case 'leviathan': {
+      const huge=form!=='hound', y=huge?20:30;
+      poly(ink,[[7,41],[19,y+4],[30,y],[55,y+4],[72,y+10],[83,y+5],[77,y+19],[71,55],[61,58],[55,48],[33,46],[29,58],[17,58],[21,47]]);
+      poly(mid,[[12,40],[25,y+4],[39,y+2],[59,y+8],[72,y+13],[78,y+10],[70,45],[61,53],[56,43],[27,43]]);
+      poly(shade,[[22,44],[39,y+13],[63,y+12],[68,46],[63,52],[59,46],[33,46],[27,56],[20,56]]);
+      if(form==='leviathan') pair(light,[[39,34],[21,7],[21,23],[9,18],[15,36],[33,39]]);
+      if(huge) for(let i=0;i<5;i++) gem(light,40+i*6,y+7+i,ridge(i));
+      head(21,y+11,huge?12:9,huge);
+      box(glow,14,y+17,3,2);break;
+    }
+    case 'beetle':
+    case 'mantis':
+    case 'moth': {
+      if(form==='moth') {
+        pair(ink,wing);pair(mid,[[44,31],[32,13],[9,9],[20,25],[16,38],[30,32],[34,42]]);
+        pair(light,[[37,30],[17,14],[24,25],[21,34],[31,30]]);
+        for(const x of [16,28,60,72]) core(x,24,3);
+      } else for(let i=0;i<4;i++) {
+        const y=26+i*7;
+        pair(ink,[[39,y],[24,y-6],[form==='mantis'?6:15,y+6],[20,y+8],[29,y],[37,y+4]]);
+        pair(light,[[33,y],[24,y-5],[16,y+5],[25,y+2]]);
+      }
+      poly(shade,[[44,21],[61,33],[57,48],[44,58],[31,48],[27,33]]);
+      poly(mid,[[44,25],[56,32],[55,43],[44,50],[33,43],[32,32]]);
+      if(form==='mantis') pair(light,[[48,40],[74,29],[84,15],[81,31],[66,43]]);
+      head(44,26,9,form!=='beetle');core(44,42,5);break;
+    }
+    case 'dragon':
+    case 'hydra':
+    case 'wyrm': {
+      if(form==='dragon') {pair(ink,wing);pair(shade,[[44,29],[29,13],[8,8],[21,23],[17,37],[32,33],[35,42]]);
+        pair(mid,[[36,31],[29,17],[16,12],[24,24],[22,34],[31,29]]);
+      }
+      poly(ink,[[13,53],[21,39],[33,42],[35,22],[40,12],[51,12],[57,23],[58,40],[75,44],[80,53],[64,59],[25,59]]);
+      poly(mid,[[16,52],[25,43],[39,44],[41,24],[46,18],[54,23],[55,42],[71,47],[74,52],[65,56],[25,56]]);
+      for(let i=0;i<4;i++) box(light,41+i,24+i*5,11,2);
+      if(form==='hydra') {head(22,33,8,true);head(69,32,8,true);}
+      head(46,17,10,true);core(46,41,5);break;
+    }
+    case 'wisp':
+    case 'specter':
+    case 'eclipse': {
+      const abyss=form==='eclipse',r=abyss?23:14;
+      for(let i=0;i<3;i++) ring(44,31,r+4+i*5,i===1?mid:shade);
+      poly(ink,[[44,30-r],[44+r,22],[55,44],[66,58],[48,52],[43,58],[35,50],[23,56],[33,40],[44-r,23]]);
+      poly(mid,[[44,32-r],[42+r,24],[53,43],[58,52],[44,47],[30,52],[36,40],[46-r,26]]);
+      core(44,29,abyss?13:7);box(ink,abyss?33:38,28,abyss?22:12,3);box(glow,42,29,4,1);
+      if(abyss) for(let i=0;i<8;i++) {const ang=i*Math.PI/4;gem(light,44+Math.cos(ang)*33,30+Math.sin(ang)*23,3);}
+      break;
+    }
+    default: {
+      const giant=big?1:.68;
+      c.save();c.translate(44*(1-giant),58*(1-giant));c.scale(giant,giant);
+      poly(ink,armor);
+      poly(shade,[[44,14],[57,18],[66,28],[72,47],[64,55],[24,55],[15,47],[22,28],[31,18]]);
+      pair(mid,[[44,27],[33,22],[22,30],[18,46],[29,43],[38,34]]);
+      pair(light,[[37,23],[29,22],[22,31],[32,28]]);
+      if(['titan','colossus','idol'].includes(form)) {
+        pair(ink,[[32,23],[21,12],[8,19],[10,44],[4,46],[6,56],[21,57],[30,41]]);
+        pair(mid,[[28,24],[21,17],[12,21],[14,43],[9,48],[10,52],[19,53],[26,38]]);
+        pair(light,[[20,17],[13,22],[17,34],[20,29]]);
+      }
+      if(form==='colossus') for(let i=0;i<4;i++) box(light,28+i*8,46,4,4);
+      if(form==='idol') for(let i=0;i<3;i++) core(26+i*18,40,5);
+      else core(44,42,big?8:5);
+      head(44,22,11,form==='titan');
+      if(form==='lantern') {box(ink,18,27,3,23);core(17,43,8);}
+      if(form==='knight') {poly(light,[[59,55],[70,28],[76,19],[75,32],[64,56]]);box(mid,57,49,12,3);}
+      c.restore();
+    }
+  }
+  for(let i=0;i<(big?13:5);i++) {
+    const x=(i*23+12+palette*3)%84,y=(i*11+8)%51;
+    box(i%3?light:glow,x,y,1,1);
+  }
+}
+function ridge(i){return i===2?4:2;}
+
+
+const damageThresholds=[100n,10000n,10n**8n,10n**12n,10n**20n,10n**40n,CAP+1n];
+function magnitude([n,d]) {
+  const abs=n<0n?-n:n;
+  return damageThresholds.filter(value=>abs>=value*d).length;
+}
+function timeline(result,armor) {
+  let combo=0;
+  const steps=result.steps.map((step,index)=>{
+    if(!step.card.enemy && step.op) combo++;
+    const type=step.card.enemy?'enemy':step.op?'card':'enemy';
+    const name=step.op?label(step.op):label(step.card)+' 無効';
+    return {index,type,name,value:step.result,combo};
+  });
+  for(const trigger of result.triggers) {
+    steps.push({type:'relic',name:relics[trigger.id].name+' · '+label(trigger.op),value:trigger.result,combo,relic:trigger.id});
+  }
+  steps.push({type:'impact',name:armor>1?'装甲 ÷'+armor+' · ダメージ確定':'ダメージ確定',value:[result.final,1n],combo});
+  return steps;
+}
+// For exact integer endpoints of a similar order, interpolate with integer arithmetic.
+function reelValue([from,fd],[to,td],tick) {
+  if(tick>=12) return [to,td];
+  if(tick<=0) return [from,fd];
+  if(fd!==1n||td!==1n||from<0n||to<0n) return [from,fd];
+  const delta=to-from;
+  if(delta<=0n) return [from+delta*BigInt(tick)/12n,1n];
+  const digits=to.toString().length-from.toString().length;
+  if(digits>=3) {
+    const shift=Math.ceil(digits*(12-tick)/12);
+    const candidate=to/10n**BigInt(shift);
+    return [candidate>from?candidate:from,1n];
+  }
+  return [from+delta*BigInt(tick)/12n,1n];
+}
+
+const app=document.querySelector('#app');
+const dialog=document.querySelector('#dialog');
+const effect=document.querySelector('#effect');
+const book=load();
+let run=null, selected=null, storageWarning=false, audio=null, notice='';
+let sequence=null, lastPage=null, craftResult=null, lastDeal=null;
+const motionMode=()=>matchMedia('(prefers-reduced-motion: reduce)').matches?'off':book.prefs.motion||'full';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+const fmt=(n,cap=true)=>format(n,book.prefs.scientific,cap);
+const exactRat=([n,d])=>d===1n?String(n):n+' / '+d;
+const rat=([n,d])=>d===1n?fmt(n,false):fmt(n,false)+' / '+fmt(d,false);
+const compact=(n,cap=true)=>{
+  if(cap&&n>CAP) return '∞';
+  const abs=n<0n?-n:n;
+  if(book.prefs.scientific||abs<10000n||abs>CAP) return fmt(n,cap);
+  const unit=10n**BigInt((Math.ceil(abs.toString().length/4)-1)*4);
+  const leading=abs/unit;
+  const fractional=String((abs%unit)*100n/unit).padStart(2,'0').replace(/0+$/,'');
+  return ((abs%unit)*100n%unit?'≈':'')+(n<0n?'−':'')+String(leading)+(fractional?'.'+fractional:'')+format(unit,false,false).slice(1);
+};
+const visibleNumber=([n,d])=>d===1n?compact(n,false):compact(n,false)+' / '+compact(d,false);
+const btn=(title,act,cls='',disabled=false)=>`<button type="button" data-action="${act}" class="${cls}" ${disabled?'disabled':''}>${title}</button>`;
+const types={add:'加算',mul:'乗算',pct:'割合',exp:'指数',pow:'累乗',clean:'先頭の妨害を解除',ward:'次の妨害を1回防ぐ'};
+const glyph={add:'✦',mul:'✧',pct:'◈',pow:'❖',exp:'✷',clean:'✤',ward:'◇'};
+const cardFace=c=>`<span class="card-rank">${rarity[c.tier]}</span><span class="mana" title="消費エネルギー">${c.cost}</span>
+  <span class="sigil" aria-hidden="true">${glyph[c.kind]||'◇'}</span><strong class="card-number">${label(c)}${c.upgraded?'✧':''}</strong>
+  <span class="card-type">${types[c.kind]||'妨害'}</span>`;
+const cardButton=(c,act,i=-1,disabled=false)=>`<button type="button" class="card t${c.tier}" data-action="${act}"
+  ${i<0?'':`draggable="${!disabled}" data-hand="${i}"`} title="${types[c.kind]}・消費 ${c.cost}" ${disabled?'disabled':''}>
+  ${cardFace(c)}</button>`;
+function persist(){storageWarning=!save(book);}
+function modal(title,content) {
+  dialog.innerHTML=`<h2>${title}</h2>${content}<form method="dialog"><button>閉じる</button></form>`;
+  if(!dialog.open) dialog.showModal();
+}
+function routeName(){return run.act===4?'EXTRA':'ACT '+['','I','II','III'][run.act];}
+const direct=a=>a.kind==='attack'||a.kind==='double';
+function intentText() {
+  const a=run.next;
+  if(a.kind==='attack') return `HPに ${a.value} ダメージ`;
+  if(a.kind==='double') return `二連撃 · ${a.value} × 2 ダメージ`;
+  if(a.kind==='wither') return `吸命 · 戦闘中の最大HP −${a.value}（下限35）`;
+  if(a.kind==='drain') return `弱体 · 戦闘中の基礎値 −${a.value}%`;
+  if(a.kind==='lock') return `封印 · 次のBURSTまで${operationNames[a.target]}を無効化`;
+  return `${a.at}枠目の後に ${label(a)} を挿入${run.ward?'（結界で防御可能）':''}`;
+}
+function sidebar(p) {
+  const active=new Set(p.triggers.map(t=>t.id));
+  if(run.deb.some(c=>c.kind==='div')) {
+    if(run.owned.includes('prism')) active.add('prism');
+    else if(run.owned.includes('key')) active.add('key');
+  }
+  return `<aside>
+    <section class="frame"><h2>術師の記録</h2><div class="data">
+    <span>HP <b>${run.hp}/${run.maxHp}</b></span><span>金貨 <b>${run.gold}</b></span>
+    <span>基礎 <b>${run.base}</b></span><span>装甲 <b>÷${run.enemy.armor}</b></span></div>
+    <small>歴代最高</small><div class="record">${fmt(BigInt(book.best.max))}</div>
+    <div class="actions" style="margin-top:9px">${btn('デッキ '+run.deck.length,'deck')}${btn('履歴','history')}</div></section>
+    <section class="frame"><h2>所持レリック</h2>${run.owned.map(id=>
+      `<button class="rune" data-relic="${id}" data-action="relic:${id}" title="${relics[id].desc}">${relics[id].name}<small>${active.has(id)?'発動':relics[id].desc}</small></button>`
+    ).join('')||'<p class="muted">所持なし</p>'}</section></aside>`;
+}
+function damageReceipt() {
+  const p=run.lastBurst;
+  if(!p) return '';
+  const kind=p.impact.kind, status=kind==='barrier'?'バリアで無効':kind==='gate'?'耐久段階を突破':kind==='miss'?'ダメージなし':'';
+  return `<section class="damage-receipt" aria-label="直前の攻撃結果">
+    <div><small>確定BURST</small><strong title="${p.final}">${compact(p.final)}</strong></div>
+    <div><small>敵HPの減少</small><strong title="${p.impact.dealt}">${compact(p.impact.dealt,false)}</strong>${status?`<small>${status}</small>`:''}</div></section>`;
+}
+function battle() {
+  const p=run.preview(), e=run.enemy;
+  const slots=Array.from({length:run.slots},(_,i)=>{
+    const c=run.board[i];
+    const status=p.steps.find(s=>s.card===c);
+    const at=Math.min(i,run.board.length);
+    const deb=i<=run.board.length?run.deb.filter(d=>Math.min(d.at,run.board.length)===i).map(d=>
+      `<span class="slot debuff" data-calc="${p.steps.findIndex(s=>s.card===d)}" title="敵の妨害 · ${d.at}枠目の後">${label(d)}</span>`).join(''):'';
+    return deb+(c?`<button type="button" class="slot board-card t${c.tier} ${i===selected?'selected':''}" style="border-color:var(--tone)"
+      data-calc="${p.steps.indexOf(status)}" data-action="slot:${i}" data-at="${i}" data-board="${i}" draggable="true" aria-pressed="${i===selected}" title="選択して移動"><strong>${label(c)}</strong><small>${types[c.kind]}</small>${status?.op===null?'<small>封印</small>':''}</button>`:
+      `<button type="button" class="slot empty" data-at="${at}" data-action="slot:${at}" aria-label="空き枠 ${i+1}">${i+1}</button>`);
+  }).join('');
+  const tail=run.board.length===run.slots?run.deb.filter(d=>d.at>=run.slots).map(d=>`<span class="slot debuff" data-calc="${p.steps.findIndex(s=>s.card===d)}">${label(d)}</span>`).join(''):'';
+  return `<main class="battle"><div class="column">
+    <section class="frame enemy" data-act="${run.act}" data-rank="${e.kind}" data-form="${e.art.form}">
+      <div class="duel">
+        <figure class="combatant hero"><canvas data-sprite="10" width="48" height="44" aria-hidden="true"></canvas>
+        <figcaption>術師</figcaption><div class="hpBar hero-hp" aria-hidden="true"><span style="width:${run.hp}%"></span></div><small id="heroHp">HP ${run.hp} / ${run.maxHp}</small></figure>
+        <span class="arena-seal" aria-hidden="true">✧</span>
+        <figure class="combatant foe"><canvas data-enemy-art width="88" height="64" aria-hidden="true"></canvas>
+        <figcaption>${e.name}</figcaption><div class="hpBar foe-hp" aria-hidden="true"><span style="width:${Number(e.hp*1000n/e.max)/10}%"></span></div><small id="foeHp" title="${e.hp} / ${e.max}">HP ${compact(e.hp)} / ${compact(e.max)}</small></figure>
+        <span class="slash" aria-hidden="true"></span><span class="enemy-cast" aria-hidden="true"></span><span id="incoming" aria-hidden="true"></span><span id="outgoing" aria-hidden="true"></span>
+      </div>
+      <div class="enemy-info"><div class="eyebrow">${routeName()} · 第${run.stage}地点</div><h1>${e.name}</h1><small class="enemy-title">${e.title}${e.elite?' · ELITE':''}</small>
+      <p class="enemy-rule">${e.detail}${e.barrier?' 残りバリア ' +e.barrier+'回。':''}${e.gates.length?' 残り耐久段階 ' +e.gates.length+'。':''}</p><div class="intent"><small>敵の次の行動</small><strong>${intentText()}</strong></div></div></section>
+    <section class="frame board-frame"><div class="heading"><h2>演算盤</h2><small>${run.board.length} / ${run.slots} 枠 · コンボ ${run.board.length}${run.ward?' · 結界あり':''}</small></div>
+      <div class="board"><span class="slot base"><small>基礎</small>${run.base}</span>${slots}${tail}</div>
+      ${selected!==null?`<div class="actions" style="margin-top:8px">${btn('← 左へ','shift:-1','',selected===0)}${btn('右へ →','shift:1','',selected===run.board.length-1)}</div>`:''}
+      ${damageReceipt()}
+      <div class="preview"><div><small>通常演算</small><strong title="${exactRat(p.normal)}">${visibleNumber(p.normal)}</strong></div><div><small>レリック適用後</small><strong title="${exactRat(p.result)}">${visibleNumber(p.result)}</strong></div>
+      <div><small>最終ダメージ予測</small><strong title="${p.final}">${compact(p.final)}</strong>${p.impact.kind==='barrier'?'<small>バリアで無効</small>':p.impact.kind==='gate'?'<small>耐久段階まで ' +compact(p.impact.dealt)+'</small>':''}</div></div>
+      <div id="reel" class="reel" hidden><div class="reel-head"><span id="stepName"></span><span id="stepCombo"></span></div>
+      <strong id="reelNumber"></strong><div class="reel-foot"><div id="stepProgress"></div>${btn('演出をスキップ','skip')}</div></div>
+      ${notice?`<small role="status">${esc(notice)}</small>`:''}</section>
+    <section class="frame"><div class="heading"><h2>手札</h2><span class="energy">エネルギー ${run.energy} / ${run.capacity} <small>· ドロー ${run.drawCount}枚</small></span></div>
+      <div class="hand">${run.hand.map((c,i)=>cardButton(c,'hand:'+i,i,c.cost>run.energy||
+        (c.kind==='clean'?!run.deb.length:c.kind==='ward'?run.ward:run.board.length>=run.slots))).join('')}</div>
+      <div class="controls"><small>クリックで配置・移動。ドラッグで挿入。${run.holds===2?' 次はBURST。':''}</small>
+      <div class="actions">${btn('HOLD '+run.holds+'/2','hold','',run.holds>=2)}${btn('BURST','burst','primary')}</div></div></section>
+    </div>${sidebar(p)}</main>`;
+}
+const chapter=(tag,title,body)=>`<main><section class="frame chapter"><div class="eyebrow">${tag}</div><h1>${title}</h1>${body}</section></main>`;
+const workshopThemes={
+  forge:{symbol:'⚒',title:'鍛冶炉の刻印',done:'カードを強化しました'},
+  shop:{symbol:'⚖',title:'旅商人の取引',done:'30金貨を支払い、カードを獲得しました'},
+  fuse:{symbol:'◈',title:'錬成陣の結合',done:'素材2枚を新しいカードにしました'},
+  relic:{symbol:'✧',title:'秘宝の譲渡',done:'レリックを獲得しました'},
+  remove:{symbol:'♜',title:'刻印の消去',done:'デッキからカードを削除しました'}
+};
+const rewardCard=c=>`<div class="card result-card t${c.tier}">${cardFace(c)}</div>`;
+function rewardChanges({hp,gold}) {
+  const delta=(name,n)=>n?`<span>${name} <strong>${n>0?'+':'−'}${Math.abs(n)}</strong></span>`:'';
+  return `<div class="reward-changes">${delta('HP',hp)}${delta('金貨',gold)}</div>`;
+}
+function cardReward() {
+  const {status,card}=run.cardDecision;
+  if(status==='none') return '';
+  return `<section class="reward-block"><h2>演算パネル</h2>${
+    status==='pending'?`<p>獲得するパネルを1枚選ぶか、見送れます。</p><div class="choices">${run.offers.map((c,i)=>cardButton(c,'take:'+i)).join('')}</div>
+      ${btn('カードを見送る','cardSkip')}`:
+      status==='taken'?`<div class="reward-result">${rewardCard(card)}<p><strong>取得済み</strong><br>デッキに ${label(card)} を追加しました。</p></div>`:
+      '<p class="muted">カードは見送り済み</p>'}</section>`;
+}
+function goldReward() {
+  const status=run.goldDecision;
+  return `<section class="reward-block reward-gold"><div><h2>金貨</h2><p><strong>${run.goldReward}</strong> 枚
+    ${status==='taken'?' · 取得済み':status==='skipped'?' · 見送り済み':''}</p></div>
+    ${status==='pending'?`<div class="actions">${btn('金貨を受け取る','goldTake','primary')}${btn('金貨を見送る','goldSkip')}</div>`:''}</section>`;
+}
+function takeReport() {
+  const items=[];
+  if(run.cardDecision.status==='taken') items.push('カード '+label(run.cardDecision.card));
+  if(run.goldDecision==='taken') items.push(run.goldReward+' 金貨');
+  if(run.relicDecision==='taken') items.push(relics[run.relicDrop].name);
+  const content=items.length?items.join(' ／ '):run.rewardPending?'報酬を選択中':'受け取った報酬はありません。';
+  return `<p class="loot-receipt" role="status"><strong>今回の取得</strong>　${content}</p>`;
+}
+function relicReward() {
+  const relic=relics[run.relicDrop];
+  if(!relic) return '';
+  return `<section class="relic-drop"><span aria-hidden="true">✧</span><div><small>${run.enemy.name}からドロップ</small>
+    <h2>${relic.name}</h2><p>${relic.desc}</p>
+    ${run.relicDecision==='pending'?`<div class="choices">${btn('取得する','relicTake','primary')}${btn('見送る','relicSkip')}</div>`:
+      `<small>${run.relicDecision==='taken'?'取得済み':'見送り済み'}</small>`}</div></section>`;
+}
+function workshopStage(kind,body,reveal=false) {
+  const theme=workshopThemes[kind];
+  const motion=reveal?' data-motion="'+motionMode()+'"':'';
+  return `<div class="workshop workshop-${kind}${reveal?' workshop-reveal':''}"${motion}>
+    <div class="workshop-sigil" aria-hidden="true"><span>${theme.symbol}</span><i></i></div><div class="workshop-content">${body}</div></div>`;
+}
+function workResult() {
+  const {kind,sources,result,relic,price}=craftResult;
+  if(kind==='event') return chapter(routeName(),'イベントの結果',`<section class="reward-block">
+    ${result?`<div class="reward-result">${rewardCard(result)}<p>デッキに <strong>${label(result)}</strong> を追加しました。</p></div>`:''}
+    ${rewardChanges(craftResult)}${!result&&!craftResult.hp&&!craftResult.gold?'<p>HPは満タンでした。</p>':''}
+    <p role="status">現在のHP ${run.hp}/100 · 所持金 ${run.gold} 枚</p>
+    <div class="actions">${btn('地図へ戻る','craftNext','primary')}</div></section>`);
+  const theme=workshopThemes[kind];
+  const previous=sources.map(c=>`<span>${label(c)}</span>`).join('')+(price?`<span>${price} 金貨</span>`:'');
+  const output=result?`<div class="card result-card t${result.tier}">${cardFace(result)}</div>`:
+    relic?`<div class="relic-drop"><div><h2>${relics[relic].name}</h2><p>${relics[relic].desc}</p></div></div>`:'<strong>消去</strong>';
+  return chapter(routeName(),theme.title,workshopStage(kind,`
+    <div class="workshop-transform"><div class="workshop-sources">${previous}</div><span aria-hidden="true">→</span>${output}</div>
+    <p role="status">${theme.done}</p><div class="actions">${btn(run.phase==='facility'?'店へ戻る':'地図へ戻る','craftNext','primary')}</div>`,true));
+}
+function useService(action,i=NaN,mode) {
+  const transaction=run.service({action,i:Number.isNaN(i)?Number(document.querySelector('#i')?.value):i,
+    j:Number(document.querySelector('#j')?.value),mode,digit:Number(document.querySelector('#digit')?.value)});
+  if(!transaction) {
+    app.querySelector('[role="status"]').textContent='金貨、素材、または利用回数の条件を満たしていません。';
+    return;
+  }
+  if(transaction.kind) craftResult=transaction;
+  else notice=transaction.message;
+  render();
+  app.querySelector('[data-action="craftNext"]')?.focus({preventScroll:true});
+}
+function eventPreview(offer) {
+  return `<p>${offer.story}</p><section class="reward-block"><h2>受け取る内容</h2><p>${offer.offer}</p>
+    ${offer.result?rewardCard(offer.result):''}${rewardChanges(offer)}
+    ${!offer.available?'<p class="muted">支払いに必要なHPまたは金貨が足りません。</p>':''}
+    <div class="actions">${btn('受け取る','service:event','primary',!offer.available)}${btn('見送る','service:decline')}</div></section>`;
+}
+function facility() {
+  const f=run.facility;
+  const options=run.deck.map((c,i)=>`<option value="${i}">${i+1}. ${label(c)}${c.upgraded?'✧':''}</option>`).join('');
+  const forge=`<div class="choices"><label>強化対象 <select id="i">${options}</select></label>${btn('火力型','forge:power')}${btn('数字調整型','forge:adjust')}</div>
+    <div class="choices"><label>刻印する数字 <select id="digit">${Array.from({length:10},(_,i)=>`<option>${i}</option>`).join('')}</select></label>
+    ${btn('末尾刻印','forge:digit')}</div><p id="forgePreview"></p>`;
+  const unable=key=>run.shopUsed[key]||run.gold<prices[key];
+  const body=f==='rest'?`<p>HP ${run.hp}/100 · 回復か鍛冶を1回選択</p><div class="choices">${btn('HPを35回復','service:heal','primary')}</div>${workshopStage('forge',forge)}`:
+    f==='event'?eventPreview(run.eventOffer):
+    workshopStage('shop',`<p>所持金 ${run.gold} · カード各${prices.buy}金貨</p><div class="choices shop-cards">${run.shop.map((c,i)=>c?cardButton(c,'buy:'+i,-1,unable('buy')):'<span class="sold">売約済み</span>').join('')}</div>
+    <h2>レリック · ${run.shopUsed.relic?'購入済み':prices.relic+'金貨／1個まで'}</h2><div class="choices">${run.stockRelics.map((id,i)=>btn(relics[id].name+'<small>'+relics[id].desc+'</small>','relicBuy:'+i,'',unable('relic'))).join('')||'在庫なし'}</div>
+    <h2>工房 · デッキ下限12枚</h2><div class="choices"><label>対象 <select id="i">${options}</select></label><label>合成相手 <select id="j">${options}</select></label>
+    ${btn(run.shopUsed.fuse?'合成済み':'合成 · '+prices.fuse+'金貨','fuse','',unable('fuse')||run.deck.length<=12)}
+    ${btn(run.shopUsed.remove?'削除済み':'削除 · '+prices.remove+'金貨','remove','',unable('remove')||run.deck.length<=12)}</div><p id="forgePreview"></p>`);
+  return chapter(routeName(),places[f].name,body+`<p role="status">${esc(notice)}</p>`
+    +(f!=='event'?`<div class="actions">${btn('地図へ戻る','leave','primary')}</div>`:''));
+}
+function mapView() {
+  const xy=n=>[17+n.col*33,100-(n.row+.5)*100/run.map.length];
+  const all=run.map.flat();
+  const links=all.flatMap(n=>n.next.map(id=>{
+    const to=all.find(v=>v.id===id);
+    const [x,y]=xy(n),[tx,ty]=xy(to);
+    const live=run.node?.id===n.id;
+    const visited=run.visited.includes(n.id)&&run.visited.includes(id);
+    return `<line x1="${x}" y1="${y}" x2="${tx}" y2="${ty}" class="${live?'live':visited?'traveled':''}"/>`;
+  })).join('');
+  const nodes=all.map(n=>{
+    const [x,y]=xy(n),place=places[n.kind],live=run.routes.includes(n.id);
+    const status=live?'選択可能':run.visited.includes(n.id)?'訪問済み':'未到達';
+    return `<button type="button" data-action="route:${n.id}" class="map-node ${n.kind} ${live?'live':''} ${status==='訪問済み'?'traveled':''}" style="--x:${x}%;--y:${y}%"
+      title="第${n.row+1}層 · ${place.desc} · ${status}" aria-label="第${n.row+1}層 ${place.name} ${status}" ${live?'':'disabled'}>
+      <span aria-hidden="true">${place.icon}</span><small>${place.name}</small></button>`;
+  }).join('');
+  return chapter(routeName(),'巡歴の地図',`<div class="map-heading"><p>下から上へ、光るマスを選ぶ。</p><p>HP ${run.hp}/100 · ${run.gold} 金貨</p></div>
+    ${notice?`<p role="status">${esc(notice)}</p>`:''}
+    <div class="route-map"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${links}</svg>${nodes}</div>
+    <div class="map-legend">${Object.values(places).map(p=>`<span><b>${p.icon}</b> ${p.desc}</span>`).join('')}</div>`);
+}
+function view() {
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.5.1</div><div class="rule"></div>
+    <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
+    <form id="start"><label><small>シード（任意）</small><input name="seed" maxlength="40" placeholder="空欄でランダム"></label><button class="primary">探索を始める</button></form>
+    </div><canvas width="320" height="243" aria-hidden="true"></canvas></section></main>`;
+  if(craftResult) return workResult();
+  switch(run.phase) {
+    case 'battle':return battle();
+    case 'reward':return chapter(routeName(),'勝利報酬',`<p>HP ${run.hp}/100 ${run.victoryHeal?'（勝利時回復 +'+run.victoryHeal+'）':''} · 所持金 ${run.gold} 枚</p>
+      ${damageReceipt()}
+      ${cardReward()}${goldReward()}${relicReward()}${takeReport()}
+      ${btn('ページをめくる','advance','primary',run.rewardPending)}`);
+    case 'map':return mapView();
+    case 'facility':return facility();
+    default: {
+      const title={loss:'探索終了',clear:'無量門突破',win:'EXTRA 突破'}[run.phase];
+      return chapter('DAMAGE BREAKER',title,`<p>シード ${esc(run.seed)}</p><h2>今回の最大ダメージ</h2>
+        <p class="record">${fmt(run.stats.max)}</p><p class="muted">${esc(run.stats.formula)}</p>
+        <h2>コンボ ${run.stats.combo} · ∞ ${run.stats.infinity}回 · ${run.stats.turns}ターン</h2>
+        <div class="actions">${run.phase==='clear'?btn('EXTRAへ挑む','extra','primary'):''}${btn('タイトルへ','title')}${btn('記録帳','records')}</div>`);
+    }
+  }
+}
+function render() {
+  app.innerHTML=`<header><div class="brand">◇ DAMAGE BREAKER</div><nav>${btn('遊び方','help')}${btn('記録帳','records')}${btn('設定','settings')}</nav></header>${view()}
+    ${storageWarning?'<p role="status" style="text-align:center">ブラウザの保存領域を使用できません。記録はこの画面内で保持されます。</p>':''}`;
+  const hero=app.querySelector('[data-sprite]');
+  if(hero) paintSprite(hero,10);
+  const enemy=app.querySelector('[data-enemy-art]');
+  if(enemy) {
+    paintEnemy(enemy,run.enemy.art);
+    const dealKey=run.act+':'+run.stage+':'+run.turn;
+    if(lastDeal!==dealKey&&motionMode()!=='off') {
+      app.querySelector('.hand').classList.add('dealing');
+      app.querySelectorAll('.hand .card').forEach((card,index)=>card.style.setProperty('--deal',index));
+    }
+    lastDeal=dealKey;
+  }
+  const titleArt=app.querySelector('.title canvas');
+  if(titleArt) paint(titleArt,2,1);
+  const page=craftResult?'craft':run?.phase??'title';
+  if(lastPage!==null&&lastPage!==page&&motionMode()!=='off') {
+    const chapter=app.querySelector('main');
+    chapter.classList.add('turn-page');
+    chapter.classList.toggle('turn-fast',motionMode()==='fast');
+    chapter.addEventListener('animationend',()=>chapter.classList.remove('turn-page'),{once:true});
+  }
+  lastPage=page;
+  updateFacility();
+}
+function updateFacility() {
+  const el=document.querySelector('#forgePreview');
+  if(!el) return;
+  const i=Number(document.querySelector('#i').value), j=Number(document.querySelector('#j')?.value);
+  const c=run.deck[i];
+  if(run.facility==='rest') {
+    const a=upgraded(c,'power'),b=upgraded(c,'adjust'),d=upgraded(c,'digit',Number(document.querySelector('#digit').value));
+    app.querySelector('[data-action="forge:digit"]').disabled=!d;
+    el.textContent=a?`変化後　火力型 ${label(a)} ／ 数字調整型 ${label(b)} ／ 末尾刻印 ${d?label(d):'同じ数字'}`:'このパネルは強化対象外です。';
+  } else {
+    const a=i!==j&&fused(c,run.deck[j]);
+    app.querySelector('[data-action="fuse"]').disabled=!a||run.shopUsed.fuse||run.gold<prices.fuse||run.deck.length<=12;
+    el.textContent=a?`合成後　${label(a)} · 消費 ${a.cost}`:'合成できる2枚を選択してください。';
+  }
+}
+function rememberRun() {
+  if(!['win','clear','loss'].includes(run.phase)) return;
+  const snapshot=run.summary();
+  if(run.archiveId) book.runs=book.runs.filter(r=>r.id!==run.archiveId);
+  run.archiveId ||= Date.now()+'-'+run.seed;
+  book.runs.unshift({...snapshot,id:run.archiveId});
+  book.runs.length=Math.min(book.runs.length,20);
+  persist();
+}
+function burstFX(n,best) {
+  const mode=motionMode();
+  const inf=n>CAP, tier=[10n**4n,10n**8n,10n**12n,10n**16n,10n**20n,10n**64n,CAP].filter(v=>n>=v).length;
+  effect.className='';
+  if(mode!=='off') {
+    effect.textContent=(inf?'INFINITY BREAK ∞':fmt(n))+(best?' · 新記録':'');
+    void effect.offsetWidth;
+    effect.dataset.tier=tier;
+    effect.className='flash'+(inf||tier>=4?' high':'')+(tier>=3&&mode==='full'?' shake':'')+(mode==='fast'?' fast':'');
+  }
+  if(!book.prefs.mute&&(inf||tier>0||best)) {
+    try {
+      audio??=new AudioContext();
+      const now=audio.currentTime;
+      const scale=inf?[196,294,392,587,784]:tier>=4?[196,294,440,587]:tier>=2?[262,392,523]:[262,392];
+      scale.forEach((hz,i)=>{
+        const osc=audio.createOscillator(),gain=audio.createGain();
+        osc.type='triangle';osc.frequency.value=hz;
+        const t=now+i*.048;
+        gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(.045,t+.012);
+        gain.gain.exponentialRampToValueAtTime(.0001,t+.18);
+        osc.connect(gain);gain.connect(audio.destination);osc.start(t);osc.stop(t+.19);
+      });
+    } catch {}
+  }
+}
+effect.addEventListener('animationend',()=>{effect.className='';});
+const prefsHTML=()=>`<p><label><input type="checkbox" id="scientific" ${book.prefs.scientific?'checked':''}> 指数表記</label></p>
+  <p><label>演出 <select id="motion">${[['full','通常'],['fast','高速・軽量'],['off','スキップ']].map(([id,t])=>
+    `<option value="${id}" ${(book.prefs.motion||'full')===id?'selected':''}>${t}</option>`).join('')}</select></label></p>
+  <p><label><input type="checkbox" id="mute" ${book.prefs.mute?'checked':''}> 効果音を消す</label></p>`;
+function openRecords() {
+  modal('記録帳',`<h3>歴代最高 ${fmt(BigInt(book.best.max))}</h3><p>${esc(book.best.formula||'記録なし')}</p>
+    <h3>探索履歴</h3>${book.runs.map(r=>`<details><summary>${esc(r.seed)} · ${{loss:'敗北',clear:'通常クリア',win:'EXTRAクリア'}[r.outcome]} · 第${r.stage}戦 · ${fmt(BigInt(r.max))}</summary>
+      <p>コンボ ${r.combo} · 最大乗算 ×${r.mul} · 最大累乗 ${r.pow} · 最大指数 ${r.exp} · ∞ ${r.infinity}回</p>
+      <p>${esc(r.formula)}</p><p>デッキ　${r.deck.map(label).join(' / ')}</p><p>レリック　${r.relics.map(id=>relics[id].name).join(' / ')}</p></details>`).join('')||'<p>探索履歴なし</p>'}`);
+}
+function action(command) {
+  const [name,arg]=command.split(':');
+  if(sequence) {if(name==='skip') sequence.abort();return;}
+  const i=Number(arg);
+  if(name==='help') return modal('遊び方',`<p>手札の演算を盤に置き、基礎攻撃力から左順に計算します。地図は下から上へ、光っているマスを選びます。たとえば 20 → +10 → ×3 は90です。</p>
+    <p>HOLDは盤を維持して新しい手札を引きます。敵はHOLD後、またはBURSTで生き残った後に予告どおり行動します。</p>
+    <p>差し引きで負になった値や分数も計算中は保持します。装甲適用後、負のダメージは0、小数は切り捨てです。</p>
+    <p>次の盤に入る妨害は、指定枠が空なら一時的に末尾で処理します。封印は直後の自分の演算を1枚無効化します。</p>`);
+  if(name==='settings') return modal('設定',prefsHTML());
+  if(name==='records') return openRecords();
+  if(name==='deck') return modal('デッキ '+run.deck.length+'枚',`<ul>${run.deck.map(c=>`<li>${label(c)} · ${rarity[c.tier]} · 消費 ${c.cost}</li>`).join('')}</ul>`);
+  if(name==='relic') return modal(relics[arg].name,'<p>'+relics[arg].desc+'</p>');
+  if(name==='history') return modal('計算履歴',run.history.map(p=>`<details><summary>${fmt(p.final)} · ${esc(p.formula)}</summary>
+    <ol>${p.steps.map(s=>`<li>${label(s.card)}${s.op?.kind!==s.card.kind?' → '+(s.op?label(s.op):'無効'):''} → ${rat(s.result)}</li>`).join('')}
+    ${p.triggers.map(t=>`<li>${relics[t.id].name} → ${rat(t.result)}</li>`).join('')}</ol></details>`).join('')||'<p>まだBURSTしていません。</p>');
+  notice='';
+  switch(name) {
+    case 'title':run=null;break;
+    case 'hand':run.play(i);break;
+    case 'slot':
+      if(selected!==null&&selected!==i) {run.move(selected,Math.min(i,run.board.length-1));selected=null;}
+      else selected=i===selected||!run.board[i]?null:i;
+      break;
+    case 'shift': {
+      const to=selected+i;
+      if(run.move(selected,to)) selected=to;
+      break;
+    }
+    case 'hold': void showHold();return;
+    case 'burst': void showBurst();return;
+    case 'take':run.takeCard(i);break;
+    case 'cardSkip':run.skipCard();break;
+    case 'goldTake':run.chooseGold(true);break;
+    case 'goldSkip':run.chooseGold(false);break;
+    case 'relicTake':run.chooseRelic(true);break;
+    case 'relicSkip':run.chooseRelic(false);break;
+    case 'advance':run.advance();break;
+    case 'route':run.route(arg);break;
+    case 'leave':run.leaveNode();break;
+    case 'extra':run.extra();break;
+    case 'craftNext':craftResult=null;break;
+    case 'buy':useService('buy',i);return;
+    case 'relicBuy':useService('relic',i);return;
+    case 'service':useService(arg);return;
+    case 'forge':useService('forge',NaN,arg);return;
+    case 'remove':
+    case 'fuse':useService(name);return;
+  }
+  rememberRun();
+  render();
+}
+app.addEventListener('click',e=>{
+  const b=e.target.closest('[data-action]');
+  if(b&&!b.disabled) action(b.dataset.action);
+});
+app.addEventListener('submit',e=>{
+  if(e.target.id!=='start') return;
+  e.preventDefault();
+  const seed=new FormData(e.target).get('seed').trim()||crypto.getRandomValues(new Uint32Array(1))[0].toString(36);
+  run=new Run(seed);
+  lastDeal=null;
+  selected=null;
+  notice='';
+  render();
+});
+let dragging=null;
+app.addEventListener('dragstart',e=>{
+  if(sequence) {e.preventDefault();return;}
+  const el=e.target.closest('[draggable="true"]');
+  if(!el) return;
+  dragging=el.dataset.hand!==undefined?{hand:Number(el.dataset.hand)}:{board:Number(el.dataset.board)};
+  e.dataTransfer.setData('text/plain','damage-breaker');
+  e.dataTransfer.effectAllowed='move';
+});
+app.addEventListener('dragover',e=>{
+  if(dragging&&e.target.closest('[data-at]')) e.preventDefault();
+});
+app.addEventListener('drop',e=>{
+  const el=e.target.closest('[data-at]');
+  if(!el||!dragging||sequence) return;
+  e.preventDefault();
+  const at=Number(el.dataset.at);
+  if(dragging.hand!==undefined) run.play(dragging.hand,at);
+  else run.move(dragging.board,Math.min(at,run.board.length-1));
+  dragging=null;selected=null;render();
+});
+app.addEventListener('dragend',()=>{dragging=null;});
+app.addEventListener('change',updateFacility);
+dialog.addEventListener('change',e=>{
+  const {id,checked,value}=e.target;
+  if(!['scientific','motion','mute'].includes(id)) return;
+  book.prefs[id]=id==='motion'?value:checked;
+  persist();render();
+});
+render();
+
+function enemyReaction(move,message) {
+  const field=app.querySelector('.enemy');
+  if(!field||motionMode()==='off') return;
+  const blocked=message.startsWith('結界');
+  field.classList.remove('player-strike','player-landed','player-blocked');
+  field.classList.add(!blocked&&direct(move)?'enemy-strike':'enemy-magic');
+  field.dataset.move=blocked?'ward':move.kind;
+  field.classList.toggle('enemy-double',move.kind==='double');
+  field.querySelector('#incoming').textContent=message;
+  const tones={attack:2,double:1,div:3,lock:5,drain:4,wither:1,pct:6,sub:2};
+  chime(tones[move.kind]||1,'enemy');
+}
+function clock(duration,signal,update=()=>{}) {
+  return new Promise(resolve=>{
+    if(signal.aborted) {resolve();return;}
+    let frame,timer;
+    const start=performance.now();
+    const stop=()=>{
+      cancelAnimationFrame(frame);clearTimeout(timer);
+      signal.removeEventListener('abort',stop);
+      resolve();
+    };
+    const draw=now=>{
+      const progress=Math.min(1,Math.max(0,(now-start)/duration));
+      update(progress);
+      if(progress===1) stop();
+      else frame=requestAnimationFrame(draw);
+    };
+    signal.addEventListener('abort',stop,{once:true});
+    timer=setTimeout(()=>{update(1);stop();},duration+40);
+    frame=requestAnimationFrame(draw);
+  });
+}
+function chime(level,kind) {
+  if(book.prefs.mute) return;
+  try {
+    audio??=new AudioContext();
+    const oscillator=audio.createOscillator(), gain=audio.createGain(),t=audio.currentTime;
+    oscillator.frequency.value=kind==='enemy'?110+level*19:220*2**(level/7);
+    oscillator.type=kind==='relic'?'sine':'triangle';
+    gain.gain.setValueAtTime(.0001,t);
+    gain.gain.exponentialRampToValueAtTime(.018,t+.018);
+    gain.gain.exponentialRampToValueAtTime(.0001,t+.12);
+    oscillator.connect(gain);gain.connect(audio.destination);
+    oscillator.start(t);oscillator.stop(t+.13);
+  } catch {}
+}
+function updateHeroDisplay(field) {
+  field.querySelector('.hero-hp span').style.width=run.hp+'%';
+  field.querySelector('#heroHp').textContent='HP '+run.hp+' / '+run.maxHp;
+}
+async function showHold() {
+  const move=run.next;
+  const prediction=run.ward&&!direct(move)?'結界が妨害を防ぎました':intentText();
+  if(!run.hold()) return;
+  selected=null;
+  notice=prediction+(run.phase==='battle'?' ／ 次の手札を引きました':'');
+  rememberRun();
+  const mode=motionMode();
+  if(mode==='off'){render();return;}
+  const control=new AbortController();
+  sequence=control;
+  const field=app.querySelector('.enemy');
+  app.querySelectorAll('button:not(:disabled)').forEach(button=>button.disabled=true);
+  enemyReaction(move,prediction);
+  updateHeroDisplay(field);
+  try {await clock(mode==='fast'?160:510,control.signal);}
+  finally {sequence=null;render();}
+}
+async function showBurst() {
+  const base=run.base, armor=run.enemy.armor, move=run.next;
+  const prediction=run.ward&&!direct(move)?'結界が妨害を防ぎました':intentText();
+  const p=run.burst();
+  if(!p) return;
+  const best=p.final>BigInt(book.best.max);
+  if(best) {book.best={max:String(p.final),formula:run.stats.formula,seed:run.seed};persist();}
+  selected=null;
+  const strike=p.impact.kind==='barrier'?'バリアがBURSTを無効化':p.impact.kind==='gate'?'耐久段階を突破 · '+compact(p.impact.dealt):'BURST '+fmt(p.final);
+  notice=strike+(best?' · 新記録':'');
+  rememberRun();
+  const mode=motionMode();
+  const control=new AbortController();
+  sequence=control;
+  const signal=control.signal;
+  const reel=app.querySelector('#reel'), field=app.querySelector('.enemy');
+  try {
+    if(mode!=='off') {
+      const name=reel.querySelector('#stepName'), counter=reel.querySelector('#reelNumber');
+      const combo=reel.querySelector('#stepCombo'), progress=reel.querySelector('#stepProgress');
+      const steps=timeline(p,armor);
+      let prior=[BigInt(base),1n];
+      counter.textContent=visibleNumber(prior);
+      reel.hidden=false;
+      reel.closest('.board-frame').classList.add('calculating');
+      field.classList.add('charging');
+      const disabled=[...app.querySelectorAll('button:not(:disabled)')].filter(b=>b.dataset.action!=='skip');
+      disabled.forEach(b=>b.disabled=true);
+      reel.querySelector('button').focus({preventScroll:true});
+      let lit=null;
+      for(const [i,step] of steps.entries()) {
+        if(signal.aborted) break;
+        lit?.classList.remove('resolving');
+        lit=step.relic?app.querySelector('[data-relic="'+step.relic+'"]'):
+          step.index===undefined?null:app.querySelector('[data-calc="'+step.index+'"]');
+        lit?.classList.add('resolving');
+        const level=magnitude(step.value);
+        reel.dataset.kind=step.type;
+        reel.dataset.level=level;
+        name.textContent=step.name;
+        combo.textContent=step.combo+' COMBO';
+        counter.title=exactRat(step.value);
+        counter.classList.remove('count-pop');
+        void counter.offsetWidth;
+        counter.classList.add('count-pop');
+        progress.style.width=((i+1)*100/steps.length)+'%';
+        chime(level,step.type);
+        const duration=mode==='fast'?95:step.type==='impact'?260:step.type==='relic'?400:270;
+        await clock(duration,signal,position=>{
+          const value=reelValue(prior,step.value,Math.floor(position*12));
+          const display=step.type==='impact'&&position===1?compact(p.final):visibleNumber(value);
+          if(counter.textContent!==display) counter.textContent=display;
+        });
+        prior=step.value;
+      }
+      if(!signal.aborted) {
+        const e=run.enemy;
+        field.classList.remove('charging');
+        field.classList.add('player-strike',p.impact.kind==='barrier'?'player-blocked':'player-landed');
+        field.querySelector('#outgoing').textContent=p.impact.kind==='barrier'?'無効':p.impact.kind==='gate'?'段階突破 −'+compact(p.impact.dealt):'−'+compact(p.impact.dealt);
+        field.querySelector('.foe-hp span').style.width=Number(e.hp*1000n/e.max)/10+'%';
+        field.querySelector('#foeHp').textContent='HP '+compact(e.hp)+' / '+compact(e.max);
+        if(p.impact.kind==='hit') burstFX(p.final,best);
+        await clock(mode==='fast'?225:850,signal);
+        if(e.hp>0n&&!signal.aborted) {
+          enemyReaction(move,prediction);
+          updateHeroDisplay(field);
+          await clock(mode==='fast'?170:620,signal);
+        }
+      }
+    } else if(p.impact.kind==='hit') burstFX(p.final,best);
+  } finally {
+    sequence=null;
+    render();
+    if(run.phase==='battle') app.querySelector('[data-action="burst"]')?.focus({preventScroll:true});
+  }
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&sequence) sequence.abort();
+});
+
+})();</script>
+</body>
+</html>
