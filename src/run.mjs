@@ -1,5 +1,5 @@
 import {random,shuffle,starter,generate,generateSupport,supportKinds,supportValue,supportCaps,upgraded,fused} from './cards.mjs';
-import {evaluate,relics,drawRelic} from './relics.mjs';
+import {evaluate,relics,drawRelic,cleanseDebuffs} from './relics.mjs';
 import {makeEnemy,intent,impact,attackHits,attackPatterns} from './enemies.mjs';
 import {CAP,label} from './math.mjs';
 import {makeMap} from './map.mjs';
@@ -17,7 +17,7 @@ export class Run {
     this.deck=starter();
     this.owned=[];
     this.history=[];
-    this.stats={max:0n,combo:0,mul:0,pow:0,exp:0,infinity:0,turns:0,formula:'',usage:{},bosses:0};
+    this.stats={max:0n,combo:0,mul:0,pow:0,exp:0,infinity:0,turns:0,formula:'',usage:{},bosses:0,intercepts:0,prevented:0};
     this.act=1;
     this.recent=[];
     this.beginMap();
@@ -63,6 +63,7 @@ export class Run {
     this.holds=0;
     this.ward=this.bonus('ward')>0;
     this.guard=0;
+    this.interceptUsed=false;
     this.refill();
   }
   refill() {
@@ -95,7 +96,7 @@ export class Run {
       const power=supportValue(c);
       if(c.kind==='ward') this.ward=Math.min(supportCaps.ward,this.wardCharges+power);
       else if(c.kind==='guard') this.guard=Math.min(supportCaps.guard,this.guardPoints+power);
-      else this.deb.splice(0,power);
+      else this.deb=cleanseDebuffs(this.deb,this.board.length,power);
       this.discard.push(c);
     } else {
       this.board.splice(at,0,c);
@@ -124,12 +125,23 @@ export class Run {
     const result=evaluate({base:this.base,board:this.board,deb:this.deb,owned:this.owned,armor:this.enemy.armor,holds:this.holds});
     return {...result,impact:impact(this.enemy,result.final)};
   }
-  enemyOutcome(action=this.next) {
+  interceptReason(p=this.preview()) {
+    if(this.interceptUsed) return 'この戦闘では使用済み';
+    if(this.energy<1) return 'エネルギーを1残す';
+    if(!attackHits(this.next)) return '敵の攻撃予告が必要';
+    if(p.impact.dealt===this.enemy.hp) return '通常BURSTで撃破できる';
+    if(!p.impact.dealt) return '敵HPにダメージが通る盤が必要';
+    if(p.steps.filter(step=>!step.card.enemy&&step.op).length<2) return '有効な演算が2枚以上必要';
+    if(this.enemyOutcome().hp===this.enemyOutcome(this.next,true).hp) return '防御だけで攻撃をしのげる';
+    return '';
+  }
+  enemyOutcome(action=this.next,intercept=false) {
     let {hp,maxHp,drain,ward,deb}=this;
     let blocked=false,drawPenalty=0,energyPenalty=0;
     const hits=attackHits(action);
     const penalty=attackPatterns[action.kind]?.penalty;
-    const attackDamage=action.value*hits;
+    const intercepted=intercept&&hits>0?action.value:0;
+    const attackDamage=action.value*hits-intercepted;
     const absorbed=Math.min(this.guardPoints,attackDamage);
     const guard=attackDamage>0?0:this.guardPoints;
     hp=Math.max(0,hp-attackDamage+absorbed);
@@ -145,16 +157,16 @@ export class Run {
       } else if(action.kind==='drain') drain=Math.min(65,drain+action.value);
       else deb=[...deb,action];
     }
-    return {hp,maxHp,drain,ward,guard,deb,blocked,absorbed,drawPenalty,energyPenalty};
+    return {hp,maxHp,drain,ward,guard,deb,blocked,absorbed,intercepted,drawPenalty,energyPenalty};
   }
   holdPreview(outcome=this.enemyOutcome()) {
     if(this.holds>=2||!outcome.hp||!this.board.length) return null;
     const result=evaluate({base:this.baseAt(outcome.drain),board:this.board,deb:outcome.deb,owned:this.owned,armor:this.enemy.armor,holds:this.holds+1});
     return result.final;
   }
-  enemyAction() {
+  enemyAction(intercept=false) {
     this.uncommittedCards.clear();
-    const {hp,maxHp,drain,ward,guard,deb,drawPenalty,energyPenalty}=this.enemyOutcome();
+    const {hp,maxHp,drain,ward,guard,deb,drawPenalty,energyPenalty}=this.enemyOutcome(this.next,intercept);
     Object.assign(this,{hp,maxHp,drain,ward,guard,deb,drawPenalty,energyPenalty});
     this.turn++;
     if(!this.hp) this.phase='loss';
@@ -167,10 +179,18 @@ export class Run {
     this.enemyAction();
     return true;
   }
-  burst() {
+  burst(intercept=false) {
     if(this.phase!=='battle') return null;
-    this.stats.turns++;
     const p=this.preview();
+    if(intercept) {
+      if(this.interceptReason(p)) return null;
+      const before=this.enemyOutcome(),after=this.enemyOutcome(this.next,true);
+      this.energy--;
+      this.interceptUsed=true;
+      this.stats.intercepts=(this.stats.intercepts??0)+1;
+      this.stats.prevented=(this.stats.prevented??0)+after.hp-before.hp;
+    }
+    this.stats.turns++;
     const formula=[String(this.base),...p.steps.map(s=>s.op?label(s.op):'無効'),...p.triggers.map(t=>relics[t.id].name),
       ...(this.enemy.armor>1?['装甲 ÷'+this.enemy.armor]:[])].join(' → ');
     this.lastBurst={...p,formula};
@@ -210,7 +230,7 @@ export class Run {
         }
       }
       this.reward();
-    } else this.enemyAction();
+    } else this.enemyAction(intercept);
     return p;
   }
   reward() {

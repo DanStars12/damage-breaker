@@ -959,3 +959,45 @@ header nav { flex-wrap: wrap; }
   .number-units { grid-template-columns:1fr; }
   .relic-badge,.relic-badge .relic-icon { width:23px; height:23px; }
 }
+
+.battle .enemy {
+  grid-template-areas:"duel name" "duel detail";
+  grid-template-rows:auto 1fr;
+  row-gap:4px;
+}
+.battle .duel { grid-area:duel; }
+.enemy-identity { grid-area:name; align-self:end; min-width:0; }
+.battle .enemy-info { grid-area:detail; align-self:start; }
+.enemy-identity h1 {
+  display:block;
+  margin:2px 0 3px;
+  font-size:clamp(19px,2.55vw,39px);
+  line-height:1.16;
+  letter-spacing:.01em;
+  overflow-wrap:anywhere;
+  word-break:normal;
+  line-break:strict;
+  text-wrap:balance;
+}
+.enemy-identity .enemy-title { display:block; font-size:10px; }
+.boss-entry strong { padding-inline:12px; line-height:1.18; overflow-wrap:anywhere; line-break:strict; }
+.intercept-button:not(:disabled) { color:#d9fff6; border-color:#64bba7; background:#21413b; }
+#intercept-condition { flex-basis:100%; color:var(--sub); font:11px/1.25 var(--interface); }
+.intercept-arc { position:absolute; z-index:2; inset:5% 30% 10% 2%; pointer-events:none; opacity:0;
+  background:conic-gradient(from 23deg at 45% 50%,transparent 5%,#74f1d2 8%,transparent 17% 46%,#dffdf8 49%,transparent 54%); }
+.intercept-reaction .intercept-arc { animation:intercept-turn 485ms ease-out both; }
+.intercept-reaction .hero canvas { animation:intercept-stance .44s ease-out both; }
+@keyframes intercept-turn {
+  0% { opacity:0; transform:scale(.62) rotate(-20deg); }
+  28% { opacity:1; transform:scale(.93) rotate(7deg); }
+  100% { opacity:0; transform:scale(1.25) rotate(26deg); }
+}
+@keyframes intercept-stance { 32% { transform:translateX(7px); filter:brightness(1.55) drop-shadow(0 0 7px #8ff9d3); } }
+#app[data-motion="fast"] .intercept-reaction .intercept-arc { animation-duration:155ms; }
+@media(max-width:600px) {
+  .battle .enemy { grid-template-areas:"name name" "duel detail"; grid-template-rows:auto auto; }
+  .enemy-identity h1 { font-size:clamp(19px,5.5vw,28px); text-wrap:wrap; }
+  .battle .enemy-info .intent { margin-top:2px; padding:5px 6px; }
+}
+.enemy-name-part { display:inline-block; max-width:100%; vertical-align:baseline; }
+.boss-entry strong .enemy-name-part { display:inline-block; font:inherit; letter-spacing:inherit; }

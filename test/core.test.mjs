@@ -509,3 +509,53 @@ test('number unit guide uses the same ten-thousand group boundaries as the forma
     assert.equal(format(10n**BigInt(exponent)),'1'+name);
   }
 });
+
+test('intercept spends one energy once per battle, stops one hit and preserves BURST damage',()=>{
+  const r=new Run('intercept');forceNode(r,'fight');
+  r.enemy.cycle=['double','double'];
+  r.enemy.hp=99999n;
+  r.board=[a('add',20),a('mul',3)];
+  r.hp=100;r.energy=1;
+  const p=r.preview(), hit=r.next.value;
+  assert.equal(r.interceptReason(p),'');
+  assert.equal(r.enemyOutcome().hp,100-2*hit);
+  assert.equal(r.enemyOutcome(r.next,true).hp,100-hit);
+  assert.equal(r.burst(true).final,p.final);
+  assert.equal(r.enemy.hp,99999n-p.impact.dealt);
+  assert.equal(r.hp,100-hit);
+  assert.equal(r.stats.intercepts,1);
+  assert.equal(r.stats.prevented,hit);
+  assert(r.interceptReason());
+  assert.equal(r.burst(true),null);
+  assert.equal(r.stats.turns,1);
+  forceNode(r,'fight');
+  assert.equal(r.interceptUsed,false);
+});
+
+test('intercept cannot bypass a barrier or use sealed cards, and guard applies after it',()=>{
+  const r=new Run('intercept-rules');forceNode(r,'fight');
+  r.enemy.cycle=['flare'];r.enemy.hp=99999n;
+  r.board=[a('add',20),a('mul',3)];r.energy=1;
+  r.enemy.barrier=1;
+  assert(r.interceptReason());
+  r.enemy.barrier=0;
+  r.deb=[{kind:'lock',target:'mul',value:0,at:1,enemy:true}];
+  assert(r.interceptReason());
+  r.deb=[];
+  const hit=r.next.value;
+  r.guard=hit;
+  assert(r.interceptReason());
+  r.guard=0;r.ward=true;
+  assert(r.burst(true));
+  assert.equal(r.wardCharges,0);
+  assert.equal(r.deb.length,0);
+});
+
+test('cleanse removes the leftmost displayed curse rather than the oldest applied',()=>{
+  const r=new Run('cleanse-order');forceNode(r,'fight');
+  r.board=[a('add',10),a('mul',2)];
+  const late=d('div',2,2), early=d('sub',10,1), same=d('pct',-25,1);
+  r.deb=[late,early,same];r.hand=[a('clean',0)];
+  assert(r.play(0));
+  assert.deepEqual(r.deb,[late,same]);
+});

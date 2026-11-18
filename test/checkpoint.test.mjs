@@ -197,3 +197,17 @@ test('new support cards and defenses survive reload while legacy ward remains us
   assert.equal(old.guardPoints,0);
   assert.equal(old.wardCharges,1);
 });
+
+test('the expended intercept stays expended when a battle resumes',()=>{
+  const run=new Run('intercept-save');
+  routeKind(run,'fight');
+  run.enemy.cycle=['double'];
+  run.enemy.hp=50000n;
+  const [addition,multiply]=[run.deck.find(c=>c.kind==='add'),run.deck.find(c=>c.kind==='mul')];
+  run.board=[addition,multiply];
+  assert(run.burst(true));
+  const copy=restore(run).run;
+  assert.equal(copy.interceptUsed,true);
+  assert.equal(copy.stats.intercepts,1);
+  assert.equal(copy.burst(true),null);
+});

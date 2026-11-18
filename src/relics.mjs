@@ -109,6 +109,11 @@ export function drawRelic(rng,owned,act,{shop=false}={}) {
 const effectOrder=['grimoire','tail','order','short','chain','star','sum','abacus','lattice','mosaic','ratio',
   ...Object.keys(relics).slice(20).filter(id=>relics[id].effect)];
 
+export function cleanseDebuffs(deb,boardLength,count) {
+  const first=deb.map((_,index)=>index).sort((a,b)=>Math.min(deb[a].at,boardLength)-Math.min(deb[b].at,boardLength));
+  const cleared=new Set(first.slice(0,count));
+  return deb.filter((_,index)=>!cleared.has(index));
+}
 export function evaluate({base=20,board=[],deb=[] ,owned=[],armor=1,holds=0}) {
   const cards=[];
   for(let i=0;i<=board.length;i++) {

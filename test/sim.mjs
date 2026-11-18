@@ -1,7 +1,7 @@
 import {supportValue,supportKinds} from '../src/cards.mjs';
 import {attackHits} from '../src/enemies.mjs';
 import {Run} from '../src/run.mjs';
-import {evaluate} from '../src/relics.mjs';
+import {evaluate,cleanseDebuffs} from '../src/relics.mjs';
 import {CAP,format} from '../src/math.mjs';
 
 const strategies={
@@ -28,7 +28,7 @@ function plan(run) {
       if(clean?!s.deb.length:s.board.length>=slots) continue;
       for(let at=0;at<=(clean?0:s.board.length);at++) {
         const b=clean?s.board:[...s.board.slice(0,at),c,...s.board.slice(at)];
-        const d=clean?s.deb.slice(supportValue(c)):s.deb;
+        const d=clean?cleanseDebuffs(s.deb,s.board.length,supportValue(c)):s.deb;
         const used=s.used|(1<<i);
         const key=used+':'+b.map(c=>c.kind+c.value).join(',')+':'+d.length;
         if(seen.has(key)) continue;
@@ -110,7 +110,7 @@ function play(seed,id) {
     }
     const survive=r.enemyOutcome().hp>0;
     if(p.impact.kind!=='gate'&&p.final<r.enemy.hp&&r.holds<2&&survive&&r.board.length<r.slots) r.hold();
-    else r.burst();
+    else r.burst(!r.interceptReason(r.preview()));
   }
   throw Error('Simulation exceeded turn budget for '+seed);
 }
@@ -118,7 +118,7 @@ const total=Number(process.argv[2]||32);
 const offset=Number(process.argv[3]||0);
 const rows=[];
 for(const id of Object.keys(strategies)) {
-  const metric={policy:id,seeds:total,clear:0,extra:0,infinity:0,bossAttempts:[0,0,0],bossWins:[0,0,0],bossesByName:{},turns:0,used:{},relics:{},lossesByEnemy:{},actReached:[0,0,0,0],additionRelic:{ownedAtEnd:0,clearWith:0,lossWithoutByAct:[0,0,0,0]}};
+  const metric={policy:id,seeds:total,clear:0,extra:0,infinity:0,intercepts:0,prevented:0,bossAttempts:[0,0,0],bossWins:[0,0,0],bossesByName:{},turns:0,used:{},relics:{},lossesByEnemy:{},actReached:[0,0,0,0],additionRelic:{ownedAtEnd:0,clearWith:0,lossWithoutByAct:[0,0,0,0]}};
   let max=0n,bestSeed='';
   for(let i=0;i<total;i++) {
     const {r,cleared,clearedWithAdditionRelic,reached}=play('db-'+(i+offset),id);
@@ -146,6 +146,8 @@ for(const id of Object.keys(strategies)) {
     metric.extra+=Number(r.phase==='win');
     metric.infinity+=Number(r.stats.max>CAP);
     metric.turns+=r.stats.turns;
+    metric.intercepts+=r.stats.intercepts;
+    metric.prevented+=r.stats.prevented;
     for(const [k,n] of Object.entries(r.stats.usage)) metric.used[k]=(metric.used[k]||0)+n;
     for(const k of r.owned) metric.relics[k]=(metric.relics[k]||0)+1;
     if(r.stats.max>max) {max=r.stats.max;bestSeed=r.seed;}
