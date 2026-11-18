@@ -294,7 +294,7 @@ test('ACT III boss HP curves preserve dragon gates and the emperor barrier',()=>
 test('boss attack follows the ACT curve and victory healing depends on encounter rank',()=>{
   for(const [i,attack] of [12,18,25].entries()) {
     for(const variant of [0,1]) {
-      assert.equal(makeEnemy(i+1,'boss',variant,9).attack,attack);
+      assert.equal(makeEnemy(i+1,'boss',variant,9).attack,i===2&&variant===0?24:attack);
     }
   }
   const r=new Run('recovery-by-rank');
@@ -336,4 +336,40 @@ test('only cards staged this turn can go back to hand and refund their exact cos
   r.burst();
   assert.equal(r.uncommittedCards.size,0);
   assert.equal(r.returnToHand(0),false);
+});
+
+test('HOLD forecast agrees with the actual enemy response and does not mutate the battle',()=>{
+  const r=new Run('hold-forecast');
+  assert(r.route(r.routes[0]));
+  r.board=[a('add',100),a('mul',2)];
+  r.enemy.hp=99999n;
+  r.enemy.cycle=['div','lock:add','drain','wither','double'];
+  r.ward=true;
+  const before=r.preview().final;
+  const protectedOutcome=r.enemyOutcome();
+  assert(protectedOutcome.blocked);
+  assert.equal(r.holdPreview(protectedOutcome),before);
+  assert(r.ward);
+  assert(r.hold());
+  assert.equal(r.ward,false);
+  assert.equal(r.preview().final,before);
+  const locked=r.holdPreview();
+  assert.equal(r.deb.length,0);
+  assert(locked<before);
+  assert(r.hold());
+  assert.equal(r.preview().final,locked);
+  assert.equal(r.holdPreview(),null);
+  r.holds=0;
+  const weakened=r.holdPreview();
+  assert.equal(r.drain,0);
+  r.enemyAction();
+  assert.equal(r.preview().final,weakened);
+  const wither=r.enemyOutcome();
+  assert(wither.hp<r.hp);
+  assert.equal(r.maxHp,100);
+  r.enemyAction();
+  assert.equal(r.hp,wither.hp);
+  r.hp=1;
+  assert.equal(r.enemyOutcome().hp,0);
+  assert.equal(r.holdPreview(),null);
 });

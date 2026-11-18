@@ -1,11 +1,15 @@
+import {createSound} from './sound.mjs';
 const app=document.querySelector('#app');
 const dialog=document.querySelector('#dialog');
 const effect=document.querySelector('#effect');
 const book=load();
 let suspended=readCheckpoint(book.checkpoint);
-let run=null, selected=null, storageWarning=false, audio=null, notice='';
+let run=null, selected=null, storageWarning=false, notice='';
 let sequence=null, lastPage=null, craftResult=null, lastDeal=null, lastBattle=null;
 const motionMode=()=>matchMedia('(prefers-reduced-motion: reduce)').matches?'off':book.prefs.motion||'full';
+const sound=createSound(globalThis.AudioContext,()=>book.prefs);
+const cue=(id,options={})=>sound.play(id,{fast:motionMode()==='fast',signal:sequence?.signal,...options});
+const cardCue=c=>({ward:'ward',clean:'clean',mul:'multiply',pct:'multiply',pow:'mystic',exp:'mystic'}[c.kind]||'place');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 const fmt=(n,cap=true)=>format(n,book.prefs.scientific,cap);
 const exactRat=([n,d])=>d===1n?String(n):n+' / '+d;
@@ -43,8 +47,7 @@ function modal(title,content) {
 }
 function routeName(act=run.act){return act===4?'EXTRA':'ACT '+['','I','II','III'][act];}
 const direct=a=>a.kind==='attack'||a.kind==='double';
-function intentText() {
-  const a=run.next;
+function intentText(a=run.next) {
   if(a.kind==='attack') return `HPに ${a.value} ダメージ`;
   if(a.kind==='double') return `二連撃 · ${a.value} × 2 ダメージ`;
   if(a.kind==='wither') return `吸命 · 戦闘中の最大HP −${a.value}（下限35）`;
@@ -76,6 +79,21 @@ function damageReceipt() {
     <div><small>敵HPの減少</small><strong title="${p.impact.dealt}">${compact(p.impact.dealt,false)}</strong>${status?`<small>${status}</small>`:''}</div>
     ${fired.length?`<p class="relic-receipt">✦ 発動レリック　${fired.join(' ／ ')}</p>`:''}</section>`;
 }
+function tacticalReadout(p) {
+  const outcome=run.enemyOutcome();
+  const held=run.holdPreview(outcome);
+  const lethal=!outcome.hp;
+  const victory=p.impact.dealt===run.enemy.hp;
+  const holdText=run.holds>=2?'HOLD上限':lethal?'反撃で敗北':outcome.blocked?'結界で妨害を防ぐ':
+    outcome.hp<run.hp?'HP −'+(run.hp-outcome.hp):outcome.maxHp<run.maxHp?'最大HP −'+(run.maxHp-outcome.maxHp):
+    outcome.drain!==run.drain?'基礎 '+run.base+' → '+run.baseAt(outcome.drain):
+    outcome.deb!==run.deb?'妨害が盤に入る':'追加の変化なし';
+  const burstText=victory?'このBURSTで撃破':p.impact.kind==='gate'?'耐久段階を突破':
+    p.impact.kind==='barrier'?'バリアを1枚破る':p.impact.kind==='miss'?'攻撃が通らない':'敵HP −'+compact(p.impact.dealt,false);
+  return `<div class="tactics" aria-label="HOLDとBURSTの比較">
+    <div class="${lethal&&run.holds<2?'tactics-danger':''}"><b>HOLD</b><span>${holdText}${held!==null&&held!==p.final?` <small title="${held}"> · 引く前の予測 ${compact(held)}</small>`:''}</span></div>
+    <div class="${victory?'tactics-win':lethal?'tactics-danger':''}"><b>BURST</b><span>${burstText}${lethal&&!victory?' · 反撃で敗北':''}</span></div></div>`;
+}
 function battle() {
   const p=run.preview(), e=run.enemy;
   const gate=e.gates[0];
@@ -85,7 +103,7 @@ function battle() {
     const at=Math.min(i,run.board.length);
     const deb=i<=run.board.length?run.deb.filter(d=>Math.min(d.at,run.board.length)===i).map(d=>
       `<span class="slot debuff" data-calc="${p.steps.findIndex(s=>s.card===d)}" title="敵の妨害 · ${d.at}枠目の後">${label(d)}</span>`).join(''):'';
-    return deb+(c?`<button type="button" class="slot board-card t${c.tier} ${i===selected?'selected':''}" style="border-color:var(--tone)"
+    return deb+(c?`<button type="button" class="slot board-card t${c.tier} ${status?.op===null?'is-sealed':''} ${i===selected?'selected':''}" style="border-color:var(--tone)"
       data-calc="${p.steps.indexOf(status)}" data-action="slot:${i}" data-at="${i}" data-board="${i}" draggable="true" aria-pressed="${i===selected}" title="${run.canReturn(i)?'選択して移動・取り消し':'選択して移動'}"><strong>${label(c)}</strong><small>${types[c.kind]}</small>${run.canReturn(i)?'<small class="returnable-label">仮置き</small>':''}${status?.op===null?'<small>封印</small>':''}</button>`:
       `<button type="button" class="slot empty" data-at="${at}" data-action="slot:${at}" aria-label="空き枠 ${i+1}">${i+1}</button>`);
   }).join('');
@@ -105,7 +123,7 @@ function battle() {
       <div class="enemy-info"><div class="eyebrow">${routeName()} · 第${run.stage}地点</div><h1>${e.name}</h1><small class="enemy-title">${e.title}${e.elite?' · ELITE':''}</small>
       ${e.detail?`<p class="enemy-rule">${e.detail}</p>`:''}
       ${e.barrier||gate!==undefined?`<p class="enemy-rule defense-status">${e.barrier?'バリア残り '+e.barrier+'回':`耐久段階あと ${e.gates.length} · 次の突破に <b title="${e.hp-gate}">${compact(e.hp-gate,false)}</b> ダメージ`}</p>`:''}
-      <div class="intent"><small>敵の次の行動</small><strong>${intentText()}</strong></div></div></section>
+      <div class="intent" data-move="${run.next.kind}"><small>敵の次の行動</small><strong>${intentText()}</strong></div></div></section>
     <section class="frame board-frame"><div class="heading"><h2>演算盤</h2><small>${run.board.length} / ${run.slots} 枠 · コンボ ${run.board.length}${run.ward?' · 結界あり':''}</small></div>
       <div class="board"><span class="slot base"><small>基礎</small>${run.base}</span>${slots}${tail}</div>
       ${selected!==null?`<div class="actions" style="margin-top:8px">${btn('← 左へ','shift:-1','',selected===0)}${btn('右へ →','shift:1','',selected===run.board.length-1)}${run.canReturn(selected)?btn('手札に戻す','unplay'):''}</div>`:''}
@@ -118,8 +136,9 @@ function battle() {
     <section class="frame"><div class="heading"><h2>手札</h2><span class="energy">エネルギー ${run.energy} / ${run.capacity} <small>· ドロー ${run.drawCount}枚</small></span></div>
       <div class="hand" data-hand-return>${run.hand.map((c,i)=>cardButton(c,'hand:'+i,i,c.cost>run.energy||
         (c.kind==='clean'?!run.deb.length:c.kind==='ward'?run.ward:run.board.length>=run.slots))).join('')}</div>
+      ${tacticalReadout(p)}
       <div class="controls"><small>仮置きは選択して手札に戻せます。HOLDまたはBURSTで確定。${run.holds===2?' 次はBURST。':''}</small>
-      <div class="actions">${btn('HOLD '+run.holds+'/2','hold','',run.holds>=2)}${btn('BURST','burst','primary')}</div></div></section>
+      <div class="actions">${btn('HOLD '+run.holds+'/2','hold','',run.holds>=2)}${btn('BURST','burst','primary')}<button data-action="skip" class="skip-hold" hidden>演出をスキップ</button></div></div></section>
     </div>${sidebar(p)}</main>`;
 }
 const chapter=(tag,title,body)=>`<main><section class="frame chapter"><div class="eyebrow">${tag}</div><h1>${title}</h1>${body}</section></main>`;
@@ -205,6 +224,7 @@ function workResult() {
     <p role="status">${theme.done}</p><div class="actions">${btn(run.phase==='facility'?'店へ戻る':'地図へ戻る','craftNext','primary')}</div>`,true));
 }
 function useService(action,i=NaN,mode) {
+  sound.unlock();
   const transaction=run.service({action,i:action!=='remove'&&Number.isNaN(i)?Number(document.querySelector('#i')?.value):i,
     j:Number(document.querySelector('#j')?.value),mode,digit:Number(document.querySelector('#digit')?.value)});
   if(!transaction) {
@@ -213,6 +233,7 @@ function useService(action,i=NaN,mode) {
     return;
   }
   if(action==='remove') dialog.close();
+  cue(({buy:'gold',relic:'relic',fuse:'fuse',forge:'forge',remove:'remove',heal:'ward'})[action]||'page');
   if(transaction.kind) craftResult=transaction;
   else notice=transaction.message;
   saveProgress();
@@ -278,7 +299,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.6.0</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.6.1</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -375,27 +396,15 @@ function burstFX(n,best) {
     effect.dataset.tier=tier;
     effect.className='flash'+(inf||tier>=4?' high':'')+(tier>=3&&mode==='full'?' shake':'')+(mode==='fast'?' fast':'');
   }
-  if(!book.prefs.mute&&(inf||tier>0||best)) {
-    try {
-      audio??=new AudioContext();
-      const now=audio.currentTime;
-      const scale=inf?[196,294,392,587,784]:tier>=4?[196,294,440,587]:tier>=2?[262,392,523]:[262,392];
-      scale.forEach((hz,i)=>{
-        const osc=audio.createOscillator(),gain=audio.createGain();
-        osc.type='triangle';osc.frequency.value=hz;
-        const t=now+i*.048;
-        gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(.045,t+.012);
-        gain.gain.exponentialRampToValueAtTime(.0001,t+.18);
-        osc.connect(gain);gain.connect(audio.destination);osc.start(t);osc.stop(t+.19);
-      });
-    } catch {}
-  }
+  cue(inf?'infinity':'hit',{level:tier});
+  if(best&&!inf) cue('record');
 }
 effect.addEventListener('animationend',()=>{effect.className='';});
 const prefsHTML=()=>`<p><label><input type="checkbox" id="scientific" ${book.prefs.scientific?'checked':''}> 指数表記</label></p>
   <p><label>演出 <select id="motion">${[['full','通常'],['fast','高速・軽量'],['off','スキップ']].map(([id,t])=>
     `<option value="${id}" ${(book.prefs.motion||'full')===id?'selected':''}>${t}</option>`).join('')}</select></label></p>
-  <p><label><input type="checkbox" id="mute" ${book.prefs.mute?'checked':''}> 効果音を消す</label></p>`;
+  <p><label><input type="checkbox" id="mute" ${book.prefs.mute?'checked':''}> 効果音を消す</label></p>
+  <p><label>効果音の音量 <input type="range" id="volume" min="0" max="100" value="${Number(book.prefs.volume??55)}"></label> <output for="volume">${Number(book.prefs.volume??55)}%</output></p>`;
 function openDeck() {
   const groups=[['add','加算'],['mul','乗算'],['pct','割合'],['pow','累乗'],['exp','指数'],['aux','補助']];
   const sections=groups.flatMap(([kind,name])=>{
@@ -415,11 +424,12 @@ function openRecords() {
 function action(command) {
   const [name,arg]=command.split(':');
   if(sequence) {if(name==='skip') sequence.abort();return;}
+  sound.unlock();
   const i=Number(arg);
   if(name==='help') return modal('遊び方',`<p>手札の演算を盤に置き、基礎攻撃力から左順に計算します。地図は下から上へ、光っているマスを選びます。たとえば 20 → +10 → ×3 は90です。</p>
     <p>HOLDは盤を維持して新しい手札を引きます。敵はHOLD後、またはBURSTで生き残った後に予告どおり行動します。</p>
     <p>差し引きで負になった値や分数も計算中は保持します。装甲適用後、負のダメージは0、小数は切り捨てです。</p>
-    <p>次の盤に入る妨害は、指定枠が空なら一時的に末尾で処理します。封印は直後の自分の演算を1枚無効化します。</p>`);
+    <p>次の盤に入る妨害は、指定枠が空なら一時的に末尾で処理します。種別封印は、次のBURSTまで指定の演算をすべて無効化します。HOLDの予測には新しく引くカードを含めません。</p>`);
   if(name==='settings') return modal('設定',prefsHTML());
   if(name==='records') return openRecords();
   if(name==='deck') return openDeck();
@@ -428,6 +438,7 @@ function action(command) {
     <ol>${p.steps.map(s=>`<li>${label(s.card)}${s.op?.kind!==s.card.kind?' → '+(s.op?label(s.op):'無効'):''} → ${rat(s.result)}</li>`).join('')}
     ${p.triggers.map(t=>`<li>${relics[t.id].name} → ${rat(t.result)}</li>`).join('')}</ol></details>`).join('')||'<p>まだBURSTしていません。</p>');
   if(name==='resume'&&suspended) {
+    cue('page');
     ({run,notice,craftResult}=suspended);
     selected=null;
     lastDeal=null;
@@ -443,32 +454,35 @@ function action(command) {
   }
   const keepNotice=name==='craftNext'||name==='slot'||name==='shift'||name==='hand'||name==='unplay';
   if(!keepNotice) notice='';
+  let feedback=null;
   switch(name) {
-    case 'hand':run.play(i);break;
+    case 'hand': feedback=playCard(i);break;
     case 'slot':
-      if(selected!==null&&selected!==i) {run.move(selected,Math.min(i,run.board.length-1));selected=null;}
+      if(selected!==null&&selected!==i) {feedback=moveCard(selected,Math.min(i,run.board.length-1));selected=null;}
       else selected=i===selected||!run.board[i]?null:i;
       break;
     case 'unplay':
-      if(run.returnToHand(selected)) selected=null;
+      feedback=undoCard(selected);
+      if(feedback) selected=null;
       break;
     case 'shift': {
       const to=selected+i;
-      if(run.move(selected,to)) selected=to;
+      feedback=moveCard(selected,to);
+      if(feedback) selected=to;
       break;
     }
     case 'hold': void showHold();return;
     case 'burst': void showBurst();return;
-    case 'take':run.takeCard(i);break;
+    case 'take':if(run.takeCard(i)) cue('mystic');break;
     case 'cardSkip':run.skipCard();break;
-    case 'goldTake':run.chooseGold(true);break;
+    case 'goldTake':if(run.chooseGold(true)) cue('gold');break;
     case 'goldSkip':run.chooseGold(false);break;
-    case 'relicTake':run.chooseRelic(true,i);break;
+    case 'relicTake':if(run.chooseRelic(true,i)) cue('relic');break;
     case 'relicSkip':run.chooseRelic(false);break;
-    case 'advance':run.advance();break;
-    case 'route':run.route(arg);break;
+    case 'advance':run.advance();cue('page');break;
+    case 'route':if(run.route(arg)) cue(run.phase==='battle'?'draw':'page');break;
     case 'leave':run.leaveNode();break;
-    case 'extra':run.extra();break;
+    case 'extra':run.extra();cue('draw');break;
     case 'craftNext':craftResult=null;break;
     case 'buy':useService('buy',i);return;
     case 'relicBuy':useService('relic',i);return;
@@ -479,6 +493,26 @@ function action(command) {
   }
   saveProgress();
   render();
+  animateCard(feedback);
+}
+function playCard(index,at=run.board.length) {
+  const card=run.hand[index];
+  if(!run.play(index,at)) return null;
+  cue(cardCue(card));
+  return {selector:'.board-card[data-at="'+at+'"]',className:'card-placed'};
+}
+function undoCard(index) {
+  if(!run.returnToHand(index)) return null;
+  cue('undo');
+  return {selector:'.hand [data-hand="'+(run.hand.length-1)+'"]',className:'card-returned'};
+}
+function moveCard(from,to) {
+  if(from===to||!run.move(from,to)) return null;
+  cue('move');
+  return {selector:'.board-card[data-at="'+to+'"]',className:'card-placed'};
+}
+function animateCard(feedback) {
+  if(feedback&&motionMode()!=='off') app.querySelector(feedback.selector)?.classList.add(feedback.className);
 }
 app.addEventListener('click',e=>{
   const b=e.target.closest('[data-action]');
@@ -489,6 +523,8 @@ app.addEventListener('submit',e=>{
   e.preventDefault();
   if(suspended&&!window.confirm('保存中の探索を終了して、新しい探索を始めますか？')) return;
   const seed=new FormData(e.target).get('seed').trim()||crypto.getRandomValues(new Uint32Array(1))[0].toString(36);
+  sound.unlock();
+  cue('page');
   run=new Run(seed);
   lastDeal=null;
   lastBattle=null;
@@ -501,6 +537,7 @@ app.addEventListener('submit',e=>{
 let dragging=null;
 app.addEventListener('dragstart',e=>{
   if(sequence) {e.preventDefault();return;}
+  sound.unlock();
   const el=e.target.closest('[draggable="true"]');
   if(!el) return;
   dragging=el.dataset.hand!==undefined?{hand:Number(el.dataset.hand)}:{board:Number(el.dataset.board)};
@@ -515,16 +552,17 @@ app.addEventListener('dragover',e=>{
 app.addEventListener('drop',e=>{
   if(!dragging||sequence) return;
   const el=e.target.closest('[data-at]');
+  let feedback;
   if(e.target.closest('[data-hand-return]')&&run.canReturn(dragging.board)) {
     e.preventDefault();
-    run.returnToHand(dragging.board);
+    feedback=undoCard(dragging.board);
   } else if(el) {
     e.preventDefault();
     const at=Number(el.dataset.at);
-    if(dragging.hand!==undefined) run.play(dragging.hand,at);
-    else run.move(dragging.board,Math.min(at,run.board.length-1));
+    if(dragging.hand!==undefined) feedback=playCard(dragging.hand,at);
+    else feedback=moveCard(dragging.board,Math.min(at,run.board.length-1));
   } else return;
-  dragging=null;selected=null;saveProgress();render();
+  dragging=null;selected=null;saveProgress();render();animateCard(feedback);
 });
 app.addEventListener('dragend',()=>{dragging=null;});
 app.addEventListener('change',updateFacility);
@@ -538,7 +576,15 @@ dialog.addEventListener('change',e=>{
   }
   if(!['scientific','motion','mute'].includes(id)) return;
   book.prefs[id]=id==='motion'?value:checked;
+  if(id==='mute') {sound.unlock();sound.refresh();}
   persist();render();
+});
+dialog.addEventListener('input',e=>{
+  if(e.target.id!=='volume') return;
+  book.prefs.volume=Number(e.target.value);
+  dialog.querySelector('output[for="volume"]').textContent=book.prefs.volume+'%';
+  sound.refresh();
+  persist();
 });
 dialog.addEventListener('submit',e=>{
   if(e.target.id!=='removeForm') return;
@@ -554,16 +600,16 @@ function reactionText(move,message,hpLost) {
   return direct(move)?loss+(move.kind==='double'?' · 二連撃':''):message+' · '+loss;
 }
 function enemyReaction(move,message,hpLost) {
+  const blocked=message.startsWith('結界');
+  cue(blocked?'ward':({attack:'melee',double:'double',lock:'seal',drain:'drain',wither:'drain'}[move.kind]||'hex'));
   const field=app.querySelector('.enemy');
   if(!field||motionMode()==='off') return;
-  const blocked=message.startsWith('結界');
-  field.classList.remove('player-strike','player-landed','player-blocked','player-miss');
+  field.classList.remove('player-strike','player-landed','player-blocked','player-miss','gate-shatter');
   field.classList.add(!blocked&&direct(move)?'enemy-strike':'enemy-magic');
   field.dataset.move=blocked?'ward':move.kind;
   field.classList.toggle('enemy-double',move.kind==='double');
   field.querySelector('#incoming').textContent=reactionText(move,message,hpLost);
-  const tones={attack:2,double:1,div:3,lock:5,drain:4,wither:1,pct:6,sub:2};
-  chime(tones[move.kind]||1,'enemy');
+
 }
 function clock(duration,signal,update=()=>{}) {
   return new Promise(resolve=>{
@@ -586,20 +632,6 @@ function clock(duration,signal,update=()=>{}) {
     frame=requestAnimationFrame(draw);
   });
 }
-function chime(level,kind) {
-  if(book.prefs.mute) return;
-  try {
-    audio??=new AudioContext();
-    const oscillator=audio.createOscillator(), gain=audio.createGain(),t=audio.currentTime;
-    oscillator.frequency.value=kind==='enemy'?110+level*19:220*2**(level/7);
-    oscillator.type=kind==='relic'?'sine':'triangle';
-    gain.gain.setValueAtTime(.0001,t);
-    gain.gain.exponentialRampToValueAtTime(.018,t+.018);
-    gain.gain.exponentialRampToValueAtTime(.0001,t+.12);
-    oscillator.connect(gain);gain.connect(audio.destination);
-    oscillator.start(t);oscillator.stop(t+.13);
-  } catch {}
-}
 function updateHeroDisplay(field) {
   field.querySelector('.hero-hp span').style.width=100*run.hp/run.maxHp+'%';
   field.querySelector('#heroHp').textContent='HP '+run.hp+' / '+run.maxHp;
@@ -607,26 +639,35 @@ function updateHeroDisplay(field) {
 async function showHold() {
   const move=run.next;
   const hpBefore=run.hp;
-  const prediction=run.ward&&!direct(move)?'結界が妨害を防ぎました':intentText();
+  const prediction=run.enemyOutcome(move).blocked?'結界が妨害を防ぎました':intentText();
   if(!run.hold()) return;
   selected=null;
   notice=reactionText(move,prediction,hpBefore-run.hp)+(run.phase==='battle'?' ／ 次の手札を引きました':'');
   saveProgress();
   const mode=motionMode();
-  if(mode==='off'){render();return;}
+  if(mode==='off'){enemyReaction(move,prediction,hpBefore-run.hp);if(run.phase==='battle') cue('draw');render();return;}
   const control=new AbortController();
   sequence=control;
   const field=app.querySelector('.enemy');
   app.querySelectorAll('button:not(:disabled)').forEach(button=>button.disabled=true);
+  const skip=app.querySelector('.skip-hold');
+  skip.hidden=false;
+  skip.disabled=false;
+  skip.focus({preventScroll:true});
   enemyReaction(move,prediction,hpBefore-run.hp);
   updateHeroDisplay(field);
   try {await clock(mode==='fast'?160:510,control.signal);}
-  finally {sequence=null;render();}
+  finally {
+    sequence=null;
+    if(!control.signal.aborted&&run.phase==='battle') cue('draw');
+    render();
+    app.querySelector('[data-action="hold"]:not(:disabled),[data-action="burst"]')?.focus({preventScroll:true});
+  }
 }
 async function showBurst() {
   const base=run.base, armor=run.enemy.armor, move=run.next;
   const hpBefore=run.hp;
-  const prediction=run.ward&&!direct(move)?'結界が妨害を防ぎました':intentText();
+  const prediction=run.enemyOutcome(move).blocked?'結界が妨害を防ぎました':intentText();
   const p=run.burst();
   if(!p) return;
   const best=p.final>BigInt(book.best.max);
@@ -680,7 +721,7 @@ async function showBurst() {
         void counter.offsetWidth;
         counter.classList.add('count-pop');
         progress.style.width=((i+1)*100/steps.length)+'%';
-        chime(level,step.type);
+        if(step.type!=='impact') cue(step.type==='relic'?'relic':step.type==='enemy'?'hex':cardCue(p.steps[step.index].card),{level});
         const duration=mode==='fast'?95:step.type==='impact'?260:step.type==='relic'?400:270;
         await clock(duration,signal,position=>{
           const value=reelValue(prior,step.value,Math.floor(position*12));
@@ -694,6 +735,7 @@ async function showBurst() {
         field.dataset.force=impactForce(p);
         if(p.impact.kind!=='miss') {
           field.classList.add('burst-firing');
+          cue('launch');
           await clock(mode==='fast'?65:155,signal);
           field.classList.remove('burst-firing');
         }
@@ -703,6 +745,7 @@ async function showBurst() {
         const impact=p.impact.kind;
         const reaction={barrier:'player-blocked',miss:'player-miss',gate:'player-landed',hit:'player-landed'};
         field.classList.add('player-strike',reaction[impact]);
+        if(impact==='gate') field.classList.add('gate-shatter');
         if(e.hp===0n) field.classList.add('enemy-defeated');
         field.querySelector('#outgoing').textContent=impact==='barrier'?'バリアで無効':impact==='miss'?'ダメージなし':
           (impact==='gate'?'段階突破 ':'')+'−'+compact(p.impact.dealt,false);
@@ -711,7 +754,8 @@ async function showBurst() {
         foeHp.textContent='HP '+compact(e.hp)+' / '+compact(e.max);
         foeHp.title=e.hp+' / '+e.max;
         if(impact==='hit') burstFX(p.final,best);
-        else if(impact==='gate'||impact==='barrier') chime(impact==='gate'?5:2,'relic');
+        else cue(impact);
+        if(e.hp===0n) cue('victory');
         await clock(mode==='fast'?160:695,signal);
         if(e.hp>0n&&!signal.aborted) {
           enemyReaction(move,prediction,hpBefore-run.hp);
@@ -719,10 +763,16 @@ async function showBurst() {
           await clock(mode==='fast'?170:620,signal);
         }
       }
-    } else if(p.impact.kind==='hit') burstFX(p.final,best);
+    } else {
+      if(p.impact.kind==='hit') burstFX(p.final,best);
+      else cue(p.impact.kind);
+      if(run.enemy.hp===0n) cue('victory');
+      else enemyReaction(move,prediction,hpBefore-run.hp);
+    }
   } finally {
     if(signal.aborted) effect.className='';
     sequence=null;
+    if(!signal.aborted&&run.phase==='battle') cue('draw');
     render();
     if(run.phase==='battle') app.querySelector('[data-action="burst"]')?.focus({preventScroll:true});
   }

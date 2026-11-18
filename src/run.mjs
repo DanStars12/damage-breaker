@@ -23,7 +23,8 @@ export class Run {
     this.beginMap();
   }
   bonus(key){return this.owned.reduce((n,id)=>n+(relics[id][key]||0),0);}
-  get base(){return Math.max(1,Math.floor((20+(this.act-1)*15)*(100+this.bonus('base')-this.drain)/100));}
+  get base(){return this.baseAt(this.drain);}
+  baseAt(drain){return Math.max(1,Math.floor((20+(this.act-1)*15)*(100+this.bonus('base')-drain)/100));}
   get slots(){return Math.min(8,5+this.act)+this.bonus('slots');}
   get capacity(){return Math.max(1,(this.act>=3?4:3)+this.bonus('energy')+(this.turn===0?this.bonus('firstEnergy'):0));}
   get drawCount(){return Math.max(2,5+this.bonus('draw')+(this.turn===0?this.bonus('firstDraw'):0));}
@@ -112,17 +113,30 @@ export class Run {
     const result=evaluate({base:this.base,board:this.board,deb:this.deb,owned:this.owned,armor:this.enemy.armor});
     return {...result,impact:impact(this.enemy,result.final)};
   }
+  enemyOutcome(action=this.next) {
+    let {hp,maxHp,drain,ward,deb}=this;
+    let blocked=false;
+    if(action.kind==='attack'||action.kind==='double') {
+      hp=Math.max(0,hp-action.value*(action.kind==='double'?2:1));
+    } else if(ward) {
+      ward=false;
+      blocked=true;
+    } else if(action.kind==='wither') {
+      maxHp=Math.max(35,maxHp-action.value);
+      hp=Math.min(hp,maxHp);
+    } else if(action.kind==='drain') drain=Math.min(65,drain+action.value);
+    else deb=[...deb,action];
+    return {hp,maxHp,drain,ward,deb,blocked};
+  }
+  holdPreview(outcome=this.enemyOutcome()) {
+    if(this.holds>=2||!outcome.hp||!this.board.length) return null;
+    const result=evaluate({base:this.baseAt(outcome.drain),board:this.board,deb:outcome.deb,owned:this.owned,armor:this.enemy.armor});
+    return result.final;
+  }
   enemyAction() {
     this.uncommittedCards.clear();
-    const action=this.next;
-    if(action.kind==='attack'||action.kind==='double') {
-      this.hp=Math.max(0,this.hp-action.value*(action.kind==='double'?2:1));
-    } else if(this.ward) this.ward=false;
-    else if(action.kind==='wither') {
-      this.maxHp=Math.max(35,this.maxHp-action.value);
-      this.hp=Math.min(this.hp,this.maxHp);
-    } else if(action.kind==='drain') this.drain=Math.min(65,this.drain+action.value);
-    else this.deb.push(action);
+    const {hp,maxHp,drain,ward,deb}=this.enemyOutcome();
+    Object.assign(this,{hp,maxHp,drain,ward,deb});
     this.turn++;
     if(!this.hp) this.phase='loss';
     else this.refill();

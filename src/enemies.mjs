@@ -40,7 +40,7 @@ const eliteFloors=[1800n,6000000n,10n**13n];
 const bossFloors=[32000n,1500000000n];
 const bossAttack=[12,18,25];
 const finalBossBalance=[
-  {floor:8n*10n**18n, scaleDivisor:2n, armor:3},
+  {floor:8n*10n**18n, scaleDivisor:2n, armor:3, attack:24},
   {floor:5n*10n**18n, scaleDivisor:3n, armor:2}
 ];
 export const operationNames={add:'加算',mul:'乗算',pct:'割合',pow:'累乗',exp:'指数'};
@@ -67,7 +67,7 @@ export function makeEnemy(act,kind,variant,row,bench=0n) {
   const max=target>floor?(target>floor*400n?floor*400n:target):floor;
   const gates=trait==='gate2'?[max/2n]:trait==='gate3'?[max*2n/3n,max/3n]:[];
   return {name,art,detail,kind,elite,title:boss?'ACT BOSS':elite?'DEFLATION ENEMY':'ENCOUNTER',
-    hp:max,max,armor:balance?.armor??(1+a),attack:boss?bossAttack[a]:5+a*3+(elite?3:0),barrier:trait==='barrier2'?2:trait==='barrier'?1:0,gates,cycle:moves};
+    hp:max,max,armor:balance?.armor??(1+a),attack:boss?(balance?.attack??bossAttack[a]):5+a*3+(elite?3:0),barrier:trait==='barrier2'?2:trait==='barrier'?1:0,gates,cycle:moves};
 }
 export function intent(enemy,turn,act) {
   const [kind,target]=enemy.cycle[turn%enemy.cycle.length].split(':');
