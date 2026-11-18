@@ -313,30 +313,46 @@ export class Run {
       this.stockRelics=[first,second].filter(Boolean);
       this.shopUsed={relic:false,fuse:false,remove:false};
     }
-    if(node.kind==='event') this.event=shuffle(Object.keys(events),this.rng)[0];
+    if(node.kind==='event') {
+      const rng=random(this.seed+'/event-route');
+      this.seenEvents??=[];
+      const order=shuffle(Object.keys(events),rng);
+      this.event=order.find(id=>!this.seenEvents.includes(id));
+      if(!this.event) {
+        this.seenEvents=[];
+        this.event=order[0];
+      }
+      this.seenEvents.push(this.event);
+    }
     return true;
   }
-  get eventOffer(){
+  get eventOffers(){
     const definition=events[this.event];
-    if(!definition) return null;
-    const hp=Math.min(100-this.hp,definition.hp||0);
-    const gold=definition.gold||0;
-    const eventRng=random(this.seed+'/event/'+this.act+'/'+this.node.id);
-    return {...definition,hp,gold,result:definition.card?generate(eventRng,this.act,definition.card):null,
-      available:this.hp+hp>0&&this.gold+gold>=0};
+    if(!definition) return [];
+    return [definition,...(definition.choices??[])].map((choice,index)=>{
+      const hp=Math.min(100-this.hp,choice.hp||0);
+      const gold=choice.gold||0;
+      const key=this.seed+'/event/'+this.act+'/'+this.node.id;
+      const rng=random(index?key+'/'+index:key);
+      const result=choice.card?generate(rng,this.act,choice.card):
+        choice.support?generateSupport(rng,this.act,choice.support,choice.kind):null;
+      return {...choice,hp,gold,result,available:this.hp+hp>0&&this.gold+gold>=0};
+    });
   }
+  get eventOffer(){return this.eventOffers[0]??null;}
   service({action,i,j,mode,digit}={}) {
     if(this.phase!=='facility') return null;
     const facility=this.facility;
     if(facility==='event'&&['event','decline'].includes(action)) {
-      if(action==='decline') {this.leaveNode();return {message:'封書を閉じた。'};}
-      const {hp,gold,result,available}=this.eventOffer;
-      if(!available) return null;
+      if(action==='decline') {this.leaveNode();return {message:'イベントを見送った。'};}
+      const offer=this.eventOffers[i??0];
+      if(!offer?.available) return null;
+      const {hp,gold,result}=offer;
       this.hp+=hp;
       this.gold+=gold;
       if(result) this.deck.push(result);
       this.leaveNode();
-      return {kind:'event',hp,gold,result};
+      return {kind:'event',event:this.event,hp,gold,result};
     }
     if(facility==='rest'&&action==='heal') {
       this.hp=Math.min(100,this.hp+35);this.leaveNode();return {message:'休息でHPを最大35回復。'};

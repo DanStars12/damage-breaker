@@ -559,3 +559,19 @@ test('cleanse removes the leftmost displayed curse rather than the oldest applie
   assert(r.play(0));
   assert.deepEqual(r.deb,[late,same]);
 });
+
+test('event routing is deterministic and avoids repeats across consecutive visits',()=>{
+  const visit=(seed)=>{
+    const r=new Run(seed);
+    return Array.from({length:12},()=>{
+      forceNode(r,'event');
+      const id=r.event;
+      r.service({action:'decline'});
+      return id;
+    });
+  };
+  const first=visit('events-30');
+  assert.deepEqual(visit('events-30'),first);
+  assert.equal(new Set(first).size,first.length);
+  assert.notDeepEqual(visit('events-31'),first);
+});

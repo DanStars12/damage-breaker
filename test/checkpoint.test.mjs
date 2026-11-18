@@ -211,3 +211,22 @@ test('the expended intercept stays expended when a battle resumes',()=>{
   assert.equal(copy.stats.intercepts,1);
   assert.equal(copy.burst(true),null);
 });
+
+test('new event options and art id are stable after reload, and only one option applies',()=>{
+  const run=new Run('event-choice-save');
+  routeKind(run,'event');
+  run.event='bloom';
+  run.hp=50;run.gold=30;
+  const opened=restore(run).run;
+  assert.deepEqual(opened.eventOffers,run.eventOffers);
+  assert.deepEqual(opened.seenEvents,run.seenEvents);
+  const before=opened.deck.length;
+  const chosen=opened.service({action:'event',i:1});
+  assert.equal(chosen.event,'bloom');
+  assert.equal(opened.hp,50);
+  assert.equal(opened.gold,16);
+  assert.equal(opened.deck.length,before+1);
+  assert.equal(opened.service({action:'event',i:0}),null);
+  const copy=restore(opened,{craftResult:chosen});
+  assert.equal(copy.craftResult.event,'bloom');
+});

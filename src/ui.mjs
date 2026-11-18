@@ -1,3 +1,5 @@
+import {paintEvent,eventCanvasSize} from './event-art.mjs';
+import {events} from './events.mjs';
 import {supportValue,supportKinds} from './cards.mjs';
 import {numberUnits} from './math.mjs';
 import {boardRelicStates} from './presentation.mjs';
@@ -259,11 +261,14 @@ function workshopStage(kind,body,reveal=false) {
 }
 function workResult() {
   const {kind,sources,result,relic,price,baseGain}=craftResult;
-  if(kind==='event') return chapter(routeName(),'イベントの結果',`<section class="reward-block">
-    ${result?`<div class="reward-result">${rewardCard(result)}<p>デッキに <strong>${label(result)}</strong> を追加しました。</p></div>`:''}
-    ${rewardChanges(craftResult)}${!result&&!craftResult.hp&&!craftResult.gold?'<p>HPは満タンでした。</p>':''}
-    <p role="status">現在のHP ${run.hp}/100 · 所持金 ${run.gold} 枚</p>
-    <div class="actions">${btn('地図へ戻る','craftNext','primary')}</div></section>`);
+  if(kind==='event') {
+    const id=craftResult.event??run.event;
+    return eventChapter(id,`<section class="reward-block"><h2>イベントの結果</h2>
+      ${result?`<div class="reward-result">${rewardCard(result)}<p>デッキに <strong>${label(result)}</strong> を追加しました。</p></div>`:''}
+      ${rewardChanges(craftResult)}${!result&&!craftResult.hp&&!craftResult.gold?'<p>HPは満タンでした。</p>':''}
+      <p role="status">現在のHP ${run.hp}/100 · 所持金 ${run.gold} 枚</p>
+      <div class="actions">${btn('地図へ戻る','craftNext','primary')}</div></section>`,true);
+  }
   const theme=workshopThemes[kind];
   if(kind==='remove'&&sources[0]) {
     const card=sources[0];
@@ -316,21 +321,35 @@ function openRemoval() {
   </form>`);
   dialog.querySelector('#removeCard').focus();
 }
-function eventPreview(offer) {
-  return `<p>${offer.story}</p><section class="reward-block"><h2>受け取る内容</h2><p>${offer.offer}</p>
+function eventChapter(id,content,resolved=false) {
+  const definition=events[id];
+  const [width,height]=eventCanvasSize;
+  return `<main class="event-page"><section class="frame chapter event-chapter">
+    <div class="event-hero">
+      ${definition?`<canvas data-event-art="${id}" width="${width}" height="${height}" aria-hidden="true"></canvas>`:''}
+      <div class="event-heading"><div class="eyebrow">${routeName()} · ランダムイベント</div>
+        <h1>${esc(definition?.name??'旅先の出来事')}</h1></div>
+    </div><div class="event-content">${!resolved&&definition?`<p class="event-story">${esc(definition.story)}</p>`:''}${content}</div>
+    </section></main>`;
+}
+function eventPreview() {
+  const choices=run.eventOffers.map((offer,i)=>`<section class="reward-block event-choice">
+    <h2>${esc(offer.offer)}</h2>
     ${offer.result?rewardCard(offer.result):''}${rewardChanges(offer)}
-    ${!offer.available?'<p class="muted">支払いに必要なHPまたは金貨が足りません。</p>':''}
-    <div class="actions">${btn('受け取る','service:event','primary',!offer.available)}${btn('見送る','service:decline')}</div></section>`;
+    ${!offer.available?'<p class="muted">必要なHPまたは金貨が足りません。</p>':''}
+    ${btn('この選択を受ける','eventChoice:'+i,'primary',!offer.available)}</section>`).join('');
+  return eventChapter(run.event,`<div class="event-choices">${choices}</div>
+    <div class="actions">${btn('見送る','service:decline')}</div>`);
 }
 function facility() {
   const f=run.facility;
+  if(f==='event') return eventPreview();
   const options=run.deck.map((c,i)=>`<option value="${i}">${i+1}. ${label(c)}${c.upgraded?'✧':''}</option>`).join('');
   const forge=`<div class="choices"><label>強化対象 <select id="i">${options}</select></label>${btn('火力型','forge:power')}${btn('数字調整型','forge:adjust')}</div>
     <div class="choices"><label>刻印する数字 <select id="digit">${Array.from({length:10},(_,i)=>`<option>${i}</option>`).join('')}</select></label>
     ${btn('末尾刻印','forge:digit')}</div><p id="forgePreview"></p>`;
   const unable=key=>run.shopUsed[key]||run.gold<prices[key];
   const body=f==='rest'?`<p>HP ${run.hp}/100 · 回復か鍛冶を1回選択</p><div class="choices">${btn('HPを35回復','service:heal','primary')}</div>${workshopStage('forge',forge)}`:
-    f==='event'?eventPreview(run.eventOffer):
     workshopStage('shop',shopContents(options,unable));
   return chapter(routeName(),places[f].name,body+`<p role="status">${esc(notice)}</p>`
     +(f!=='event'?`<div class="actions">${btn('地図へ戻る','leave','primary')}</div>`:''));
@@ -372,7 +391,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.6.4</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.6.5</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -422,6 +441,8 @@ function render() {
     }
     lastDeal=dealKey;
   }
+  const eventArt=app.querySelector('[data-event-art]');
+  if(eventArt) paintEvent(eventArt,eventArt.dataset.eventArt);
   const titleArt=app.querySelector('.title canvas');
   if(titleArt) paint(titleArt,2,1);
   const page=craftResult?'craft':run?.phase??'title';
@@ -598,6 +619,7 @@ function action(command) {
     case 'buy':useService('buy',i);return;
     case 'relicBuy':useService('relic',i);return;
     case 'service':useService(arg);return;
+    case 'eventChoice':useService('event',i);return;
     case 'forge':useService('forge',NaN,arg);return;
     case 'remove':openRemoval();return;
     case 'fuse':useService(name);return;

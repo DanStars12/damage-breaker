@@ -41,9 +41,9 @@ function rollTier(rng,act,boost) {
   const roll=rng()*100+boost+8*(act-1);
   return roll>=105?4:roll>=88?3:roll>=67?2:roll>=38?1:0;
 }
-export function generateSupport(rng,act,boost=0) {
+export function generateSupport(rng,act,boost=0,family) {
   const tier=rollTier(rng,act,boost);
-  const kind=supportKinds[Math.floor(rng()*supportKinds.length)];
+  const kind=family??supportKinds[Math.floor(rng()*supportKinds.length)];
   return card(kind,supportTiers[kind][tier],tier);
 }
 export function generate(rng,act,boost=0) {
