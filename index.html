@@ -676,6 +676,7 @@ const bossSpecs=[
 const normalFloors=[330n,320000n,10n**11n];
 const eliteFloors=[1800n,6000000n,10n**13n];
 const bossFloors=[32000n,1500000000n];
+const bossAttack=[12,18,25];
 const finalBossBalance=[
   {floor:8n*10n**18n, scaleDivisor:2n, armor:3},
   {floor:5n*10n**18n, scaleDivisor:3n, armor:2}
@@ -698,7 +699,7 @@ function makeEnemy(act,kind,variant,row,bench=0n) {
   const max=target>floor?(target>floor*400n?floor*400n:target):floor;
   const gates=trait==='gate2'?[max/2n]:trait==='gate3'?[max*2n/3n,max/3n]:[];
   return {name,art,detail,kind,elite,title:boss?'ACT BOSS':elite?'DEFLATION ENEMY':'ENCOUNTER',
-    hp:max,max,armor:balance?.armor??(1+a),attack:5+a*3+(boss?4:elite?3:0),barrier:trait==='barrier2'?2:trait==='barrier'?1:0,gates,cycle:moves};
+    hp:max,max,armor:balance?.armor??(1+a),attack:boss?bossAttack[a]:5+a*3+(elite?3:0),barrier:trait==='barrier2'?2:trait==='barrier'?1:0,gates,cycle:moves};
 }
 function intent(enemy,turn,act) {
   const [kind,target]=enemy.cycle[turn%enemy.cycle.length].split(':');
@@ -854,7 +855,7 @@ class Run {
       const boss=this.enemy.kind==='boss', elite=this.enemy.elite;
       if(boss) this.stats.bosses++;
       const hpBefore=this.hp;
-      this.hp=Math.min(100,this.hp+(boss?31:elite?16:10));
+      this.hp=Math.min(100,this.hp+(boss?28:elite?13:7));
       this.victoryHeal=this.hp-hpBefore;
       if(elite||boss||this.act===4) {
         const pool=Object.keys(relics).filter(id=>!this.owned.includes(id));
@@ -1973,7 +1974,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.5.5</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.5.6</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}

@@ -1,0 +1,2729 @@
+{
+  "sets": [
+    {
+      "firstSeed": 0,
+      "baseline": [
+        {
+          "policy": "grimoire",
+          "seeds": 192,
+          "clear": 166,
+          "extra": 142,
+          "infinity": 49,
+          "bossAttempts": [
+            192,
+            187,
+            178
+          ],
+          "bossWins": [
+            192,
+            185,
+            166
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 97,
+              "wins": 97,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 101,
+              "wins": 100,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 99
+            },
+            "無量門の王竜": {
+              "attempts": 90,
+              "wins": 84,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 231
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 95,
+              "wins": 95,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "白紙の月蛾女王": {
+              "attempts": 86,
+              "wins": 85,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 67
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 88,
+              "wins": 82,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 569
+            }
+          },
+          "turns": 9235,
+          "used": {
+            "mul": 9002,
+            "add": 8778,
+            "pct": 4141,
+            "exp": 1418,
+            "pow": 667,
+            "clean": 256
+          },
+          "relics": {
+            "mosaic": 136,
+            "tail": 176,
+            "order": 177,
+            "prism": 155,
+            "star": 151,
+            "key": 107,
+            "chain": 151,
+            "grimoire": 152,
+            "spring": 146,
+            "furnace": 161,
+            "codex": 137,
+            "ratio": 147,
+            "tithe": 142,
+            "rack": 156,
+            "abacus": 143,
+            "lattice": 144,
+            "short": 107,
+            "sum": 135
+          },
+          "lossesByEnemy": {
+            "3:boss": 12,
+            "4:extra": 24,
+            "2:elite": 4,
+            "3:fight": 3,
+            "2:boss": 2,
+            "2:fight": 1,
+            "3:elite": 4
+          },
+          "actReached": [
+            192,
+            192,
+            185,
+            166
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 178,
+            "clearWith": 155,
+            "lossWithoutByAct": [
+              0,
+              4,
+              4,
+              4
+            ]
+          },
+          "avgTurns": 48.1,
+          "max": "1.3040e+146",
+          "maxExact": "130405961882861836870515802788192768560210907114201044462390259512034682624991305185784274926429757061461864981468912025600000000000000000000000000",
+          "bestSeed": "db-134"
+        },
+        {
+          "policy": "power",
+          "seeds": 192,
+          "clear": 176,
+          "extra": 145,
+          "infinity": 67,
+          "bossAttempts": [
+            192,
+            187,
+            185
+          ],
+          "bossWins": [
+            192,
+            187,
+            176
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 97,
+              "wins": 97,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 102,
+              "wins": 102,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "無量門の王竜": {
+              "attempts": 94,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 132
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 95,
+              "wins": 95,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "白紙の月蛾女王": {
+              "attempts": 85,
+              "wins": 85,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 91,
+              "wins": 85,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 399
+            }
+          },
+          "turns": 9274,
+          "used": {
+            "mul": 9090,
+            "add": 8362,
+            "pct": 3276,
+            "pow": 1238,
+            "clean": 265,
+            "exp": 1598
+          },
+          "relics": {
+            "mosaic": 147,
+            "tail": 181,
+            "order": 175,
+            "prism": 156,
+            "star": 166,
+            "spring": 146,
+            "chain": 162,
+            "sum": 146,
+            "tithe": 145,
+            "abacus": 144,
+            "lattice": 150,
+            "rack": 155,
+            "furnace": 162,
+            "key": 96,
+            "codex": 140,
+            "ratio": 141,
+            "short": 110,
+            "grimoire": 146
+          },
+          "lossesByEnemy": {
+            "3:boss": 9,
+            "4:extra": 31,
+            "3:elite": 1,
+            "3:fight": 1,
+            "2:fight": 1,
+            "2:elite": 4
+          },
+          "actReached": [
+            192,
+            192,
+            187,
+            176
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 181,
+            "clearWith": 165,
+            "lossWithoutByAct": [
+              0,
+              1,
+              2,
+              4
+            ]
+          },
+          "avgTurns": 48.3,
+          "max": "1.3451e+207",
+          "maxExact": "1345119400168121998434218569127747711360040960000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-175"
+        },
+        {
+          "policy": "mixed",
+          "seeds": 192,
+          "clear": 181,
+          "extra": 139,
+          "infinity": 58,
+          "bossAttempts": [
+            192,
+            190,
+            188
+          ],
+          "bossWins": [
+            192,
+            189,
+            181
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 97,
+              "wins": 97,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 103,
+              "wins": 102,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 44
+            },
+            "無量門の王竜": {
+              "attempts": 96,
+              "wins": 92,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 94
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 95,
+              "wins": 95,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "白紙の月蛾女王": {
+              "attempts": 87,
+              "wins": 87,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 92,
+              "wins": 89,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 255
+            }
+          },
+          "turns": 9474,
+          "used": {
+            "mul": 9294,
+            "add": 8479,
+            "pct": 3750,
+            "pow": 869,
+            "exp": 1804,
+            "clean": 264
+          },
+          "relics": {
+            "mosaic": 168,
+            "tail": 183,
+            "order": 182,
+            "ratio": 183,
+            "star": 157,
+            "rack": 145,
+            "key": 108,
+            "codex": 149,
+            "tithe": 153,
+            "spring": 147,
+            "furnace": 157,
+            "abacus": 150,
+            "grimoire": 142,
+            "sum": 146,
+            "prism": 152,
+            "chain": 156,
+            "short": 110,
+            "lattice": 150
+          },
+          "lossesByEnemy": {
+            "4:extra": 42,
+            "2:elite": 2,
+            "3:elite": 1,
+            "3:boss": 7,
+            "2:boss": 1
+          },
+          "actReached": [
+            192,
+            192,
+            189,
+            181
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 181,
+            "clearWith": 167,
+            "lossWithoutByAct": [
+              0,
+              1,
+              1,
+              3
+            ]
+          },
+          "avgTurns": 49.34,
+          "max": "5.0692e+139",
+          "maxExact": "50692018248430904028932645794377599133357526219369234520944997818091754750358208762886394005289034857738881001985109771525251648704217088000",
+          "bestSeed": "db-7"
+        },
+        {
+          "policy": "additive",
+          "seeds": 192,
+          "clear": 167,
+          "extra": 139,
+          "infinity": 24,
+          "bossAttempts": [
+            192,
+            183,
+            174
+          ],
+          "bossWins": [
+            192,
+            181,
+            167
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 97,
+              "wins": 97,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 100,
+              "wins": 98,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 198
+            },
+            "無量門の王竜": {
+              "attempts": 88,
+              "wins": 82,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 264
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 95,
+              "wins": 95,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "白紙の月蛾女王": {
+              "attempts": 83,
+              "wins": 83,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 86,
+              "wins": 85,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 88
+            }
+          },
+          "turns": 8858,
+          "used": {
+            "mul": 5773,
+            "add": 13810,
+            "pct": 2057,
+            "exp": 934,
+            "clean": 251,
+            "pow": 428
+          },
+          "relics": {
+            "sum": 175,
+            "tail": 176,
+            "order": 176,
+            "codex": 138,
+            "star": 127,
+            "furnace": 141,
+            "abacus": 180,
+            "prism": 151,
+            "lattice": 142,
+            "grimoire": 144,
+            "tithe": 154,
+            "rack": 134,
+            "mosaic": 126,
+            "short": 110,
+            "spring": 130,
+            "ratio": 135,
+            "key": 108,
+            "chain": 145
+          },
+          "lossesByEnemy": {
+            "3:fight": 6,
+            "4:extra": 28,
+            "3:boss": 7,
+            "2:elite": 3,
+            "2:boss": 2,
+            "2:fight": 6,
+            "3:elite": 1
+          },
+          "actReached": [
+            192,
+            192,
+            181,
+            167
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 186,
+            "clearWith": 166,
+            "lossWithoutByAct": [
+              0,
+              3,
+              2,
+              0
+            ]
+          },
+          "avgTurns": 46.14,
+          "max": "3.4377e+133",
+          "maxExact": "34377725049120350497051761742063801495603791110140811171430798216479325866942144614587669545687550766153212485070197056427172613324800",
+          "bestSeed": "db-7"
+        }
+      ],
+      "updated": [
+        {
+          "policy": "grimoire",
+          "seeds": 192,
+          "clear": 133,
+          "extra": 97,
+          "infinity": 43,
+          "bossAttempts": [
+            192,
+            187,
+            175
+          ],
+          "bossWins": [
+            192,
+            184,
+            133
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 97,
+              "wins": 97,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 101,
+              "wins": 99,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 147
+            },
+            "無量門の王竜": {
+              "attempts": 89,
+              "wins": 57,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1302
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 95,
+              "wins": 95,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "白紙の月蛾女王": {
+              "attempts": 86,
+              "wins": 85,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 97
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 86,
+              "wins": 76,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 872
+            }
+          },
+          "turns": 8892,
+          "used": {
+            "mul": 8692,
+            "add": 8487,
+            "pct": 3934,
+            "exp": 1304,
+            "pow": 609,
+            "clean": 263
+          },
+          "relics": {
+            "mosaic": 134,
+            "tail": 175,
+            "order": 177,
+            "prism": 157,
+            "star": 150,
+            "key": 105,
+            "chain": 145,
+            "grimoire": 148,
+            "spring": 137,
+            "furnace": 153,
+            "codex": 131,
+            "ratio": 135,
+            "tithe": 139,
+            "rack": 150,
+            "abacus": 133,
+            "lattice": 142,
+            "short": 101,
+            "sum": 138
+          },
+          "lossesByEnemy": {
+            "4:extra": 36,
+            "3:fight": 7,
+            "3:boss": 42,
+            "2:fight": 2,
+            "2:boss": 3,
+            "2:elite": 3,
+            "3:elite": 2
+          },
+          "actReached": [
+            192,
+            192,
+            184,
+            133
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 175,
+            "clearWith": 126,
+            "lossWithoutByAct": [
+              0,
+              5,
+              8,
+              2
+            ]
+          },
+          "avgTurns": 46.31,
+          "max": "1.3040e+146",
+          "maxExact": "130405961882861836870515802788192768560210907114201044462390259512034682624991305185784274926429757061461864981468912025600000000000000000000000000",
+          "bestSeed": "db-134"
+        },
+        {
+          "policy": "power",
+          "seeds": 192,
+          "clear": 134,
+          "extra": 101,
+          "infinity": 54,
+          "bossAttempts": [
+            192,
+            187,
+            178
+          ],
+          "bossWins": [
+            192,
+            185,
+            134
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 97,
+              "wins": 97,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 102,
+              "wins": 100,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 127
+            },
+            "無量門の王竜": {
+              "attempts": 90,
+              "wins": 60,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1137
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 95,
+              "wins": 95,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "白紙の月蛾女王": {
+              "attempts": 85,
+              "wins": 85,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 88,
+              "wins": 74,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1296
+            }
+          },
+          "turns": 8887,
+          "used": {
+            "mul": 8727,
+            "add": 8080,
+            "pct": 3102,
+            "pow": 1112,
+            "clean": 264,
+            "exp": 1438
+          },
+          "relics": {
+            "mosaic": 138,
+            "tail": 178,
+            "order": 175,
+            "prism": 154,
+            "star": 157,
+            "spring": 141,
+            "chain": 156,
+            "sum": 143,
+            "tithe": 145,
+            "abacus": 136,
+            "lattice": 149,
+            "rack": 153,
+            "furnace": 152,
+            "key": 95,
+            "codex": 134,
+            "ratio": 129,
+            "grimoire": 139,
+            "short": 100
+          },
+          "lossesByEnemy": {
+            "3:boss": 44,
+            "4:extra": 33,
+            "3:elite": 5,
+            "3:fight": 2,
+            "2:fight": 1,
+            "2:boss": 2,
+            "2:elite": 4
+          },
+          "actReached": [
+            192,
+            192,
+            185,
+            134
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 176,
+            "clearWith": 127,
+            "lossWithoutByAct": [
+              0,
+              2,
+              8,
+              2
+            ]
+          },
+          "avgTurns": 46.29,
+          "max": "1.3451e+207",
+          "maxExact": "1345119400168121998434218569127747711360040960000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-175"
+        },
+        {
+          "policy": "mixed",
+          "seeds": 192,
+          "clear": 125,
+          "extra": 94,
+          "infinity": 46,
+          "bossAttempts": [
+            192,
+            190,
+            179
+          ],
+          "bossWins": [
+            192,
+            188,
+            125
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 97,
+              "wins": 97,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 103,
+              "wins": 101,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 99
+            },
+            "無量門の王竜": {
+              "attempts": 93,
+              "wins": 50,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1757
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 95,
+              "wins": 95,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "白紙の月蛾女王": {
+              "attempts": 87,
+              "wins": 87,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 86,
+              "wins": 75,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 949
+            }
+          },
+          "turns": 8969,
+          "used": {
+            "mul": 8820,
+            "add": 8074,
+            "pct": 3483,
+            "pow": 761,
+            "exp": 1577,
+            "clean": 248
+          },
+          "relics": {
+            "mosaic": 164,
+            "tail": 181,
+            "order": 178,
+            "ratio": 181,
+            "star": 150,
+            "rack": 138,
+            "key": 92,
+            "codex": 139,
+            "tithe": 148,
+            "spring": 138,
+            "furnace": 150,
+            "abacus": 138,
+            "grimoire": 138,
+            "sum": 142,
+            "prism": 144,
+            "chain": 153,
+            "short": 97,
+            "lattice": 142
+          },
+          "lossesByEnemy": {
+            "4:extra": 31,
+            "3:boss": 54,
+            "3:elite": 4,
+            "2:fight": 1,
+            "2:boss": 2,
+            "3:fight": 5,
+            "2:elite": 1
+          },
+          "actReached": [
+            192,
+            192,
+            188,
+            125
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 174,
+            "clearWith": 118,
+            "lossWithoutByAct": [
+              0,
+              1,
+              11,
+              2
+            ]
+          },
+          "avgTurns": 46.71,
+          "max": "4.3207e+151",
+          "maxExact": "43207458968473754584459771596222571799619010058547389742244426780994651229498944785944208964318763417600000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-149"
+        },
+        {
+          "policy": "additive",
+          "seeds": 192,
+          "clear": 136,
+          "extra": 87,
+          "infinity": 13,
+          "bossAttempts": [
+            192,
+            183,
+            171
+          ],
+          "bossWins": [
+            191,
+            178,
+            136
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 97,
+              "wins": 97,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 100,
+              "wins": 96,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 296
+            },
+            "無量門の王竜": {
+              "attempts": 86,
+              "wins": 60,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1251
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 95,
+              "wins": 94,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 28
+            },
+            "白紙の月蛾女王": {
+              "attempts": 83,
+              "wins": 82,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 65
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 85,
+              "wins": 76,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 877
+            }
+          },
+          "turns": 8532,
+          "used": {
+            "mul": 5601,
+            "add": 13231,
+            "pct": 1982,
+            "exp": 870,
+            "clean": 251,
+            "pow": 368
+          },
+          "relics": {
+            "sum": 173,
+            "tail": 173,
+            "order": 176,
+            "codex": 127,
+            "star": 122,
+            "furnace": 137,
+            "abacus": 180,
+            "prism": 150,
+            "lattice": 138,
+            "grimoire": 138,
+            "tithe": 151,
+            "rack": 130,
+            "mosaic": 124,
+            "short": 104,
+            "spring": 122,
+            "ratio": 131,
+            "key": 102,
+            "chain": 137
+          },
+          "lossesByEnemy": {
+            "3:fight": 5,
+            "4:extra": 49,
+            "3:elite": 2,
+            "3:boss": 35,
+            "2:boss": 5,
+            "2:elite": 3,
+            "2:fight": 5,
+            "1:boss": 1
+          },
+          "actReached": [
+            192,
+            191,
+            178,
+            136
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 186,
+            "clearWith": 135,
+            "lossWithoutByAct": [
+              1,
+              2,
+              2,
+              1
+            ]
+          },
+          "avgTurns": 44.44,
+          "max": "3.4377e+133",
+          "maxExact": "34377725049120350497051761742063801495603791110140811171430798216479325866942144614587669545687550766153212485070197056427172613324800",
+          "bestSeed": "db-7"
+        }
+      ]
+    },
+    {
+      "firstSeed": 192,
+      "baseline": [
+        {
+          "policy": "grimoire",
+          "seeds": 192,
+          "clear": 165,
+          "extra": 145,
+          "infinity": 45,
+          "bossAttempts": [
+            192,
+            189,
+            178
+          ],
+          "bossWins": [
+            192,
+            188,
+            165
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 99,
+              "wins": 99,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 91,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 96,
+              "wins": 93,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 292
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 93,
+              "wins": 93,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "無量門の王竜": {
+              "attempts": 82,
+              "wins": 72,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 486
+            },
+            "白紙の月蛾女王": {
+              "attempts": 98,
+              "wins": 97,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 98
+            }
+          },
+          "turns": 9370,
+          "used": {
+            "mul": 9480,
+            "add": 8705,
+            "pct": 4139,
+            "clean": 272,
+            "exp": 1370,
+            "pow": 669
+          },
+          "relics": {
+            "star": 162,
+            "chain": 157,
+            "tail": 182,
+            "grimoire": 156,
+            "codex": 138,
+            "mosaic": 146,
+            "order": 168,
+            "spring": 161,
+            "ratio": 145,
+            "prism": 154,
+            "furnace": 163,
+            "abacus": 137,
+            "short": 108,
+            "rack": 139,
+            "key": 106,
+            "lattice": 147,
+            "tithe": 143,
+            "sum": 133
+          },
+          "lossesByEnemy": {
+            "3:elite": 7,
+            "4:extra": 20,
+            "3:boss": 13,
+            "3:fight": 3,
+            "2:fight": 1,
+            "2:elite": 2,
+            "2:boss": 1
+          },
+          "actReached": [
+            192,
+            192,
+            188,
+            165
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 172,
+            "clearWith": 149,
+            "lossWithoutByAct": [
+              0,
+              3,
+              4,
+              2
+            ]
+          },
+          "avgTurns": 48.8,
+          "max": "2.3181e+141",
+          "maxExact": "2318126628606250744291518954892999376765997085332902844210698256384000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-200"
+        },
+        {
+          "policy": "power",
+          "seeds": 192,
+          "clear": 163,
+          "extra": 136,
+          "infinity": 64,
+          "bossAttempts": [
+            192,
+            183,
+            176
+          ],
+          "bossWins": [
+            192,
+            182,
+            163
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 99,
+              "wins": 99,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 89,
+              "wins": 89,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 98,
+              "wins": 93,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 419
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 93,
+              "wins": 93,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "無量門の王竜": {
+              "attempts": 78,
+              "wins": 70,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 300
+            },
+            "白紙の月蛾女王": {
+              "attempts": 94,
+              "wins": 93,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 62
+            }
+          },
+          "turns": 9267,
+          "used": {
+            "mul": 9283,
+            "add": 8176,
+            "pct": 3433,
+            "clean": 265,
+            "pow": 1147,
+            "exp": 1422
+          },
+          "relics": {
+            "ratio": 136,
+            "rack": 150,
+            "tail": 175,
+            "mosaic": 138,
+            "star": 161,
+            "lattice": 153,
+            "order": 172,
+            "tithe": 147,
+            "sum": 130,
+            "abacus": 132,
+            "prism": 153,
+            "spring": 152,
+            "furnace": 156,
+            "chain": 153,
+            "grimoire": 138,
+            "codex": 135,
+            "short": 103,
+            "key": 112
+          },
+          "lossesByEnemy": {
+            "4:extra": 27,
+            "3:boss": 13,
+            "2:elite": 5,
+            "2:fight": 4,
+            "3:fight": 2,
+            "3:elite": 4,
+            "2:boss": 1
+          },
+          "actReached": [
+            192,
+            192,
+            182,
+            163
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 169,
+            "clearWith": 147,
+            "lossWithoutByAct": [
+              0,
+              8,
+              3,
+              0
+            ]
+          },
+          "avgTurns": 48.27,
+          "max": "7.1501e+178",
+          "maxExact": "71501737594417681616757947140626633694811701937616447845701353324098673508467314811042032472788637857189276571026198019195745427405172805931738511202177425784028017582664130898496",
+          "bestSeed": "db-380"
+        },
+        {
+          "policy": "mixed",
+          "seeds": 192,
+          "clear": 172,
+          "extra": 155,
+          "infinity": 57,
+          "bossAttempts": [
+            192,
+            188,
+            180
+          ],
+          "bossWins": [
+            192,
+            187,
+            172
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 99,
+              "wins": 99,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 92,
+              "wins": 92,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 97,
+              "wins": 93,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 316
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 93,
+              "wins": 93,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "無量門の王竜": {
+              "attempts": 83,
+              "wins": 79,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 165
+            },
+            "白紙の月蛾女王": {
+              "attempts": 96,
+              "wins": 95,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 38
+            }
+          },
+          "turns": 9259,
+          "used": {
+            "mul": 9175,
+            "add": 8175,
+            "pct": 3713,
+            "clean": 242,
+            "exp": 1640,
+            "pow": 878
+          },
+          "relics": {
+            "ratio": 178,
+            "rack": 141,
+            "tail": 184,
+            "mosaic": 166,
+            "order": 178,
+            "sum": 134,
+            "prism": 143,
+            "chain": 156,
+            "abacus": 136,
+            "lattice": 146,
+            "tithe": 137,
+            "star": 153,
+            "furnace": 146,
+            "short": 119,
+            "grimoire": 154,
+            "key": 116,
+            "spring": 146,
+            "codex": 141
+          },
+          "lossesByEnemy": {
+            "3:boss": 8,
+            "4:extra": 17,
+            "2:fight": 1,
+            "3:elite": 6,
+            "2:elite": 3,
+            "3:fight": 1,
+            "2:boss": 1
+          },
+          "actReached": [
+            192,
+            192,
+            187,
+            172
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 173,
+            "clearWith": 155,
+            "lossWithoutByAct": [
+              0,
+              5,
+              2,
+              0
+            ]
+          },
+          "avgTurns": 48.22,
+          "max": "8.0597e+131",
+          "maxExact": "805970100453599781758001356416847646707766060035734914395518498683338966008902646981818623029722710859034650231017112042277568187420",
+          "bestSeed": "db-321"
+        },
+        {
+          "policy": "additive",
+          "seeds": 192,
+          "clear": 173,
+          "extra": 140,
+          "infinity": 26,
+          "bossAttempts": [
+            192,
+            187,
+            182
+          ],
+          "bossWins": [
+            190,
+            186,
+            173
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 99,
+              "wins": 99,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 92,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 27
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 98,
+              "wins": 97,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 99
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 93,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 58
+            },
+            "無量門の王竜": {
+              "attempts": 84,
+              "wins": 76,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 404
+            },
+            "白紙の月蛾女王": {
+              "attempts": 95,
+              "wins": 95,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            }
+          },
+          "turns": 8977,
+          "used": {
+            "mul": 5564,
+            "add": 14255,
+            "pct": 2129,
+            "clean": 252,
+            "exp": 883,
+            "pow": 383
+          },
+          "relics": {
+            "sum": 181,
+            "rack": 147,
+            "tail": 181,
+            "ratio": 127,
+            "order": 178,
+            "abacus": 185,
+            "prism": 141,
+            "chain": 142,
+            "lattice": 148,
+            "tithe": 147,
+            "furnace": 156,
+            "codex": 132,
+            "spring": 148,
+            "grimoire": 153,
+            "mosaic": 125,
+            "star": 126,
+            "key": 112,
+            "short": 101
+          },
+          "lossesByEnemy": {
+            "4:extra": 33,
+            "3:boss": 9,
+            "3:elite": 3,
+            "1:boss": 2,
+            "2:fight": 2,
+            "2:elite": 1,
+            "3:fight": 1,
+            "2:boss": 1
+          },
+          "actReached": [
+            192,
+            190,
+            186,
+            173
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 188,
+            "clearWith": 173,
+            "lossWithoutByAct": [
+              2,
+              2,
+              0,
+              0
+            ]
+          },
+          "avgTurns": 46.76,
+          "max": "8.1035e+117",
+          "maxExact": "8103573725608849607405955432287424573865984000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-381"
+        }
+      ],
+      "updated": [
+        {
+          "policy": "grimoire",
+          "seeds": 192,
+          "clear": 143,
+          "extra": 113,
+          "infinity": 39,
+          "bossAttempts": [
+            192,
+            188,
+            173
+          ],
+          "bossWins": [
+            192,
+            184,
+            143
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 99,
+              "wins": 99,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 91,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 94,
+              "wins": 88,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 592
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 93,
+              "wins": 93,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "無量門の王竜": {
+              "attempts": 79,
+              "wins": 55,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1140
+            },
+            "白紙の月蛾女王": {
+              "attempts": 97,
+              "wins": 93,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 371
+            }
+          },
+          "turns": 9057,
+          "used": {
+            "mul": 9169,
+            "add": 8463,
+            "pct": 3977,
+            "clean": 259,
+            "exp": 1284,
+            "pow": 590
+          },
+          "relics": {
+            "star": 154,
+            "chain": 153,
+            "tail": 179,
+            "grimoire": 151,
+            "codex": 133,
+            "mosaic": 139,
+            "order": 166,
+            "spring": 156,
+            "ratio": 145,
+            "prism": 152,
+            "furnace": 157,
+            "abacus": 132,
+            "short": 102,
+            "rack": 137,
+            "key": 100,
+            "lattice": 142,
+            "tithe": 137,
+            "sum": 130
+          },
+          "lossesByEnemy": {
+            "3:boss": 30,
+            "3:elite": 7,
+            "4:extra": 30,
+            "3:fight": 4,
+            "2:fight": 1,
+            "2:elite": 3,
+            "2:boss": 4
+          },
+          "actReached": [
+            192,
+            192,
+            184,
+            143
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 170,
+            "clearWith": 128,
+            "lossWithoutByAct": [
+              0,
+              3,
+              8,
+              4
+            ]
+          },
+          "avgTurns": 47.17,
+          "max": "2.3181e+141",
+          "maxExact": "2318126628606250744291518954892999376765997085332902844210698256384000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-200"
+        },
+        {
+          "policy": "power",
+          "seeds": 192,
+          "clear": 126,
+          "extra": 87,
+          "infinity": 50,
+          "bossAttempts": [
+            192,
+            182,
+            168
+          ],
+          "bossWins": [
+            192,
+            177,
+            126
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 99,
+              "wins": 99,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 89,
+              "wins": 86,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 117
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 93,
+              "wins": 93,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 94,
+              "wins": 82,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1147
+            },
+            "無量門の王竜": {
+              "attempts": 74,
+              "wins": 44,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1181
+            },
+            "白紙の月蛾女王": {
+              "attempts": 93,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 118
+            }
+          },
+          "turns": 8821,
+          "used": {
+            "mul": 8845,
+            "add": 7851,
+            "pct": 3287,
+            "clean": 258,
+            "pow": 994,
+            "exp": 1266
+          },
+          "relics": {
+            "ratio": 130,
+            "rack": 146,
+            "tail": 170,
+            "mosaic": 131,
+            "star": 156,
+            "lattice": 143,
+            "order": 171,
+            "tithe": 141,
+            "sum": 123,
+            "abacus": 120,
+            "short": 93,
+            "codex": 128,
+            "spring": 147,
+            "chain": 146,
+            "prism": 147,
+            "furnace": 155,
+            "grimoire": 133,
+            "key": 107
+          },
+          "lossesByEnemy": {
+            "3:fight": 4,
+            "4:extra": 39,
+            "3:boss": 42,
+            "2:elite": 6,
+            "2:fight": 4,
+            "3:elite": 5,
+            "2:boss": 5
+          },
+          "actReached": [
+            192,
+            192,
+            177,
+            126
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 161,
+            "clearWith": 111,
+            "lossWithoutByAct": [
+              0,
+              10,
+              9,
+              5
+            ]
+          },
+          "avgTurns": 45.94,
+          "max": "3.2151e+173",
+          "maxExact": "321515111657838524239111791692657476990500238322112403994612694469712160791790882225826403218096128000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-353"
+        },
+        {
+          "policy": "mixed",
+          "seeds": 192,
+          "clear": 138,
+          "extra": 98,
+          "infinity": 46,
+          "bossAttempts": [
+            192,
+            188,
+            182
+          ],
+          "bossWins": [
+            192,
+            186,
+            138
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 99,
+              "wins": 99,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 92,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 24
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 97,
+              "wins": 84,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1120
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 93,
+              "wins": 93,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "無量門の王竜": {
+              "attempts": 85,
+              "wins": 54,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1225
+            },
+            "白紙の月蛾女王": {
+              "attempts": 96,
+              "wins": 95,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 38
+            }
+          },
+          "turns": 8983,
+          "used": {
+            "mul": 8934,
+            "add": 7951,
+            "pct": 3593,
+            "clean": 229,
+            "exp": 1512,
+            "pow": 790
+          },
+          "relics": {
+            "ratio": 179,
+            "rack": 138,
+            "tail": 181,
+            "mosaic": 165,
+            "order": 177,
+            "sum": 128,
+            "prism": 139,
+            "chain": 150,
+            "abacus": 132,
+            "lattice": 143,
+            "tithe": 134,
+            "star": 143,
+            "furnace": 142,
+            "short": 111,
+            "grimoire": 147,
+            "key": 111,
+            "codex": 132,
+            "spring": 142
+          },
+          "lossesByEnemy": {
+            "4:extra": 40,
+            "3:boss": 44,
+            "2:fight": 1,
+            "2:boss": 2,
+            "2:elite": 3,
+            "3:fight": 1,
+            "3:elite": 3
+          },
+          "actReached": [
+            192,
+            192,
+            186,
+            138
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 171,
+            "clearWith": 122,
+            "lossWithoutByAct": [
+              0,
+              6,
+              2,
+              5
+            ]
+          },
+          "avgTurns": 46.79,
+          "max": "1.5407e+132",
+          "maxExact": "1540724591384558120953973326212988110419231105135243912289247631075352900375000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-322"
+        },
+        {
+          "policy": "additive",
+          "seeds": 192,
+          "clear": 140,
+          "extra": 100,
+          "infinity": 22,
+          "bossAttempts": [
+            192,
+            187,
+            181
+          ],
+          "bossWins": [
+            190,
+            186,
+            140
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 99,
+              "wins": 99,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 92,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 50
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 97,
+              "wins": 88,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 890
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 93,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 135
+            },
+            "無量門の王竜": {
+              "attempts": 84,
+              "wins": 52,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1713
+            },
+            "白紙の月蛾女王": {
+              "attempts": 95,
+              "wins": 95,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            }
+          },
+          "turns": 8648,
+          "used": {
+            "mul": 5458,
+            "add": 13604,
+            "pct": 2052,
+            "clean": 252,
+            "exp": 821,
+            "pow": 321
+          },
+          "relics": {
+            "sum": 180,
+            "rack": 143,
+            "tail": 180,
+            "ratio": 127,
+            "order": 177,
+            "abacus": 184,
+            "prism": 135,
+            "chain": 143,
+            "lattice": 141,
+            "tithe": 140,
+            "grimoire": 149,
+            "spring": 144,
+            "star": 120,
+            "codex": 121,
+            "key": 104,
+            "short": 93,
+            "furnace": 155,
+            "mosaic": 117
+          },
+          "lossesByEnemy": {
+            "3:boss": 41,
+            "4:extra": 40,
+            "2:boss": 1,
+            "3:elite": 3,
+            "1:boss": 2,
+            "2:fight": 3,
+            "3:fight": 2
+          },
+          "actReached": [
+            192,
+            190,
+            186,
+            140
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 188,
+            "clearWith": 140,
+            "lossWithoutByAct": [
+              2,
+              2,
+              0,
+              0
+            ]
+          },
+          "avgTurns": 45.04,
+          "max": "8.1035e+117",
+          "maxExact": "8103573725608849607405955432287424573865984000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-381"
+        }
+      ]
+    },
+    {
+      "firstSeed": 384,
+      "baseline": [
+        {
+          "policy": "grimoire",
+          "seeds": 192,
+          "clear": 170,
+          "extra": 146,
+          "infinity": 48,
+          "bossAttempts": [
+            192,
+            189,
+            181
+          ],
+          "bossWins": [
+            192,
+            188,
+            170
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 91,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 85,
+              "wins": 85,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "無量門の王竜": {
+              "attempts": 91,
+              "wins": 80,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 619
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 101,
+              "wins": 101,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "白紙の月蛾女王": {
+              "attempts": 104,
+              "wins": 103,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 99
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 90,
+              "wins": 90,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            }
+          },
+          "turns": 9218,
+          "used": {
+            "add": 8855,
+            "mul": 9165,
+            "pct": 3838,
+            "exp": 1410,
+            "pow": 707,
+            "clean": 259
+          },
+          "relics": {
+            "ratio": 141,
+            "order": 174,
+            "prism": 161,
+            "lattice": 150,
+            "tail": 183,
+            "grimoire": 155,
+            "furnace": 152,
+            "mosaic": 140,
+            "codex": 150,
+            "abacus": 148,
+            "tithe": 162,
+            "rack": 145,
+            "chain": 160,
+            "sum": 151,
+            "spring": 149,
+            "key": 104,
+            "short": 109,
+            "star": 153
+          },
+          "lossesByEnemy": {
+            "4:extra": 24,
+            "3:elite": 6,
+            "3:boss": 11,
+            "2:elite": 1,
+            "2:fight": 2,
+            "3:fight": 1,
+            "2:boss": 1
+          },
+          "actReached": [
+            192,
+            192,
+            188,
+            170
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 181,
+            "clearWith": 165,
+            "lossWithoutByAct": [
+              0,
+              3,
+              5,
+              0
+            ]
+          },
+          "avgTurns": 48.01,
+          "max": "4.6052e+180",
+          "maxExact": "4605226357655758950813817254269465335022026352312622375435507669444627999345534667968589789074745693657550312761333684470074601319246594916183236983713949588809318400000000000000000",
+          "bestSeed": "db-574"
+        },
+        {
+          "policy": "power",
+          "seeds": 192,
+          "clear": 177,
+          "extra": 152,
+          "infinity": 78,
+          "bossAttempts": [
+            192,
+            188,
+            186
+          ],
+          "bossWins": [
+            192,
+            188,
+            177
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 91,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 85,
+              "wins": 85,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "無量門の王竜": {
+              "attempts": 91,
+              "wins": 85,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 231
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 101,
+              "wins": 101,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "白紙の月蛾女王": {
+              "attempts": 103,
+              "wins": 103,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 95,
+              "wins": 92,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 285
+            }
+          },
+          "turns": 9257,
+          "used": {
+            "add": 8230,
+            "mul": 9205,
+            "pct": 3201,
+            "exp": 1590,
+            "pow": 1230,
+            "clean": 259
+          },
+          "relics": {
+            "ratio": 132,
+            "order": 175,
+            "prism": 163,
+            "lattice": 148,
+            "tail": 178,
+            "grimoire": 150,
+            "furnace": 148,
+            "mosaic": 135,
+            "codex": 159,
+            "abacus": 143,
+            "tithe": 149,
+            "rack": 149,
+            "chain": 171,
+            "sum": 145,
+            "spring": 145,
+            "key": 102,
+            "short": 121,
+            "star": 167
+          },
+          "lossesByEnemy": {
+            "4:extra": 25,
+            "3:boss": 9,
+            "2:elite": 2,
+            "2:fight": 2,
+            "3:fight": 1,
+            "3:elite": 1
+          },
+          "actReached": [
+            192,
+            192,
+            188,
+            177
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 182,
+            "clearWith": 167,
+            "lossWithoutByAct": [
+              0,
+              3,
+              2,
+              0
+            ]
+          },
+          "avgTurns": 48.21,
+          "max": "1.9032e+167",
+          "maxExact": "190320898470780835520967304247321090189363760970862349495291709899902343750000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-559"
+        },
+        {
+          "policy": "mixed",
+          "seeds": 192,
+          "clear": 171,
+          "extra": 136,
+          "infinity": 50,
+          "bossAttempts": [
+            192,
+            190,
+            188
+          ],
+          "bossWins": [
+            192,
+            190,
+            171
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 91,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 86,
+              "wins": 86,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "無量門の王竜": {
+              "attempts": 92,
+              "wins": 81,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 590
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 101,
+              "wins": 101,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "白紙の月蛾女王": {
+              "attempts": 104,
+              "wins": 104,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 96,
+              "wins": 90,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 526
+            }
+          },
+          "turns": 9309,
+          "used": {
+            "add": 8422,
+            "mul": 9202,
+            "pct": 3554,
+            "exp": 1709,
+            "pow": 886,
+            "clean": 238
+          },
+          "relics": {
+            "ratio": 182,
+            "mosaic": 151,
+            "short": 109,
+            "abacus": 145,
+            "tail": 185,
+            "grimoire": 135,
+            "prism": 164,
+            "order": 179,
+            "codex": 142,
+            "lattice": 146,
+            "tithe": 147,
+            "furnace": 154,
+            "rack": 144,
+            "spring": 139,
+            "chain": 161,
+            "sum": 142,
+            "star": 148,
+            "key": 109
+          },
+          "lossesByEnemy": {
+            "4:extra": 35,
+            "3:boss": 17,
+            "3:elite": 2,
+            "2:fight": 1,
+            "2:elite": 1
+          },
+          "actReached": [
+            192,
+            192,
+            190,
+            171
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 181,
+            "clearWith": 161,
+            "lossWithoutByAct": [
+              0,
+              2,
+              2,
+              1
+            ]
+          },
+          "avgTurns": 48.48,
+          "max": "7.2258e+277",
+          "maxExact": "72258200638554405673459583386839679397825520080687910203372452093206859874641168062225915491580963134765625000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-497"
+        },
+        {
+          "policy": "additive",
+          "seeds": 192,
+          "clear": 171,
+          "extra": 148,
+          "infinity": 24,
+          "bossAttempts": [
+            192,
+            182,
+            178
+          ],
+          "bossWins": [
+            191,
+            182,
+            171
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 91,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 85,
+              "wins": 85,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "無量門の王竜": {
+              "attempts": 85,
+              "wins": 82,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 99
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 101,
+              "wins": 100,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 60
+            },
+            "白紙の月蛾女王": {
+              "attempts": 97,
+              "wins": 97,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 93,
+              "wins": 89,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 323
+            }
+          },
+          "turns": 8617,
+          "used": {
+            "add": 13652,
+            "mul": 5387,
+            "pct": 1898,
+            "exp": 926,
+            "clean": 222,
+            "pow": 428
+          },
+          "relics": {
+            "abacus": 180,
+            "order": 174,
+            "prism": 150,
+            "sum": 181,
+            "tail": 175,
+            "grimoire": 153,
+            "furnace": 139,
+            "ratio": 120,
+            "codex": 137,
+            "mosaic": 129,
+            "tithe": 154,
+            "rack": 128,
+            "chain": 146,
+            "lattice": 144,
+            "spring": 155,
+            "key": 111,
+            "short": 118,
+            "star": 129
+          },
+          "lossesByEnemy": {
+            "4:extra": 23,
+            "2:elite": 6,
+            "3:boss": 7,
+            "1:boss": 1,
+            "3:fight": 4,
+            "2:fight": 3
+          },
+          "actReached": [
+            192,
+            191,
+            182,
+            171
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 185,
+            "clearWith": 171,
+            "lossWithoutByAct": [
+              1,
+              6,
+              0,
+              0
+            ]
+          },
+          "avgTurns": 44.88,
+          "max": "7.0012e+147",
+          "maxExact": "7001265621717444034090530059249084627137471579254640041829879703931730407989743315558674548392874405330449589666484225829895973155353565208732470706",
+          "bestSeed": "db-497"
+        }
+      ],
+      "updated": [
+        {
+          "policy": "grimoire",
+          "seeds": 192,
+          "clear": 139,
+          "extra": 103,
+          "infinity": 53,
+          "bossAttempts": [
+            192,
+            186,
+            177
+          ],
+          "bossWins": [
+            192,
+            186,
+            139
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 91,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 85,
+              "wins": 85,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "無量門の王竜": {
+              "attempts": 86,
+              "wins": 59,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1176
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 101,
+              "wins": 101,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "白紙の月蛾女王": {
+              "attempts": 101,
+              "wins": 101,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 91,
+              "wins": 80,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1073
+            }
+          },
+          "turns": 8887,
+          "used": {
+            "add": 8493,
+            "mul": 8860,
+            "pct": 3677,
+            "exp": 1308,
+            "pow": 656,
+            "clean": 256
+          },
+          "relics": {
+            "ratio": 134,
+            "order": 170,
+            "prism": 157,
+            "lattice": 142,
+            "tail": 182,
+            "grimoire": 150,
+            "furnace": 143,
+            "mosaic": 140,
+            "codex": 143,
+            "abacus": 145,
+            "tithe": 157,
+            "rack": 142,
+            "chain": 156,
+            "sum": 150,
+            "spring": 141,
+            "key": 96,
+            "short": 99,
+            "star": 149
+          },
+          "lossesByEnemy": {
+            "4:extra": 36,
+            "3:boss": 38,
+            "3:elite": 6,
+            "3:fight": 3,
+            "2:elite": 3,
+            "2:fight": 3
+          },
+          "actReached": [
+            192,
+            192,
+            186,
+            139
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 178,
+            "clearWith": 133,
+            "lossWithoutByAct": [
+              0,
+              5,
+              4,
+              2
+            ]
+          },
+          "avgTurns": 46.29,
+          "max": "4.6052e+180",
+          "maxExact": "4605226357655758950813817254269465335022026352312622375435507669444627999345534667968589789074745693657550312761333684470074601319246594916183236983713949588809318400000000000000000",
+          "bestSeed": "db-574"
+        },
+        {
+          "policy": "power",
+          "seeds": 192,
+          "clear": 141,
+          "extra": 98,
+          "infinity": 66,
+          "bossAttempts": [
+            192,
+            188,
+            182
+          ],
+          "bossWins": [
+            192,
+            188,
+            141
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 91,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 85,
+              "wins": 85,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "無量門の王竜": {
+              "attempts": 87,
+              "wins": 61,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1186
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 101,
+              "wins": 101,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "白紙の月蛾女王": {
+              "attempts": 103,
+              "wins": 103,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 95,
+              "wins": 80,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1449
+            }
+          },
+          "turns": 8914,
+          "used": {
+            "add": 7946,
+            "mul": 8892,
+            "pct": 3053,
+            "exp": 1464,
+            "pow": 1109,
+            "clean": 254
+          },
+          "relics": {
+            "ratio": 126,
+            "order": 171,
+            "prism": 158,
+            "lattice": 138,
+            "tail": 179,
+            "grimoire": 143,
+            "furnace": 140,
+            "mosaic": 130,
+            "codex": 153,
+            "abacus": 143,
+            "tithe": 149,
+            "rack": 146,
+            "chain": 166,
+            "sum": 144,
+            "spring": 143,
+            "key": 95,
+            "short": 108,
+            "star": 165
+          },
+          "lossesByEnemy": {
+            "4:extra": 43,
+            "3:boss": 41,
+            "3:fight": 5,
+            "2:elite": 2,
+            "2:fight": 2,
+            "3:elite": 1
+          },
+          "actReached": [
+            192,
+            192,
+            188,
+            141
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 181,
+            "clearWith": 132,
+            "lossWithoutByAct": [
+              0,
+              3,
+              4,
+              2
+            ]
+          },
+          "avgTurns": 46.43,
+          "max": "1.0427e+162",
+          "maxExact": "1042715160982579185247535228670092099999868278575906926778279526400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-447"
+        },
+        {
+          "policy": "mixed",
+          "seeds": 192,
+          "clear": 140,
+          "extra": 101,
+          "infinity": 48,
+          "bossAttempts": [
+            192,
+            190,
+            184
+          ],
+          "bossWins": [
+            192,
+            189,
+            140
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 91,
+              "wins": 91,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "天秤の終末巨像": {
+              "attempts": 86,
+              "wins": 86,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "無量門の王竜": {
+              "attempts": 90,
+              "wins": 61,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1416
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 101,
+              "wins": 101,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "白紙の月蛾女王": {
+              "attempts": 104,
+              "wins": 103,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 41
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 94,
+              "wins": 79,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 1453
+            }
+          },
+          "turns": 8975,
+          "used": {
+            "add": 8115,
+            "mul": 8823,
+            "pct": 3446,
+            "exp": 1576,
+            "pow": 799,
+            "clean": 242
+          },
+          "relics": {
+            "ratio": 180,
+            "mosaic": 152,
+            "short": 106,
+            "abacus": 143,
+            "tail": 182,
+            "grimoire": 130,
+            "prism": 159,
+            "order": 176,
+            "codex": 136,
+            "lattice": 143,
+            "tithe": 144,
+            "furnace": 151,
+            "rack": 139,
+            "spring": 127,
+            "chain": 155,
+            "sum": 138,
+            "star": 141,
+            "key": 104
+          },
+          "lossesByEnemy": {
+            "4:extra": 39,
+            "3:boss": 44,
+            "3:fight": 3,
+            "2:boss": 1,
+            "3:elite": 2,
+            "2:fight": 1,
+            "2:elite": 1
+          },
+          "actReached": [
+            192,
+            192,
+            189,
+            140
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 178,
+            "clearWith": 130,
+            "lossWithoutByAct": [
+              0,
+              2,
+              5,
+              2
+            ]
+          },
+          "avgTurns": 46.74,
+          "max": "7.2258e+277",
+          "maxExact": "72258200638554405673459583386839679397825520080687910203372452093206859874641168062225915491580963134765625000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-497"
+        },
+        {
+          "policy": "additive",
+          "seeds": 192,
+          "clear": 147,
+          "extra": 109,
+          "infinity": 24,
+          "bossAttempts": [
+            192,
+            182,
+            177
+          ],
+          "bossWins": [
+            190,
+            182,
+            147
+          ],
+          "bossesByName": {
+            "喰算の地殻獣": {
+              "attempts": 91,
+              "wins": 90,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 64
+            },
+            "天秤の終末巨像": {
+              "attempts": 85,
+              "wins": 85,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "無量門の王竜": {
+              "attempts": 84,
+              "wins": 62,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 882
+            },
+            "黒曜の公爵・城喰": {
+              "attempts": 101,
+              "wins": 100,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 67
+            },
+            "白紙の月蛾女王": {
+              "attempts": 97,
+              "wins": 97,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 0
+            },
+            "星蝕の虚空皇帝": {
+              "attempts": 93,
+              "wins": 85,
+              "lossAtFullHp": 0,
+              "remainingHpPctSum": 792
+            }
+          },
+          "turns": 8329,
+          "used": {
+            "add": 13165,
+            "mul": 5273,
+            "pct": 1841,
+            "exp": 847,
+            "clean": 210,
+            "pow": 389
+          },
+          "relics": {
+            "abacus": 179,
+            "order": 173,
+            "prism": 147,
+            "sum": 180,
+            "tail": 175,
+            "grimoire": 152,
+            "furnace": 138,
+            "ratio": 122,
+            "codex": 131,
+            "mosaic": 123,
+            "tithe": 152,
+            "rack": 121,
+            "chain": 144,
+            "lattice": 140,
+            "spring": 146,
+            "key": 108,
+            "short": 108,
+            "star": 124
+          },
+          "lossesByEnemy": {
+            "3:boss": 30,
+            "4:extra": 38,
+            "2:elite": 6,
+            "1:boss": 2,
+            "3:fight": 5,
+            "2:fight": 2
+          },
+          "actReached": [
+            192,
+            190,
+            182,
+            147
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 185,
+            "clearWith": 147,
+            "lossWithoutByAct": [
+              2,
+              5,
+              0,
+              0
+            ]
+          },
+          "avgTurns": 43.38,
+          "max": "7.0012e+147",
+          "maxExact": "7001265621717444034090530059249084627137471579254640041829879703931730407989743315558674548392874405330449589666484225829895973155353565208732470706",
+          "bestSeed": "db-497"
+        }
+      ]
+    }
+  ]
+}

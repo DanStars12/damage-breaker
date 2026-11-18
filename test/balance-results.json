@@ -2,18 +2,18 @@
   {
     "policy": "grimoire",
     "seeds": 192,
-    "clear": 166,
-    "extra": 142,
-    "infinity": 49,
+    "clear": 133,
+    "extra": 97,
+    "infinity": 43,
     "bossAttempts": [
       192,
       187,
-      178
+      175
     ],
     "bossWins": [
       192,
-      185,
-      166
+      184,
+      133
     ],
     "bossesByName": {
       "喰算の地殻獣": {
@@ -24,15 +24,15 @@
       },
       "天秤の終末巨像": {
         "attempts": 101,
-        "wins": 100,
+        "wins": 99,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 99
+        "remainingHpPctSum": 147
       },
       "無量門の王竜": {
-        "attempts": 90,
-        "wins": 84,
+        "attempts": 89,
+        "wins": 57,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 231
+        "remainingHpPctSum": 1302
       },
       "黒曜の公爵・城喰": {
         "attempts": 95,
@@ -44,70 +44,70 @@
         "attempts": 86,
         "wins": 85,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 67
+        "remainingHpPctSum": 97
       },
       "星蝕の虚空皇帝": {
-        "attempts": 88,
-        "wins": 82,
+        "attempts": 86,
+        "wins": 76,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 569
+        "remainingHpPctSum": 872
       }
     },
-    "turns": 9235,
+    "turns": 8892,
     "used": {
-      "mul": 9002,
-      "add": 8778,
-      "pct": 4141,
-      "exp": 1418,
-      "pow": 667,
-      "clean": 256
+      "mul": 8692,
+      "add": 8487,
+      "pct": 3934,
+      "exp": 1304,
+      "pow": 609,
+      "clean": 263
     },
     "relics": {
-      "mosaic": 136,
-      "tail": 176,
+      "mosaic": 134,
+      "tail": 175,
       "order": 177,
-      "prism": 155,
-      "star": 151,
-      "key": 107,
-      "chain": 151,
-      "grimoire": 152,
-      "spring": 146,
-      "furnace": 161,
-      "codex": 137,
-      "ratio": 147,
-      "tithe": 142,
-      "rack": 156,
-      "abacus": 143,
-      "lattice": 144,
-      "short": 107,
-      "sum": 135
+      "prism": 157,
+      "star": 150,
+      "key": 105,
+      "chain": 145,
+      "grimoire": 148,
+      "spring": 137,
+      "furnace": 153,
+      "codex": 131,
+      "ratio": 135,
+      "tithe": 139,
+      "rack": 150,
+      "abacus": 133,
+      "lattice": 142,
+      "short": 101,
+      "sum": 138
     },
     "lossesByEnemy": {
-      "3:boss": 12,
-      "4:extra": 24,
-      "2:elite": 4,
-      "3:fight": 3,
-      "2:boss": 2,
-      "2:fight": 1,
-      "3:elite": 4
+      "4:extra": 36,
+      "3:fight": 7,
+      "3:boss": 42,
+      "2:fight": 2,
+      "2:boss": 3,
+      "2:elite": 3,
+      "3:elite": 2
     },
     "actReached": [
       192,
       192,
-      185,
-      166
+      184,
+      133
     ],
     "additionRelic": {
-      "ownedAtEnd": 178,
-      "clearWith": 155,
+      "ownedAtEnd": 175,
+      "clearWith": 126,
       "lossWithoutByAct": [
         0,
-        4,
-        4,
-        4
+        5,
+        8,
+        2
       ]
     },
-    "avgTurns": 48.1,
+    "avgTurns": 46.31,
     "max": "1.3040e+146",
     "maxExact": "130405961882861836870515802788192768560210907114201044462390259512034682624991305185784274926429757061461864981468912025600000000000000000000000000",
     "bestSeed": "db-134"
@@ -115,18 +115,18 @@
   {
     "policy": "power",
     "seeds": 192,
-    "clear": 176,
-    "extra": 145,
-    "infinity": 67,
+    "clear": 134,
+    "extra": 101,
+    "infinity": 54,
     "bossAttempts": [
       192,
       187,
-      185
+      178
     ],
     "bossWins": [
       192,
-      187,
-      176
+      185,
+      134
     ],
     "bossesByName": {
       "喰算の地殻獣": {
@@ -137,15 +137,15 @@
       },
       "天秤の終末巨像": {
         "attempts": 102,
-        "wins": 102,
+        "wins": 100,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 0
+        "remainingHpPctSum": 127
       },
       "無量門の王竜": {
-        "attempts": 94,
-        "wins": 91,
+        "attempts": 90,
+        "wins": 60,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 132
+        "remainingHpPctSum": 1137
       },
       "黒曜の公爵・城喰": {
         "attempts": 95,
@@ -160,66 +160,67 @@
         "remainingHpPctSum": 0
       },
       "星蝕の虚空皇帝": {
-        "attempts": 91,
-        "wins": 85,
+        "attempts": 88,
+        "wins": 74,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 399
+        "remainingHpPctSum": 1296
       }
     },
-    "turns": 9274,
+    "turns": 8887,
     "used": {
-      "mul": 9090,
-      "add": 8362,
-      "pct": 3276,
-      "pow": 1238,
-      "clean": 265,
-      "exp": 1598
+      "mul": 8727,
+      "add": 8080,
+      "pct": 3102,
+      "pow": 1112,
+      "clean": 264,
+      "exp": 1438
     },
     "relics": {
-      "mosaic": 147,
-      "tail": 181,
+      "mosaic": 138,
+      "tail": 178,
       "order": 175,
-      "prism": 156,
-      "star": 166,
-      "spring": 146,
-      "chain": 162,
-      "sum": 146,
+      "prism": 154,
+      "star": 157,
+      "spring": 141,
+      "chain": 156,
+      "sum": 143,
       "tithe": 145,
-      "abacus": 144,
-      "lattice": 150,
-      "rack": 155,
-      "furnace": 162,
-      "key": 96,
-      "codex": 140,
-      "ratio": 141,
-      "short": 110,
-      "grimoire": 146
+      "abacus": 136,
+      "lattice": 149,
+      "rack": 153,
+      "furnace": 152,
+      "key": 95,
+      "codex": 134,
+      "ratio": 129,
+      "grimoire": 139,
+      "short": 100
     },
     "lossesByEnemy": {
-      "3:boss": 9,
-      "4:extra": 31,
-      "3:elite": 1,
-      "3:fight": 1,
+      "3:boss": 44,
+      "4:extra": 33,
+      "3:elite": 5,
+      "3:fight": 2,
       "2:fight": 1,
+      "2:boss": 2,
       "2:elite": 4
     },
     "actReached": [
       192,
       192,
-      187,
-      176
+      185,
+      134
     ],
     "additionRelic": {
-      "ownedAtEnd": 181,
-      "clearWith": 165,
+      "ownedAtEnd": 176,
+      "clearWith": 127,
       "lossWithoutByAct": [
         0,
-        1,
         2,
-        4
+        8,
+        2
       ]
     },
-    "avgTurns": 48.3,
+    "avgTurns": 46.29,
     "max": "1.3451e+207",
     "maxExact": "1345119400168121998434218569127747711360040960000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
     "bestSeed": "db-175"
@@ -227,18 +228,18 @@
   {
     "policy": "mixed",
     "seeds": 192,
-    "clear": 181,
-    "extra": 139,
-    "infinity": 58,
+    "clear": 125,
+    "extra": 94,
+    "infinity": 46,
     "bossAttempts": [
       192,
       190,
-      188
+      179
     ],
     "bossWins": [
       192,
-      189,
-      181
+      188,
+      125
     ],
     "bossesByName": {
       "喰算の地殻獣": {
@@ -249,15 +250,15 @@
       },
       "天秤の終末巨像": {
         "attempts": 103,
-        "wins": 102,
+        "wins": 101,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 44
+        "remainingHpPctSum": 99
       },
       "無量門の王竜": {
-        "attempts": 96,
-        "wins": 92,
+        "attempts": 93,
+        "wins": 50,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 94
+        "remainingHpPctSum": 1757
       },
       "黒曜の公爵・城喰": {
         "attempts": 95,
@@ -272,84 +273,86 @@
         "remainingHpPctSum": 0
       },
       "星蝕の虚空皇帝": {
-        "attempts": 92,
-        "wins": 89,
+        "attempts": 86,
+        "wins": 75,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 255
+        "remainingHpPctSum": 949
       }
     },
-    "turns": 9474,
+    "turns": 8969,
     "used": {
-      "mul": 9294,
-      "add": 8479,
-      "pct": 3750,
-      "pow": 869,
-      "exp": 1804,
-      "clean": 264
+      "mul": 8820,
+      "add": 8074,
+      "pct": 3483,
+      "pow": 761,
+      "exp": 1577,
+      "clean": 248
     },
     "relics": {
-      "mosaic": 168,
-      "tail": 183,
-      "order": 182,
-      "ratio": 183,
-      "star": 157,
-      "rack": 145,
-      "key": 108,
-      "codex": 149,
-      "tithe": 153,
-      "spring": 147,
-      "furnace": 157,
-      "abacus": 150,
-      "grimoire": 142,
-      "sum": 146,
-      "prism": 152,
-      "chain": 156,
-      "short": 110,
-      "lattice": 150
+      "mosaic": 164,
+      "tail": 181,
+      "order": 178,
+      "ratio": 181,
+      "star": 150,
+      "rack": 138,
+      "key": 92,
+      "codex": 139,
+      "tithe": 148,
+      "spring": 138,
+      "furnace": 150,
+      "abacus": 138,
+      "grimoire": 138,
+      "sum": 142,
+      "prism": 144,
+      "chain": 153,
+      "short": 97,
+      "lattice": 142
     },
     "lossesByEnemy": {
-      "4:extra": 42,
-      "2:elite": 2,
-      "3:elite": 1,
-      "3:boss": 7,
-      "2:boss": 1
+      "4:extra": 31,
+      "3:boss": 54,
+      "3:elite": 4,
+      "2:fight": 1,
+      "2:boss": 2,
+      "3:fight": 5,
+      "2:elite": 1
     },
     "actReached": [
       192,
       192,
-      189,
-      181
+      188,
+      125
     ],
     "additionRelic": {
-      "ownedAtEnd": 181,
-      "clearWith": 167,
+      "ownedAtEnd": 174,
+      "clearWith": 118,
       "lossWithoutByAct": [
         0,
         1,
-        1,
-        3
+        11,
+        2
       ]
     },
-    "avgTurns": 49.34,
-    "max": "5.0692e+139",
-    "maxExact": "50692018248430904028932645794377599133357526219369234520944997818091754750358208762886394005289034857738881001985109771525251648704217088000",
-    "bestSeed": "db-7"
+    "avgTurns": 46.71,
+    "max": "4.3207e+151",
+    "maxExact": "43207458968473754584459771596222571799619010058547389742244426780994651229498944785944208964318763417600000000000000000000000000000000000000000000000000",
+    "bestSeed": "db-149"
   },
   {
     "policy": "additive",
     "seeds": 192,
-    "clear": 167,
-    "extra": 139,
-    "infinity": 24,
+    "clear": 136,
+    "extra": 87,
+    "infinity": 13,
     "bossAttempts": [
       192,
       183,
-      174
+      171
     ],
     "bossWins": [
-      192,
-      181,
-      167
+      191,
+      178,
+      136
     ],
     "bossesByName": {
       "喰算の地殻獣": {
@@ -360,90 +363,91 @@
       },
       "天秤の終末巨像": {
         "attempts": 100,
-        "wins": 98,
+        "wins": 96,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 198
+        "remainingHpPctSum": 296
       },
       "無量門の王竜": {
-        "attempts": 88,
-        "wins": 82,
+        "attempts": 86,
+        "wins": 60,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 264
+        "remainingHpPctSum": 1251
       },
       "黒曜の公爵・城喰": {
         "attempts": 95,
-        "wins": 95,
+        "wins": 94,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 0
+        "remainingHpPctSum": 28
       },
       "白紙の月蛾女王": {
         "attempts": 83,
-        "wins": 83,
+        "wins": 82,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 0
+        "remainingHpPctSum": 65
       },
       "星蝕の虚空皇帝": {
-        "attempts": 86,
-        "wins": 85,
+        "attempts": 85,
+        "wins": 76,
         "lossAtFullHp": 0,
-        "remainingHpPctSum": 88
+        "remainingHpPctSum": 877
       }
     },
-    "turns": 8858,
+    "turns": 8532,
     "used": {
-      "mul": 5773,
-      "add": 13810,
-      "pct": 2057,
-      "exp": 934,
+      "mul": 5601,
+      "add": 13231,
+      "pct": 1982,
+      "exp": 870,
       "clean": 251,
-      "pow": 428
+      "pow": 368
     },
     "relics": {
-      "sum": 175,
-      "tail": 176,
+      "sum": 173,
+      "tail": 173,
       "order": 176,
-      "codex": 138,
-      "star": 127,
-      "furnace": 141,
+      "codex": 127,
+      "star": 122,
+      "furnace": 137,
       "abacus": 180,
-      "prism": 151,
-      "lattice": 142,
-      "grimoire": 144,
-      "tithe": 154,
-      "rack": 134,
-      "mosaic": 126,
-      "short": 110,
-      "spring": 130,
-      "ratio": 135,
-      "key": 108,
-      "chain": 145
+      "prism": 150,
+      "lattice": 138,
+      "grimoire": 138,
+      "tithe": 151,
+      "rack": 130,
+      "mosaic": 124,
+      "short": 104,
+      "spring": 122,
+      "ratio": 131,
+      "key": 102,
+      "chain": 137
     },
     "lossesByEnemy": {
-      "3:fight": 6,
-      "4:extra": 28,
-      "3:boss": 7,
+      "3:fight": 5,
+      "4:extra": 49,
+      "3:elite": 2,
+      "3:boss": 35,
+      "2:boss": 5,
       "2:elite": 3,
-      "2:boss": 2,
-      "2:fight": 6,
-      "3:elite": 1
+      "2:fight": 5,
+      "1:boss": 1
     },
     "actReached": [
       192,
-      192,
-      181,
-      167
+      191,
+      178,
+      136
     ],
     "additionRelic": {
       "ownedAtEnd": 186,
-      "clearWith": 166,
+      "clearWith": 135,
       "lossWithoutByAct": [
-        0,
-        3,
+        1,
         2,
-        0
+        2,
+        1
       ]
     },
-    "avgTurns": 46.14,
+    "avgTurns": 44.44,
     "max": "3.4377e+133",
     "maxExact": "34377725049120350497051761742063801495603791110140811171430798216479325866942144614587669545687550766153212485070197056427172613324800",
     "bestSeed": "db-7"

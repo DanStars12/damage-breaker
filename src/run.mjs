@@ -144,7 +144,7 @@ export class Run {
       const boss=this.enemy.kind==='boss', elite=this.enemy.elite;
       if(boss) this.stats.bosses++;
       const hpBefore=this.hp;
-      this.hp=Math.min(100,this.hp+(boss?31:elite?16:10));
+      this.hp=Math.min(100,this.hp+(boss?28:elite?13:7));
       this.victoryHeal=this.hp-hpBefore;
       if(elite||boss||this.act===4) {
         const pool=Object.keys(relics).filter(id=>!this.owned.includes(id));

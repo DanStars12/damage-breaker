@@ -281,3 +281,25 @@ test('ACT III boss HP curves preserve dragon gates and the emperor barrier',()=>
   assert.equal(makeEnemy(3,'boss',1,9,bench).max,bench/3n);
   assert.equal(makeEnemy(3,'boss',1,9,10n**80n).max,emperor.max*400n);
 });
+
+
+test('boss attack follows the ACT curve and victory healing depends on encounter rank',()=>{
+  for(const [i,attack] of [12,18,25].entries()) {
+    for(const variant of [0,1]) {
+      assert.equal(makeEnemy(i+1,'boss',variant,9).attack,attack);
+    }
+  }
+  const r=new Run('recovery-by-rank');
+  for(const [kind,recovery] of [['fight',7],['elite',13],['boss',28]]) {
+    forceNode(r,kind);
+    r.hp=40;
+    kill(r);
+    assert.equal(r.victoryHeal,recovery);
+    assert.equal(r.hp,40+recovery);
+  }
+  forceNode(r,'fight');
+  r.hp=98;
+  kill(r);
+  assert.equal(r.hp,100);
+  assert.equal(r.victoryHeal,2);
+});
