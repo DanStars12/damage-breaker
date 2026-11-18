@@ -53,11 +53,7 @@ function intentText() {
   return `${a.at}枠目の後に ${label(a)} を挿入${run.ward?'（結界で防御可能）':''}`;
 }
 function sidebar(p) {
-  const active=new Set(p.triggers.map(t=>t.id));
-  if(run.deb.some(c=>c.kind==='div')) {
-    if(run.owned.includes('prism')) active.add('prism');
-    else if(run.owned.includes('key')) active.add('key');
-  }
+  const active=relicActivations(p);
   return `<aside>
     <section class="frame"><h2>術師の記録</h2><div class="data">
     <span>HP <b>${run.hp}/${run.maxHp}</b></span><span>金貨 <b>${run.gold}</b></span>
@@ -65,16 +61,20 @@ function sidebar(p) {
     <small>歴代最高</small><div class="record">${fmt(BigInt(book.best.max))}</div>
     <div class="actions" style="margin-top:9px">${btn('デッキ '+run.deck.length,'deck')}${btn('履歴','history')}</div></section>
     <section class="frame"><h2>所持レリック</h2>${run.owned.map(id=>
-      `<button class="rune" data-relic="${id}" data-action="relic:${id}" title="${relics[id].desc}">${relics[id].name}<small>${active.has(id)?'発動':relics[id].desc}</small></button>`
+      `<button class="rune${active.has(id)?' rune-ready':''}" data-relic="${id}" data-action="relic:${id}">
+        <span class="rune-heading"><span>${relics[id].name}</span><span class="rune-state">${active.has(id)?'発動可能':''}</span></span>
+        <small>${relics[id].desc}</small></button>`
     ).join('')||'<p class="muted">所持なし</p>'}</section></aside>`;
 }
 function damageReceipt() {
   const p=run.lastBurst;
   if(!p) return '';
   const kind=p.impact.kind, status=kind==='barrier'?'バリアで無効':kind==='gate'?'耐久段階を突破':kind==='miss'?'ダメージなし':'';
+  const fired=[...relicActivations(p)].map(id=>relics[id].name);
   return `<section class="damage-receipt" aria-label="直前の攻撃結果">
     <div><small>確定BURST</small><strong title="${p.final}">${compact(p.final)}</strong></div>
-    <div><small>敵HPの減少</small><strong title="${p.impact.dealt}">${compact(p.impact.dealt,false)}</strong>${status?`<small>${status}</small>`:''}</div></section>`;
+    <div><small>敵HPの減少</small><strong title="${p.impact.dealt}">${compact(p.impact.dealt,false)}</strong>${status?`<small>${status}</small>`:''}</div>
+    ${fired.length?`<p class="relic-receipt">✦ 発動レリック　${fired.join(' ／ ')}</p>`:''}</section>`;
 }
 function battle() {
   const p=run.preview(), e=run.enemy;
@@ -267,7 +267,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.5.8</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.5.9</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -633,17 +633,26 @@ async function showBurst() {
       const disabled=[...app.querySelectorAll('button:not(:disabled)')].filter(b=>b.dataset.action!=='skip');
       disabled.forEach(b=>b.disabled=true);
       reel.querySelector('button').focus({preventScroll:true});
-      let lit=null;
+      let lit=null, firingRelic=null;
       for(const [i,step] of steps.entries()) {
         if(signal.aborted) break;
         lit?.classList.remove('resolving');
-        lit=step.relic?app.querySelector('[data-relic="'+step.relic+'"]'):
-          step.index===undefined?null:app.querySelector('[data-calc="'+step.index+'"]');
+        if(firingRelic) {
+          firingRelic.classList.remove('relic-firing');
+          firingRelic.querySelector('.rune-state').textContent='発動';
+        }
+        lit=step.index===undefined?null:app.querySelector('[data-calc="'+step.index+'"]');
         lit?.classList.add('resolving');
+        firingRelic=step.relic?app.querySelector('[data-relic="'+step.relic+'"]'):null;
+        if(firingRelic) {
+          void firingRelic.offsetWidth;
+          firingRelic.classList.add('relic-fired','relic-firing');
+          firingRelic.querySelector('.rune-state').textContent='発動中';
+        }
         const level=magnitude(step.value);
         reel.dataset.kind=step.type;
         reel.dataset.level=level;
-        name.textContent=step.name;
+        name.textContent=step.relic?'✦ 発動 · '+step.name:step.name;
         combo.textContent=step.combo+' COMBO';
         counter.title=exactRat(step.value);
         counter.classList.remove('count-pop');

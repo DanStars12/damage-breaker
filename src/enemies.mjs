@@ -1,38 +1,38 @@
 const normalSpecs=[
-  [['灰の番人','lantern','attack','sub'],['錆びた典礼騎士','knight','attack','div'],['煙墓の猟犬','hound','double','attack'],
-   ['火花の精','wisp','sub','attack'],['黄銅の甲虫','beetle','attack','pct'],['迷路の甲冑霊','specter','pct','attack']],
-  [['割算の巫女','specter','div','attack'],['禁書の近衛','knight','lock:add','attack'],['鉱脈の甲虫','beetle','attack','div'],
-   ['霧裂きの牙獣','hound','double','pct'],['青焔の漂霊','wisp','drain','attack'],['書庫の灯守','lantern','attack','sub']],
-  [['星喰いの司祭','specter','pct','attack'],['虚数の竜騎士','knight','attack','double'],['虚光の散霊','wisp','lock:pct','attack'],
-   ['裂星の大甲虫','beetle','div','attack'],['影渡りの猟獣','hound','double','sub'],['無数灯の門番','lantern','drain','attack']]
+  [['アッシュランタン','lantern','attack','sub'],['ラストテンプラー','knight','attack','div'],['グレイヴハウンド','hound','double','attack'],
+   ['エンバーウィスプ','wisp','sub','attack'],['ブラススカラベ','beetle','attack','pct'],['ラビリンスレイス','specter','pct','attack']],
+  [['セヴラ・オラクル','specter','div','attack'],['ヴェイルガード','knight','lock:add','attack'],['ジオードスカラベ','beetle','attack','div'],
+   ['ミストファング','hound','double','pct'],['アズールウィスプ','wisp','drain','attack'],['ルクス・ライブラリアン','lantern','attack','sub']],
+  [['アストラヴォア','specter','pct','attack'],['ファントムドラグーン','knight','attack','double'],['ノクスウィスプ','wisp','lock:pct','attack'],
+   ['スターフラクチャー','beetle','div','attack'],['アンブラハウンド','hound','double','sub'],['エーテルゲートキーパー','lantern','drain','attack']]
 ];
 const monsterForms=[['golem','hydra','wyrm'],['behemoth','golem','mantis'],['hydra','idol','wyrm']];
 const bossForms=[['titan','leviathan'],['colossus','moth'],['dragon','eclipse']];
 const eliteSpecs=[
   [
-    ['鉄槌の巌巨人',1,'衝撃波で二連打。','double','attack','sub'],
-    ['霜印の三頭竜',3,'加算を封じ、基礎値も冷却する。','lock:add','drain','attack'],
-    ['砂刻の大蛇',0,'基礎値を半減し、除算を差し込む。','drain','attack','div']
+    ['グラニト・タイタン',1,'衝撃波で二連打。','double','attack','sub'],
+    ['クリオヒュドラ',3,'加算を封じ、基礎値も冷却する。','lock:add','drain','attack'],
+    ['サンドクロノス',0,'基礎値を半減し、除算を差し込む。','drain','attack','div']
   ],[
-    ['欠数の獣',7,'BURSTを1回だけ無効化する。', 'attack','div','double','barrier'],
-    ['虚算の封石巨人',4,'乗算を封じ、基礎値を削ぐ。','lock:mul','drain','attack'],
-    ['赤鏡の大鎌蟷螂',2,'二連撃と割合妨害を交互に使う。','pct','double','attack']
+    ['ヴォイドベヒモス',7,'BURSTを1回だけ無効化する。', 'attack','div','double','barrier'],
+    ['シジルゴーレム',4,'乗算を封じ、基礎値を削ぐ。','lock:mul','drain','attack'],
+    ['ルビーミラーマンティス',2,'二連撃と割合妨害を交互に使う。','pct','double','attack']
   ],[
-    ['逆星の三頭竜',6,'累乗を封じ、強い除算を差し込む。','lock:pow','div','double','attack'],
-    ['無価の食人巨像',5,'回復可能な範囲でHPを直接削り、基礎値を弱める。','wither','drain','double','attack'],
-    ['二重影の飛蛇',9,'BURSTを1回無効化し、指数を封じる。','lock:exp','double','attack','barrier']
+    ['アンチアストラ・ヒュドラ',6,'累乗を封じ、強い除算を差し込む。','lock:pow','div','double','attack'],
+    ['デヴォーラ・イドル',5,'回復可能な範囲でHPを直接削り、基礎値を弱める。','wither','drain','double','attack'],
+    ['ジェミニワーム',9,'BURSTを1回無効化し、指数を封じる。','lock:exp','double','attack','barrier']
   ]
 ];
 const bossSpecs=[
   [
-    ['黒曜の公爵・城喰',2,'開幕バリアが攻撃を2回無効化する。','attack','sub','double','barrier2'],
-    ['喰算の地殻獣',5,'基礎値を半減し、加算を封じる。','drain','attack','lock:add','double']
+    ['オブシディアン・デューク',2,'開幕バリアが攻撃を2回無効化する。','attack','sub','double','barrier2'],
+    ['テラヴォア・リヴァイアサン',5,'基礎値を半減し、加算を封じる。','drain','attack','lock:add','double']
   ],[
-    ['天秤の終末巨像',5,'HP半分で耐える。撃破には最低2回の有効BURSTが必要。','pct','attack','drain','double','gate2'],
-    ['白紙の月蛾女王',3,'乗算と割合を交互に封じ、基礎値も削ぐ。','lock:mul','attack','lock:pct','drain','double']
+    ['リブラ・コロッサス',5,'HP半分で耐える。撃破には最低2回の有効BURSTが必要。','pct','attack','drain','double','gate2'],
+    ['ルナリア・モスクイーン',3,'乗算と割合を交互に封じ、基礎値も削ぐ。','lock:mul','attack','lock:pct','drain','double']
   ],[
-    ['無量門の王竜',8,'HPの⅔と⅓で耐える。最低3回の有効BURSTが必要。','div','double','drain','attack','gate3'],
-    ['星蝕の虚空皇帝',9,'2回の無効バリアに加え、最大HPを削る吸命と累乗封印を使う。','wither','lock:pow','double','attack','barrier2']
+    ['アエテル・ドラゴンロード',8,'HPの⅔と⅓で耐える。最低3回の有効BURSTが必要。','div','double','drain','attack','gate3'],
+    ['エクリプス・エンペラー',9,'2回の無効バリアに加え、最大HPを削る吸命と累乗封印を使う。','wither','lock:pow','double','attack','barrier2']
   ]
 ];
 const normalFloors=[330n,320000n,10n**11n];
@@ -44,8 +44,14 @@ const finalBossBalance=[
   {floor:5n*10n**18n, scaleDivisor:3n, armor:2}
 ];
 export const operationNames={add:'加算',mul:'乗算',pct:'割合',pow:'累乗',exp:'指数'};
+const extraEnemyName='エコー・オブ・インフィニティ';
+export function encounterName(act,kind,variant) {
+  if(act===4&&kind==='extra') return extraEnemyName;
+  const specs={fight:normalSpecs,elite:eliteSpecs,boss:bossSpecs};
+  return specs[kind]?.[act-1]?.[variant]?.[0];
+}
 export function makeEnemy(act,kind,variant,row,bench=0n) {
-  if(act===4) return {name:'無限の残響',title:'EXTRA',detail:'耐久段階を越えて無限を破る。',art:{form:'eclipse',palette:17},kind:'extra',
+  if(act===4) return {name:extraEnemyName,title:'EXTRA',detail:'耐久段階を越えて無限を破る。',art:{form:'eclipse',palette:17},kind:'extra',
     hp:10n**31n,max:10n**31n,attack:21,armor:5,barrier:0,gates:[5n*10n**30n],cycle:['div','attack','drain','double']};
   const a=act-1, elite=kind==='elite', boss=kind==='boss';
   const spec=elite?eliteSpecs[a][variant]:boss?bossSpecs[a][variant]:null;

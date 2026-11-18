@@ -1,6 +1,7 @@
 import {random} from './cards.mjs';
 import {Run} from './run.mjs';
 import {relics} from './relics.mjs';
+import {encounterName} from './enemies.mjs';
 
 const checkpointVersion=1;
 const resumablePhases=['map','battle','reward','facility','clear'];
@@ -51,6 +52,10 @@ export function readCheckpoint(serialized) {
     if(craftResult&&(!shopKinds.includes(craftResult.kind)||(craftResult.result&&!validCard(craftResult.result))||
       (craftResult.kind!=='event'&&!validCards(craftResult.sources))||
       (craftResult.relic&&!validRelic(craftResult.relic)))) return null;
+    if(state.phase==='battle'||state.phase==='reward') {
+      const variant=state.enemy.art?.palette%6;
+      state.enemy.name=encounterName(state.act,state.enemy.kind,variant)??state.enemy.name;
+    }
     Object.setPrototypeOf(state,Run.prototype);
     state.rng=random(state.seed,randomState);
     return {run:state,notice,craftResult};

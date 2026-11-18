@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {CAP} from '../src/math.mjs';
 import {evaluate} from '../src/relics.mjs';
 import {card,upgraded} from '../src/cards.mjs';
-import {timeline,magnitude,reelValue,impactForce} from '../src/presentation.mjs';
+import {timeline,magnitude,reelValue,impactForce,relicActivations} from '../src/presentation.mjs';
 
 test('timeline preserves resolution order, exact relic value and armored damage',()=>{
   const result=evaluate({board:[card('add',10),card('mul',12),card('add',100),card('mul',101)],
@@ -43,4 +43,19 @@ test('arena effects distinguish ordinary and large hits from defensive outcomes'
   assert.equal(feel(CAP+1n,'barrier'),'ward');
   assert.equal(feel(CAP+1n,'gate'),'break');
   assert.equal(feel(0n,'miss'),'none');
+});
+
+test('relic feedback follows the real calculation order and respects DIV priority',()=>{
+  const board=[card('add',20)];
+  const deb=[{kind:'div',value:2,at:0,enemy:true},{kind:'div',value:5,at:1,enemy:true}];
+  const both=evaluate({board,deb,owned:['key','prism','sum']});
+  assert.deepEqual([...relicActivations(both)],['prism','sum']);
+  const steps=timeline(both,1);
+  assert.deepEqual(steps.filter(s=>s.relic).map(s=>s.relic),['prism','prism','sum']);
+  assert.deepEqual(steps[0].value,[40n,1n]);
+  assert.equal(steps[0].index,0);
+  const cancelled=timeline(evaluate({board,deb,owned:['key']}),1);
+  assert.equal(cancelled[0].relic,'key');
+  assert.match(cancelled[0].name,/無効/);
+  assert.deepEqual([...relicActivations(evaluate({board,owned:['prism','key','furnace']}))],[]);
 });

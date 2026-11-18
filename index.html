@@ -518,6 +518,59 @@ header nav { flex-wrap: wrap; }
 .remove-form .result-card { width: min(135px,100%); }
 .remove-form button { justify-self: start; }
 .remove-form :is(#removeStatus,#removePreview):empty { display: none; }
+
+.rune {
+  position: relative;
+  padding: .55rem .5rem;
+  margin-block: .15rem;
+  border-left: 2px solid transparent;
+}
+.rune-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .15rem .35rem;
+  font-weight: bold;
+}
+.rune-state {
+  flex: none;
+  padding: .05rem .3rem;
+  border: 1px solid currentColor;
+  color: #d7b9fc;
+  font: 700 .68rem/1.3 var(--interface);
+}
+.rune-state:empty { display: none; }
+.rune.rune-ready {
+  border-left-color: #ae88d9;
+  background: #8460a526;
+}
+.rune.rune-fired {
+  border-left-color: #ffe09a;
+  background: #9e6b392d;
+}
+.rune.rune-fired .rune-state { color: #ffe09a; }
+.rune.rune-firing {
+  color: #fff1cb;
+  background: #94653665;
+  animation: relic-ignite 360ms ease-out both;
+}
+.rune:disabled { opacity: 1; }
+.relic-receipt {
+  grid-column: 1 / -1;
+  padding: .3rem .7rem;
+  background: #2d2036;
+  color: #f1d7fa;
+  font: 600 .78rem/1.5 var(--interface);
+  overflow-wrap: anywhere;
+}
+@keyframes relic-ignite {
+  0% { box-shadow: inset 0 0 0 0 #ffdf9a; }
+  33% { box-shadow: inset 0 0 0 2px #ffdf9a, 0 0 12px #ffc96c77; }
+  100% { box-shadow: inset 0 0 0 1px #ffdf9a; }
+}
+#app[data-motion="fast"] .rune.relic-firing { animation-duration: 95ms; }
+#app[data-motion="off"] .rune.relic-firing { animation: none; }
 </style>
 </head>
 <body>
@@ -786,40 +839,40 @@ function makeMap(seed,act) {
 }
 
 const normalSpecs=[
-  [['灰の番人','lantern','attack','sub'],['錆びた典礼騎士','knight','attack','div'],['煙墓の猟犬','hound','double','attack'],
-   ['火花の精','wisp','sub','attack'],['黄銅の甲虫','beetle','attack','pct'],['迷路の甲冑霊','specter','pct','attack']],
-  [['割算の巫女','specter','div','attack'],['禁書の近衛','knight','lock:add','attack'],['鉱脈の甲虫','beetle','attack','div'],
-   ['霧裂きの牙獣','hound','double','pct'],['青焔の漂霊','wisp','drain','attack'],['書庫の灯守','lantern','attack','sub']],
-  [['星喰いの司祭','specter','pct','attack'],['虚数の竜騎士','knight','attack','double'],['虚光の散霊','wisp','lock:pct','attack'],
-   ['裂星の大甲虫','beetle','div','attack'],['影渡りの猟獣','hound','double','sub'],['無数灯の門番','lantern','drain','attack']]
+  [['アッシュランタン','lantern','attack','sub'],['ラストテンプラー','knight','attack','div'],['グレイヴハウンド','hound','double','attack'],
+   ['エンバーウィスプ','wisp','sub','attack'],['ブラススカラベ','beetle','attack','pct'],['ラビリンスレイス','specter','pct','attack']],
+  [['セヴラ・オラクル','specter','div','attack'],['ヴェイルガード','knight','lock:add','attack'],['ジオードスカラベ','beetle','attack','div'],
+   ['ミストファング','hound','double','pct'],['アズールウィスプ','wisp','drain','attack'],['ルクス・ライブラリアン','lantern','attack','sub']],
+  [['アストラヴォア','specter','pct','attack'],['ファントムドラグーン','knight','attack','double'],['ノクスウィスプ','wisp','lock:pct','attack'],
+   ['スターフラクチャー','beetle','div','attack'],['アンブラハウンド','hound','double','sub'],['エーテルゲートキーパー','lantern','drain','attack']]
 ];
 const monsterForms=[['golem','hydra','wyrm'],['behemoth','golem','mantis'],['hydra','idol','wyrm']];
 const bossForms=[['titan','leviathan'],['colossus','moth'],['dragon','eclipse']];
 const eliteSpecs=[
   [
-    ['鉄槌の巌巨人',1,'衝撃波で二連打。','double','attack','sub'],
-    ['霜印の三頭竜',3,'加算を封じ、基礎値も冷却する。','lock:add','drain','attack'],
-    ['砂刻の大蛇',0,'基礎値を半減し、除算を差し込む。','drain','attack','div']
+    ['グラニト・タイタン',1,'衝撃波で二連打。','double','attack','sub'],
+    ['クリオヒュドラ',3,'加算を封じ、基礎値も冷却する。','lock:add','drain','attack'],
+    ['サンドクロノス',0,'基礎値を半減し、除算を差し込む。','drain','attack','div']
   ],[
-    ['欠数の獣',7,'BURSTを1回だけ無効化する。', 'attack','div','double','barrier'],
-    ['虚算の封石巨人',4,'乗算を封じ、基礎値を削ぐ。','lock:mul','drain','attack'],
-    ['赤鏡の大鎌蟷螂',2,'二連撃と割合妨害を交互に使う。','pct','double','attack']
+    ['ヴォイドベヒモス',7,'BURSTを1回だけ無効化する。', 'attack','div','double','barrier'],
+    ['シジルゴーレム',4,'乗算を封じ、基礎値を削ぐ。','lock:mul','drain','attack'],
+    ['ルビーミラーマンティス',2,'二連撃と割合妨害を交互に使う。','pct','double','attack']
   ],[
-    ['逆星の三頭竜',6,'累乗を封じ、強い除算を差し込む。','lock:pow','div','double','attack'],
-    ['無価の食人巨像',5,'回復可能な範囲でHPを直接削り、基礎値を弱める。','wither','drain','double','attack'],
-    ['二重影の飛蛇',9,'BURSTを1回無効化し、指数を封じる。','lock:exp','double','attack','barrier']
+    ['アンチアストラ・ヒュドラ',6,'累乗を封じ、強い除算を差し込む。','lock:pow','div','double','attack'],
+    ['デヴォーラ・イドル',5,'回復可能な範囲でHPを直接削り、基礎値を弱める。','wither','drain','double','attack'],
+    ['ジェミニワーム',9,'BURSTを1回無効化し、指数を封じる。','lock:exp','double','attack','barrier']
   ]
 ];
 const bossSpecs=[
   [
-    ['黒曜の公爵・城喰',2,'開幕バリアが攻撃を2回無効化する。','attack','sub','double','barrier2'],
-    ['喰算の地殻獣',5,'基礎値を半減し、加算を封じる。','drain','attack','lock:add','double']
+    ['オブシディアン・デューク',2,'開幕バリアが攻撃を2回無効化する。','attack','sub','double','barrier2'],
+    ['テラヴォア・リヴァイアサン',5,'基礎値を半減し、加算を封じる。','drain','attack','lock:add','double']
   ],[
-    ['天秤の終末巨像',5,'HP半分で耐える。撃破には最低2回の有効BURSTが必要。','pct','attack','drain','double','gate2'],
-    ['白紙の月蛾女王',3,'乗算と割合を交互に封じ、基礎値も削ぐ。','lock:mul','attack','lock:pct','drain','double']
+    ['リブラ・コロッサス',5,'HP半分で耐える。撃破には最低2回の有効BURSTが必要。','pct','attack','drain','double','gate2'],
+    ['ルナリア・モスクイーン',3,'乗算と割合を交互に封じ、基礎値も削ぐ。','lock:mul','attack','lock:pct','drain','double']
   ],[
-    ['無量門の王竜',8,'HPの⅔と⅓で耐える。最低3回の有効BURSTが必要。','div','double','drain','attack','gate3'],
-    ['星蝕の虚空皇帝',9,'2回の無効バリアに加え、最大HPを削る吸命と累乗封印を使う。','wither','lock:pow','double','attack','barrier2']
+    ['アエテル・ドラゴンロード',8,'HPの⅔と⅓で耐える。最低3回の有効BURSTが必要。','div','double','drain','attack','gate3'],
+    ['エクリプス・エンペラー',9,'2回の無効バリアに加え、最大HPを削る吸命と累乗封印を使う。','wither','lock:pow','double','attack','barrier2']
   ]
 ];
 const normalFloors=[330n,320000n,10n**11n];
@@ -831,8 +884,14 @@ const finalBossBalance=[
   {floor:5n*10n**18n, scaleDivisor:3n, armor:2}
 ];
 const operationNames={add:'加算',mul:'乗算',pct:'割合',pow:'累乗',exp:'指数'};
+const extraEnemyName='エコー・オブ・インフィニティ';
+function encounterName(act,kind,variant) {
+  if(act===4&&kind==='extra') return extraEnemyName;
+  const specs={fight:normalSpecs,elite:eliteSpecs,boss:bossSpecs};
+  return specs[kind]?.[act-1]?.[variant]?.[0];
+}
 function makeEnemy(act,kind,variant,row,bench=0n) {
-  if(act===4) return {name:'無限の残響',title:'EXTRA',detail:'耐久段階を越えて無限を破る。',art:{form:'eclipse',palette:17},kind:'extra',
+  if(act===4) return {name:extraEnemyName,title:'EXTRA',detail:'耐久段階を越えて無限を破る。',art:{form:'eclipse',palette:17},kind:'extra',
     hp:10n**31n,max:10n**31n,attack:21,armor:5,barrier:0,gates:[5n*10n**30n],cycle:['div','attack','drain','double']};
   const a=act-1, elite=kind==='elite', boss=kind==='boss';
   const spec=elite?eliteSpecs[a][variant]:boss?bossSpecs[a][variant]:null;
@@ -1228,6 +1287,10 @@ function readCheckpoint(serialized) {
     if(craftResult&&(!shopKinds.includes(craftResult.kind)||(craftResult.result&&!validCard(craftResult.result))||
       (craftResult.kind!=='event'&&!validCards(craftResult.sources))||
       (craftResult.relic&&!validRelic(craftResult.relic)))) return null;
+    if(state.phase==='battle'||state.phase==='reward') {
+      const variant=state.enemy.art?.palette%6;
+      state.enemy.name=encounterName(state.act,state.enemy.kind,variant)??state.enemy.name;
+    }
     Object.setPrototypeOf(state,Run.prototype);
     state.rng=random(state.seed,randomState);
     return {run:state,notice,craftResult};
@@ -1840,13 +1903,29 @@ function magnitude([n,d]) {
   const abs=n<0n?-n:n;
   return damageThresholds.filter(value=>abs>=value*d).length;
 }
+function divisorRelic(step) {
+  if(!step.card.enemy||step.card.kind!=='div') return null;
+  if(!step.op) return 'key';
+  return step.op.kind==='mul'?'prism':null;
+}
+function relicActivations(result) {
+  const ids=new Set();
+  for(const step of result.steps) {
+    const id=divisorRelic(step);
+    if(id) ids.add(id);
+  }
+  for(const trigger of result.triggers) ids.add(trigger.id);
+  return ids;
+}
 function timeline(result,armor) {
   let combo=0;
   const steps=result.steps.map((step,index)=>{
     if(!step.card.enemy && step.op) combo++;
     const type=step.card.enemy?'enemy':step.op?'card':'enemy';
-    const name=step.op?label(step.op):label(step.card)+' 無効';
-    return {index,type,name,value:step.result,combo};
+    const operation=step.op?label(step.op):label(step.card)+' 無効';
+    const relic=divisorRelic(step);
+    const name=relic?relics[relic].name+' · '+operation:operation;
+    return {index,type:relic?'relic':type,name,value:step.result,combo,...(relic?{relic}:{})};
   });
   for(const trigger of result.triggers) {
     steps.push({type:'relic',name:relics[trigger.id].name+' · '+label(trigger.op),value:trigger.result,combo,relic:trigger.id});
@@ -1935,11 +2014,7 @@ function intentText() {
   return `${a.at}枠目の後に ${label(a)} を挿入${run.ward?'（結界で防御可能）':''}`;
 }
 function sidebar(p) {
-  const active=new Set(p.triggers.map(t=>t.id));
-  if(run.deb.some(c=>c.kind==='div')) {
-    if(run.owned.includes('prism')) active.add('prism');
-    else if(run.owned.includes('key')) active.add('key');
-  }
+  const active=relicActivations(p);
   return `<aside>
     <section class="frame"><h2>術師の記録</h2><div class="data">
     <span>HP <b>${run.hp}/${run.maxHp}</b></span><span>金貨 <b>${run.gold}</b></span>
@@ -1947,16 +2022,20 @@ function sidebar(p) {
     <small>歴代最高</small><div class="record">${fmt(BigInt(book.best.max))}</div>
     <div class="actions" style="margin-top:9px">${btn('デッキ '+run.deck.length,'deck')}${btn('履歴','history')}</div></section>
     <section class="frame"><h2>所持レリック</h2>${run.owned.map(id=>
-      `<button class="rune" data-relic="${id}" data-action="relic:${id}" title="${relics[id].desc}">${relics[id].name}<small>${active.has(id)?'発動':relics[id].desc}</small></button>`
+      `<button class="rune${active.has(id)?' rune-ready':''}" data-relic="${id}" data-action="relic:${id}">
+        <span class="rune-heading"><span>${relics[id].name}</span><span class="rune-state">${active.has(id)?'発動可能':''}</span></span>
+        <small>${relics[id].desc}</small></button>`
     ).join('')||'<p class="muted">所持なし</p>'}</section></aside>`;
 }
 function damageReceipt() {
   const p=run.lastBurst;
   if(!p) return '';
   const kind=p.impact.kind, status=kind==='barrier'?'バリアで無効':kind==='gate'?'耐久段階を突破':kind==='miss'?'ダメージなし':'';
+  const fired=[...relicActivations(p)].map(id=>relics[id].name);
   return `<section class="damage-receipt" aria-label="直前の攻撃結果">
     <div><small>確定BURST</small><strong title="${p.final}">${compact(p.final)}</strong></div>
-    <div><small>敵HPの減少</small><strong title="${p.impact.dealt}">${compact(p.impact.dealt,false)}</strong>${status?`<small>${status}</small>`:''}</div></section>`;
+    <div><small>敵HPの減少</small><strong title="${p.impact.dealt}">${compact(p.impact.dealt,false)}</strong>${status?`<small>${status}</small>`:''}</div>
+    ${fired.length?`<p class="relic-receipt">✦ 発動レリック　${fired.join(' ／ ')}</p>`:''}</section>`;
 }
 function battle() {
   const p=run.preview(), e=run.enemy;
@@ -2149,7 +2228,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.5.8</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.5.9</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -2515,17 +2594,26 @@ async function showBurst() {
       const disabled=[...app.querySelectorAll('button:not(:disabled)')].filter(b=>b.dataset.action!=='skip');
       disabled.forEach(b=>b.disabled=true);
       reel.querySelector('button').focus({preventScroll:true});
-      let lit=null;
+      let lit=null, firingRelic=null;
       for(const [i,step] of steps.entries()) {
         if(signal.aborted) break;
         lit?.classList.remove('resolving');
-        lit=step.relic?app.querySelector('[data-relic="'+step.relic+'"]'):
-          step.index===undefined?null:app.querySelector('[data-calc="'+step.index+'"]');
+        if(firingRelic) {
+          firingRelic.classList.remove('relic-firing');
+          firingRelic.querySelector('.rune-state').textContent='発動';
+        }
+        lit=step.index===undefined?null:app.querySelector('[data-calc="'+step.index+'"]');
         lit?.classList.add('resolving');
+        firingRelic=step.relic?app.querySelector('[data-relic="'+step.relic+'"]'):null;
+        if(firingRelic) {
+          void firingRelic.offsetWidth;
+          firingRelic.classList.add('relic-fired','relic-firing');
+          firingRelic.querySelector('.rune-state').textContent='発動中';
+        }
         const level=magnitude(step.value);
         reel.dataset.kind=step.type;
         reel.dataset.level=level;
-        name.textContent=step.name;
+        name.textContent=step.relic?'✦ 発動 · '+step.name:step.name;
         combo.textContent=step.combo+' COMBO';
         counter.title=exactRat(step.value);
         counter.classList.remove('count-pop');

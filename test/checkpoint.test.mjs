@@ -121,3 +121,19 @@ test('a second elite relic can be chosen after reload and the other stays unowne
   assert(migrated.chooseRelic(true));
   assert.deepEqual(migrated.owned,[relicDrop]);
 });
+
+
+test('loading an old enemy name updates the label while preserving battle state',()=>{
+  const run=new Run('checkpoint-renamed-foe');
+  run.act=3;
+  run.start({kind:'boss',variant:1,row:9});
+  run.enemy.hp-=1n;
+  run.enemy.barrier=1;
+  run.enemy.name='星蝕の虚空皇帝';
+  const loaded=restore(run).run;
+  assert.equal(loaded.enemy.name,'エクリプス・エンペラー');
+  assert.equal(loaded.enemy.hp,run.enemy.hp);
+  assert.equal(loaded.enemy.barrier,1);
+  assert.deepEqual(loaded.enemy.gates,run.enemy.gates);
+  assert.deepEqual(loaded.next,run.next);
+});

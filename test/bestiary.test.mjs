@@ -12,6 +12,8 @@ test('all enemy encounters including EXTRA have distinct face silhouettes using 
   }
   enemies.push(makeEnemy(4,'extra',0));
   const silhouettes=new Set();
+  assert.equal(new Set(enemies.map(e=>e.name)).size,34);
+  assert(enemies.every(e=>/^[ァ-ヺー・]+$/.test(e.name)));
   for(const {name,art:{form,palette}} of enemies) {
     let path, silhouette;
     const context={

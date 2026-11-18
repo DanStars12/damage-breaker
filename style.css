@@ -511,3 +511,56 @@ header nav { flex-wrap: wrap; }
 .remove-form .result-card { width: min(135px,100%); }
 .remove-form button { justify-self: start; }
 .remove-form :is(#removeStatus,#removePreview):empty { display: none; }
+
+.rune {
+  position: relative;
+  padding: .55rem .5rem;
+  margin-block: .15rem;
+  border-left: 2px solid transparent;
+}
+.rune-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .15rem .35rem;
+  font-weight: bold;
+}
+.rune-state {
+  flex: none;
+  padding: .05rem .3rem;
+  border: 1px solid currentColor;
+  color: #d7b9fc;
+  font: 700 .68rem/1.3 var(--interface);
+}
+.rune-state:empty { display: none; }
+.rune.rune-ready {
+  border-left-color: #ae88d9;
+  background: #8460a526;
+}
+.rune.rune-fired {
+  border-left-color: #ffe09a;
+  background: #9e6b392d;
+}
+.rune.rune-fired .rune-state { color: #ffe09a; }
+.rune.rune-firing {
+  color: #fff1cb;
+  background: #94653665;
+  animation: relic-ignite 360ms ease-out both;
+}
+.rune:disabled { opacity: 1; }
+.relic-receipt {
+  grid-column: 1 / -1;
+  padding: .3rem .7rem;
+  background: #2d2036;
+  color: #f1d7fa;
+  font: 600 .78rem/1.5 var(--interface);
+  overflow-wrap: anywhere;
+}
+@keyframes relic-ignite {
+  0% { box-shadow: inset 0 0 0 0 #ffdf9a; }
+  33% { box-shadow: inset 0 0 0 2px #ffdf9a, 0 0 12px #ffc96c77; }
+  100% { box-shadow: inset 0 0 0 1px #ffdf9a; }
+}
+#app[data-motion="fast"] .rune.relic-firing { animation-duration: 95ms; }
+#app[data-motion="off"] .rune.relic-firing { animation: none; }

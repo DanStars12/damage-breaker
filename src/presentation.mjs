@@ -6,13 +6,29 @@ export function magnitude([n,d]) {
   const abs=n<0n?-n:n;
   return damageThresholds.filter(value=>abs>=value*d).length;
 }
+function divisorRelic(step) {
+  if(!step.card.enemy||step.card.kind!=='div') return null;
+  if(!step.op) return 'key';
+  return step.op.kind==='mul'?'prism':null;
+}
+export function relicActivations(result) {
+  const ids=new Set();
+  for(const step of result.steps) {
+    const id=divisorRelic(step);
+    if(id) ids.add(id);
+  }
+  for(const trigger of result.triggers) ids.add(trigger.id);
+  return ids;
+}
 export function timeline(result,armor) {
   let combo=0;
   const steps=result.steps.map((step,index)=>{
     if(!step.card.enemy && step.op) combo++;
     const type=step.card.enemy?'enemy':step.op?'card':'enemy';
-    const name=step.op?label(step.op):label(step.card)+' 無効';
-    return {index,type,name,value:step.result,combo};
+    const operation=step.op?label(step.op):label(step.card)+' 無効';
+    const relic=divisorRelic(step);
+    const name=relic?relics[relic].name+' · '+operation:operation;
+    return {index,type:relic?'relic':type,name,value:step.result,combo,...(relic?{relic}:{})};
   });
   for(const trigger of result.triggers) {
     steps.push({type:'relic',name:relics[trigger.id].name+' · '+label(trigger.op),value:trigger.result,combo,relic:trigger.id});
