@@ -4,7 +4,7 @@ const effect=document.querySelector('#effect');
 const book=load();
 let suspended=readCheckpoint(book.checkpoint);
 let run=null, selected=null, storageWarning=false, audio=null, notice='';
-let sequence=null, lastPage=null, craftResult=null, lastDeal=null;
+let sequence=null, lastPage=null, craftResult=null, lastDeal=null, lastBattle=null;
 const motionMode=()=>matchMedia('(prefers-reduced-motion: reduce)').matches?'off':book.prefs.motion||'full';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 const fmt=(n,cap=true)=>format(n,book.prefs.scientific,cap);
@@ -98,6 +98,8 @@ function battle() {
         <span class="arena-seal" aria-hidden="true">✧</span>
         <figure class="combatant foe"><canvas data-enemy-art width="88" height="64" aria-hidden="true"></canvas>
         <figcaption>${e.name}</figcaption><div class="hpBar foe-hp" aria-hidden="true"><span style="width:${Number(e.hp*1000n/e.max)/10}%"></span></div><small id="foeHp" title="${e.hp} / ${e.max}">HP ${compact(e.hp)} / ${compact(e.max)}</small></figure>
+        <span class="burst-scene" aria-hidden="true"><i class="burst-seal"></i><i class="burst-bolt"></i>
+          <i class="burst-ring"></i><i class="burst-ring echo"></i></span>
         <span class="slash" aria-hidden="true"></span><span class="enemy-cast" aria-hidden="true"></span><span id="incoming" aria-hidden="true"></span><span id="outgoing" aria-hidden="true"></span>
       </div>
       <div class="enemy-info"><div class="eyebrow">${routeName()} · 第${run.stage}地点</div><h1>${e.name}</h1><small class="enemy-title">${e.title}${e.elite?' · ELITE':''}</small>
@@ -251,7 +253,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.5.6</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.5.7</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -278,6 +280,8 @@ function view() {
   }
 }
 function render() {
+  const mode=motionMode();
+  app.dataset.motion=mode;
   app.innerHTML=`<header><div class="brand">◇ DAMAGE BREAKER</div><nav>${run&&run.phase!=='battle'?btn('デッキ '+run.deck.length,'deck'):''}${run&&suspended?btn('中断','pause'):''}${btn('遊び方','help')}${btn('記録帳','records')}${btn('設定','settings')}</nav></header>${view()}
     ${storageWarning?'<p role="status" style="text-align:center">保存できませんでした。画面を閉じると、今回の進行や記録が失われる場合があります。</p>':''}`;
   const hero=app.querySelector('[data-sprite]');
@@ -285,8 +289,13 @@ function render() {
   const enemy=app.querySelector('[data-enemy-art]');
   if(enemy) {
     paintEnemy(enemy,run.enemy.art);
-    const dealKey=run.act+':'+run.stage+':'+run.turn;
-    if(lastDeal!==dealKey&&motionMode()!=='off') {
+    const battleKey=run.act+':'+run.stage;
+    const dealKey=battleKey+':'+run.turn;
+    if(lastBattle!==battleKey&&run.turn===0&&mode!=='off') {
+      app.querySelector('.enemy').classList.add('encounter-arrival');
+    }
+    lastBattle=battleKey;
+    if(lastDeal!==dealKey&&mode!=='off') {
       app.querySelector('.hand').classList.add('dealing');
       app.querySelectorAll('.hand .card').forEach((card,index)=>card.style.setProperty('--deal',index));
     }
@@ -295,11 +304,15 @@ function render() {
   const titleArt=app.querySelector('.title canvas');
   if(titleArt) paint(titleArt,2,1);
   const page=craftResult?'craft':run?.phase??'title';
-  if(lastPage!==null&&lastPage!==page&&motionMode()!=='off') {
+  if(lastPage!==null&&lastPage!==page&&mode!=='off') {
     const chapter=app.querySelector('main');
     chapter.classList.add('turn-page');
-    chapter.classList.toggle('turn-fast',motionMode()==='fast');
-    chapter.addEventListener('animationend',()=>chapter.classList.remove('turn-page'),{once:true});
+    chapter.classList.toggle('turn-fast',mode==='fast');
+    chapter.addEventListener('animationend',function finishPage(e) {
+      if(e.target!==chapter||e.animationName!=='turn-page') return;
+      chapter.classList.remove('turn-page','turn-fast');
+      chapter.removeEventListener('animationend',finishPage);
+    });
   }
   lastPage=page;
   updateFacility();
@@ -450,6 +463,7 @@ app.addEventListener('submit',e=>{
   const seed=new FormData(e.target).get('seed').trim()||crypto.getRandomValues(new Uint32Array(1))[0].toString(36);
   run=new Run(seed);
   lastDeal=null;
+  lastBattle=null;
   selected=null;
   craftResult=null;
   notice='';
@@ -496,7 +510,7 @@ function enemyReaction(move,message,hpLost) {
   const field=app.querySelector('.enemy');
   if(!field||motionMode()==='off') return;
   const blocked=message.startsWith('結界');
-  field.classList.remove('player-strike','player-landed','player-blocked');
+  field.classList.remove('player-strike','player-landed','player-blocked','player-miss');
   field.classList.add(!blocked&&direct(move)?'enemy-strike':'enemy-magic');
   field.dataset.move=blocked?'ward':move.kind;
   field.classList.toggle('enemy-double',move.kind==='double');
@@ -588,6 +602,7 @@ async function showBurst() {
       counter.textContent=visibleNumber(prior);
       reel.hidden=false;
       reel.closest('.board-frame').classList.add('calculating');
+      field.classList.remove('encounter-arrival');
       field.classList.add('charging');
       const disabled=[...app.querySelectorAll('button:not(:disabled)')].filter(b=>b.dataset.action!=='skip');
       disabled.forEach(b=>b.disabled=true);
@@ -619,16 +634,29 @@ async function showBurst() {
         prior=step.value;
       }
       if(!signal.aborted) {
-        const e=run.enemy;
         field.classList.remove('charging');
-        field.classList.add('player-strike',p.impact.kind==='barrier'?'player-blocked':'player-landed');
-        field.querySelector('#outgoing').textContent=p.impact.kind==='barrier'?'無効':p.impact.kind==='gate'?'段階突破 −'+compact(p.impact.dealt,false):'−'+compact(p.impact.dealt,false);
+        field.dataset.force=impactForce(p);
+        if(p.impact.kind!=='miss') {
+          field.classList.add('burst-firing');
+          await clock(mode==='fast'?65:155,signal);
+          field.classList.remove('burst-firing');
+        }
+      }
+      if(!signal.aborted) {
+        const e=run.enemy;
+        const impact=p.impact.kind;
+        const reaction={barrier:'player-blocked',miss:'player-miss',gate:'player-landed',hit:'player-landed'};
+        field.classList.add('player-strike',reaction[impact]);
+        if(e.hp===0n) field.classList.add('enemy-defeated');
+        field.querySelector('#outgoing').textContent=impact==='barrier'?'バリアで無効':impact==='miss'?'ダメージなし':
+          (impact==='gate'?'段階突破 ':'')+'−'+compact(p.impact.dealt,false);
         field.querySelector('.foe-hp span').style.width=Number(e.hp*1000n/e.max)/10+'%';
         const foeHp=field.querySelector('#foeHp');
         foeHp.textContent='HP '+compact(e.hp)+' / '+compact(e.max);
         foeHp.title=e.hp+' / '+e.max;
-        if(p.impact.kind==='hit') burstFX(p.final,best);
-        await clock(mode==='fast'?225:850,signal);
+        if(impact==='hit') burstFX(p.final,best);
+        else if(impact==='gate'||impact==='barrier') chime(impact==='gate'?5:2,'relic');
+        await clock(mode==='fast'?160:695,signal);
         if(e.hp>0n&&!signal.aborted) {
           enemyReaction(move,prediction,hpBefore-run.hp);
           updateHeroDisplay(field);
@@ -637,6 +665,7 @@ async function showBurst() {
       }
     } else if(p.impact.kind==='hit') burstFX(p.final,best);
   } finally {
+    if(signal.aborted) effect.className='';
     sequence=null;
     render();
     if(run.phase==='battle') app.querySelector('[data-action="burst"]')?.focus({preventScroll:true});

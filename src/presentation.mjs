@@ -35,3 +35,13 @@ export function reelValue([from,fd],[to,td],tick) {
   }
   return [from+delta*BigInt(tick)/12n,1n];
 }
+
+
+export function impactForce({final,impact}) {
+  if(impact.kind==='miss') return 'none';
+  if(impact.kind==='barrier') return 'ward';
+  if(impact.kind==='gate') return 'break';
+  const level=magnitude([final,1n]);
+  if(level===7) return 'infinity';
+  return level>=3?'great':'standard';
+}

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {CAP} from '../src/math.mjs';
 import {evaluate} from '../src/relics.mjs';
 import {card,upgraded} from '../src/cards.mjs';
-import {timeline,magnitude,reelValue} from '../src/presentation.mjs';
+import {timeline,magnitude,reelValue,impactForce} from '../src/presentation.mjs';
 
 test('timeline preserves resolution order, exact relic value and armored damage',()=>{
   const result=evaluate({board:[card('add',10),card('mul',12),card('add',100),card('mul',101)],
@@ -32,4 +32,15 @@ test('forge imprint preserves the operation and raises value to the selected fin
   assert.equal(upgraded(card('add',10),'digit',0),null);
   assert.equal(upgraded(card('add',10),'digit',-1),null);
   assert.equal(upgraded(card('pow',2),'digit',7),null);
+});
+
+test('arena effects distinguish ordinary and large hits from defensive outcomes',()=>{
+  const feel=(final,kind)=>impactForce({final,impact:{kind}});
+  assert.equal(feel(9999n,'hit'),'standard');
+  assert.equal(feel(10n**8n,'hit'),'great');
+  assert.equal(feel(CAP,'hit'),'great');
+  assert.equal(feel(CAP+1n,'hit'),'infinity');
+  assert.equal(feel(CAP+1n,'barrier'),'ward');
+  assert.equal(feel(CAP+1n,'gate'),'break');
+  assert.equal(feel(0n,'miss'),'none');
 });

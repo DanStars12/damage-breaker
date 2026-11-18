@@ -362,3 +362,143 @@ header nav { flex-wrap: wrap; }
   color: #f2cf92;
   overflow-wrap: anywhere;
 }
+
+/* Bounded arena effects stay behind the combat readouts. */
+.enemy {
+  --hero-x: 24%;
+  --foe-x: 76%;
+  --burst-color: #ffd91b;
+  --flight: 155ms;
+  --impact: 640ms;
+}
+.enemy:is([data-rank="elite"],[data-rank="boss"],[data-rank="extra"]) {
+  --hero-x: 18%;
+  --foe-x: 68%;
+}
+.enemy[data-force="ward"] { --burst-color: #a6e1fc; }
+.enemy[data-force="break"] { --burst-color: #ffae70; }
+.enemy[data-force="great"] { --burst-color: #f3b3ff; }
+.enemy[data-force="infinity"] { --burst-color: #b2fae9; }
+
+.burst-scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.burst-scene i {
+  position: absolute;
+  display: block;
+  opacity: 0;
+  top: 39%;
+  transform: translate(-50%, -50%);
+}
+.burst-seal {
+  left: var(--hero-x);
+  width: clamp(30px, 6vw, 85px);
+  aspect-ratio: 1;
+  border: 2px dotted #a6e8c9;
+  border-radius: 50%;
+  box-shadow: inset 0 0 13px #98dabb80, 0 0 10px #98dabb65;
+}
+.charging .burst-seal { animation: charge-seal 1.1s ease-out both; }
+.burst-bolt {
+  left: var(--hero-x);
+  width: clamp(26px, 7vw, 94px);
+  height: 9px;
+  border-radius: 60%;
+  background: linear-gradient(90deg,transparent,var(--burst-color) 70%,#fff9e6);
+  box-shadow: 0 0 12px var(--burst-color);
+}
+.burst-firing .burst-bolt { animation: bolt-flight var(--flight) ease-in both; }
+.burst-ring {
+  left: var(--foe-x);
+  width: clamp(32px, 8vw, 112px);
+  aspect-ratio: 1;
+  border: 2px solid var(--burst-color);
+  border-radius: 50%;
+  box-shadow: 0 0 11px var(--burst-color);
+}
+.player-strike:not(.player-miss) .burst-ring:not(.echo) {
+  animation: impact-ring var(--impact) ease-out both;
+}
+.player-strike:is([data-force="great"],[data-force="infinity"],[data-force="break"]) .burst-ring.echo {
+  border-style: dashed;
+  animation: impact-ring var(--impact) 80ms ease-out both;
+}
+.player-landed[data-force="break"] .burst-ring {
+  border-radius: 18%;
+}
+.player-blocked .burst-ring:not(.echo) {
+  background: radial-gradient(ellipse,transparent 60%,#a4d9fe44);
+  animation-name: barrier-ripple;
+}
+.player-miss .slash,
+.player-miss .combatant canvas { animation: none; }
+.player-miss #outgoing { color: #dbcfbd; text-shadow: 0 2px 5px #140f18; }
+.encounter-arrival .foe canvas { animation: enemy-arrive .42s ease-out both; }
+.encounter-arrival:is([data-rank="boss"],[data-rank="extra"]) .foe canvas {
+  animation: boss-arrive .64s cubic-bezier(.18,.65,.2,1) both;
+}
+.encounter-arrival:is([data-rank="boss"],[data-rank="extra"]) .burst-ring:not(.echo) {
+  border-style: double;
+  animation: impact-ring .66s ease-out both;
+}
+@keyframes charge-seal {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.52) rotate(-30deg); }
+  45% { opacity: .9; }
+  100% { opacity: .52; transform: translate(-50%, -50%) scale(1.16) rotate(15deg); }
+}
+@keyframes bolt-flight {
+  0% { opacity: .2; left: var(--hero-x); transform: translate(-70%, -50%) scaleX(.45); }
+  34% { opacity: 1; }
+  100% { opacity: .9; left: var(--foe-x); transform: translate(-80%, -50%) scaleX(1.15); }
+}
+@keyframes impact-ring {
+  0% { opacity: .85; transform: translate(-50%, -50%) scale(.28) rotate(-12deg); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.85) rotate(18deg); }
+}
+@keyframes barrier-ripple {
+  0% { opacity: 0; transform: translate(-50%, -50%) scaleX(.7); }
+  20% { opacity: .9; transform: translate(-50%, -50%) scale(1.08); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.27); }
+}
+@keyframes enemy-arrive {
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes boss-arrive {
+  0% { opacity: .05; transform: translateY(-18px) scale(.83); }
+  59% { opacity: 1; transform: translateY(4px) scale(1.045); }
+  100% { opacity: 1; transform: none; }
+}
+#app[data-motion="fast"] .enemy { --flight: 65ms; --impact: 150ms; }
+#app[data-motion="fast"] .enemy :is(canvas,.slash,.enemy-cast,#incoming,#outgoing) {
+  animation-duration: .15s;
+  animation-iteration-count: 1;
+}
+#app[data-motion="fast"] .enemy.charging canvas,
+#app[data-motion="fast"] .charging .burst-seal,
+#app[data-motion="fast"] .burst-ring.echo { animation: none; }
+#app[data-motion="fast"] .dealing .card {
+  animation-duration: .16s;
+  animation-delay: calc(var(--deal)*10ms);
+}
+#app[data-motion="fast"] .reel #reelNumber { animation-duration: .09s; }
+#app[data-motion="off"] :is(.enemy,.hand,.reel,.workshop,.relic-drop),
+#app[data-motion="off"] :is(.enemy,.hand,.reel,.workshop,.relic-drop) * {
+  animation: none;
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  #app .burst-scene,
+  #effect.flash { display: none; }
+}
+
+.enemy-defeated.player-landed .foe canvas {
+  animation: enemy-defeated .64s ease-out both;
+}
+@keyframes enemy-defeated {
+  0% { opacity: 1; }
+  23% { opacity: 1; transform: translateX(8px) scale(1.08); filter: brightness(1.85); }
+  100% { opacity: 0; transform: translate(14px, 5px) scale(.88); }
+}
