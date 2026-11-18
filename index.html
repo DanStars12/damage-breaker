@@ -509,6 +509,15 @@ header nav { flex-wrap: wrap; }
   23% { opacity: 1; transform: translateX(8px) scale(1.08); filter: brightness(1.85); }
   100% { opacity: 0; transform: translate(14px, 5px) scale(.88); }
 }
+
+.remove-form {
+  display: grid;
+  gap: .55rem;
+  margin-block: .75rem 1rem;
+}
+.remove-form .result-card { width: min(135px,100%); }
+.remove-form button { justify-self: start; }
+.remove-form :is(#removeStatus,#removePreview):empty { display: none; }
 </style>
 </head>
 <body>
@@ -1141,7 +1150,7 @@ class Run {
       this.deck[Math.min(i,j)]=result;
       this.deck.splice(Math.max(i,j),1);
       transaction={kind:'fuse',sources,result};
-    } else if(action==='remove'&&this.deck[i]&&this.deck.length>12) {
+    } else if(action==='remove'&&Number.isInteger(i)&&this.deck[i]&&this.deck.length>12) {
       transaction={kind:'remove',sources:this.deck.splice(i,1)};
     }
     if(!transaction) return null;
@@ -2067,17 +2076,31 @@ function workResult() {
     <p role="status">${theme.done}</p><div class="actions">${btn(run.phase==='facility'?'店へ戻る':'地図へ戻る','craftNext','primary')}</div>`,true));
 }
 function useService(action,i=NaN,mode) {
-  const transaction=run.service({action,i:Number.isNaN(i)?Number(document.querySelector('#i')?.value):i,
+  const transaction=run.service({action,i:action!=='remove'&&Number.isNaN(i)?Number(document.querySelector('#i')?.value):i,
     j:Number(document.querySelector('#j')?.value),mode,digit:Number(document.querySelector('#digit')?.value)});
   if(!transaction) {
-    app.querySelector('[role="status"]').textContent='金貨、素材、または利用回数の条件を満たしていません。';
+    const status=action==='remove'?dialog.querySelector('#removeStatus'):app.querySelector('[role="status"]');
+    if(status) status.textContent='金貨、素材、または利用回数の条件を満たしていません。';
     return;
   }
+  if(action==='remove') dialog.close();
   if(transaction.kind) craftResult=transaction;
   else notice=transaction.message;
   saveProgress();
   render();
   app.querySelector('[data-action="craftNext"]')?.focus({preventScroll:true});
+}
+function openRemoval() {
+  const options=run.deck.map((c,i)=>`<option value="${i}">${i+1}. ${label(c)}${c.upgraded?' ✧':''} · ${rarity[c.tier]} · 消費 ${c.cost}</option>`).join('');
+  modal('削除するカードを選ぶ',`<form id="removeForm" class="remove-form">
+    <p>料金 ${prices.remove} 金貨 · 所持金 ${run.gold} 金貨</p>
+    <label for="removeCard">削除するカード</label>
+    <select id="removeCard" name="card" required><option value="" selected disabled>カードを選択</option>${options}</select>
+    <div id="removePreview" aria-live="polite"></div>
+    <p id="removeStatus" role="status"></p>
+    <button class="primary" type="submit" disabled>選んだカードを削除</button>
+  </form>`);
+  dialog.querySelector('#removeCard').focus();
 }
 function eventPreview(offer) {
   return `<p>${offer.story}</p><section class="reward-block"><h2>受け取る内容</h2><p>${offer.offer}</p>
@@ -2097,8 +2120,8 @@ function facility() {
     workshopStage('shop',`<p>所持金 ${run.gold} · カード各${prices.buy}金貨</p><div class="choices shop-cards">${run.shop.map((c,i)=>c?cardButton(c,'buy:'+i,-1,unable('buy')):'<span class="sold">売約済み</span>').join('')}</div>
     <h2>レリック · ${run.shopUsed.relic?'購入済み':prices.relic+'金貨／1個まで'}</h2><div class="choices">${run.stockRelics.map((id,i)=>btn(relics[id].name+'<small>'+relics[id].desc+'</small>','relicBuy:'+i,'',unable('relic'))).join('')||'在庫なし'}</div>
     <h2>工房 · デッキ下限12枚</h2><div class="choices"><label>対象 <select id="i">${options}</select></label><label>合成相手 <select id="j">${options}</select></label>
-    ${btn(run.shopUsed.fuse?'合成済み':'合成 · '+prices.fuse+'金貨','fuse','',unable('fuse')||run.deck.length<=12)}
-    ${btn(run.shopUsed.remove?'削除済み':'削除 · '+prices.remove+'金貨','remove','',unable('remove')||run.deck.length<=12)}</div><p id="forgePreview"></p>`);
+    ${btn(run.shopUsed.fuse?'合成済み':'合成 · '+prices.fuse+'金貨','fuse','',unable('fuse')||run.deck.length<=12)}</div><p id="forgePreview"></p>
+    <div class="actions">${btn(run.shopUsed.remove?'削除済み':'削除するカードを選ぶ · '+prices.remove+'金貨','remove','',unable('remove')||run.deck.length<=12)}</div>`);
   return chapter(routeName(),places[f].name,body+`<p role="status">${esc(notice)}</p>`
     +(f!=='event'?`<div class="actions">${btn('地図へ戻る','leave','primary')}</div>`:''));
 }
@@ -2126,7 +2149,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.5.7</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.5.8</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -2319,7 +2342,7 @@ function action(command) {
     case 'relicBuy':useService('relic',i);return;
     case 'service':useService(arg);return;
     case 'forge':useService('forge',NaN,arg);return;
-    case 'remove':
+    case 'remove':openRemoval();return;
     case 'fuse':useService(name);return;
   }
   saveProgress();
@@ -2368,9 +2391,21 @@ app.addEventListener('dragend',()=>{dragging=null;});
 app.addEventListener('change',updateFacility);
 dialog.addEventListener('change',e=>{
   const {id,checked,value}=e.target;
+  if(id==='removeCard') {
+    const selectedCard=value===''?null:run.deck[Number(value)];
+    dialog.querySelector('#removePreview').innerHTML=selectedCard?rewardCard(selectedCard):'';
+    dialog.querySelector('#removeForm button').disabled=!selectedCard;
+    return;
+  }
   if(!['scientific','motion','mute'].includes(id)) return;
   book.prefs[id]=id==='motion'?value:checked;
   persist();render();
+});
+dialog.addEventListener('submit',e=>{
+  if(e.target.id!=='removeForm') return;
+  e.preventDefault();
+  const value=e.target.elements.card.value;
+  if(value!=='') useService('remove',Number(value));
 });
 render();
 

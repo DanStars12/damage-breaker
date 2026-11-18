@@ -143,7 +143,15 @@ test('shops sell multiple cards, limit other services, and cannot charge for inv
   assert.equal(r.service({action:'fuse',i:0,j:0}),null);
   assert.equal(r.service({action:'fuse',i:0,j:1}).result.value,22);
   assert.equal(r.service({action:'fuse',i:2,j:3}),null);
-  assert(r.service({action:'remove',i:2}));
+  const beforeRemove=[...r.deck];
+  const beforeFee=r.gold;
+  for(const i of [undefined,'length',NaN,-1,r.deck.length]) {
+    assert.equal(r.service({action:'remove',i}),null);
+  }
+  assert.deepEqual(r.deck,beforeRemove);
+  assert.equal(r.gold,beforeFee);
+  assert.equal(r.service({action:'remove',i:2}).sources[0],beforeRemove[2]);
+  assert.deepEqual(r.deck,beforeRemove.filter((_,i)=>i!==2));
   assert.equal(r.service({action:'remove',i:3}),null);
   assert.equal(r.gold,300-2*prices.buy-prices.relic-prices.fuse-prices.remove);
   assert.equal(r.deck.length,15);

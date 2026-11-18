@@ -502,3 +502,12 @@ header nav { flex-wrap: wrap; }
   23% { opacity: 1; transform: translateX(8px) scale(1.08); filter: brightness(1.85); }
   100% { opacity: 0; transform: translate(14px, 5px) scale(.88); }
 }
+
+.remove-form {
+  display: grid;
+  gap: .55rem;
+  margin-block: .75rem 1rem;
+}
+.remove-form .result-card { width: min(135px,100%); }
+.remove-form button { justify-self: start; }
+.remove-form :is(#removeStatus,#removePreview):empty { display: none; }

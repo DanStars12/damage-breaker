@@ -290,7 +290,7 @@ export class Run {
       this.deck[Math.min(i,j)]=result;
       this.deck.splice(Math.max(i,j),1);
       transaction={kind:'fuse',sources,result};
-    } else if(action==='remove'&&this.deck[i]&&this.deck.length>12) {
+    } else if(action==='remove'&&Number.isInteger(i)&&this.deck[i]&&this.deck.length>12) {
       transaction={kind:'remove',sources:this.deck.splice(i,1)};
     }
     if(!transaction) return null;
