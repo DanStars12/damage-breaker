@@ -47,7 +47,69 @@ export const relics = {
   tithe:{name:'双刃の燭台',desc:'毎ターンのエナジー+1。戦闘開始時にHPを8失う（最低HP1）。',energy:1,entry:8},
   star:{name:'千星の象牙盤',desc:'指数を含むBURSTに×100。',effect:({cards})=>cards.some(c=>c.kind==='exp'&&!c.enemy)?{kind:'mul',value:100}:null}
 };
-export function evaluate({base=20,board=[],deb=[] ,owned=[],armor=1}) {
+const effectCount=(own,kind)=>own.filter(c=>c.kind===kind).length;
+const amplify=(condition,value)=>condition?{kind:'mul',value}:null;
+Object.assign(relics,{
+  chalk:{name:'黎明の白墨',desc:'基礎値に+5。',flatBase:5},
+  brazier:{name:'暁火の香炉',desc:'基礎値+25%。初ターンのドロー−1。',base:25,firstDraw:-1},
+  lens:{name:'遠見の単眼鏡',desc:'初ターンのドロー+1。',firstDraw:1},
+  paper:{name:'折り紙の護符',desc:'初ターンだけエナジー+1。戦闘開始時にHPを4失う。',firstEnergy:1,entry:4},
+  sealwax:{name:'封蝋の羽根',desc:'有効パネル4枚以上で、最後が加算なら×12。',effect:({own})=>amplify(own.length>=4&&own.at(-1)?.kind==='add',12)},
+  quartette:{name:'四拍の鈴',desc:'有効パネルがちょうど4枚なら×12。',effect:({count})=>amplify(count===4,12)},
+  compass:{name:'降階の針',desc:'隣り合う数字パネル3枚の値が厳密な降順なら×18。',effect:({cards})=>
+    amplify(cards.some((c,i)=>i>=2&&cards.slice(i-2,i+1).every(numeric)&&cards[i-2].value>cards[i-1].value&&cards[i-1].value>c.value),18)},
+  ember:{name:'灰炉の熾石',desc:'最初と最後の有効パネルが加算で、計3枚以上なら×18。',effect:({own})=>amplify(own.length>=3&&own[0].kind==='add'&&own.at(-1).kind==='add',18)},
+  anvil:{name:'双刻の金床',desc:'強化済みパネルが2枚以上なら×32。',effect:({own})=>amplify(own.filter(c=>c.upgraded).length>=2,32)},
+  helix:{name:'螺旋の錫杖',desc:'加算と乗算が各2枚以上なら×30。',effect:({own})=>amplify(effectCount(own,'add')>=2&&effectCount(own,'mul')>=2,30)},
+  mirror:{name:'複写の鏡片',desc:'同じ演算・同じ値が隣接すると×16。',effect:({cards})=>
+    amplify(cards.some((c,i)=>i>0&&numeric(c)&&numeric(cards[i-1])&&c.kind===cards[i-1].kind&&c.value===cards[i-1].value),16)},
+  vigil:{name:'夜番の灯',desc:'HOLDを2回経たBURSTで、有効パネル3枚以上なら×26。',effect:({holds,count})=>amplify(holds===2&&count>=3,26)},
+  pulse:{name:'真珠の振り子',desc:'割合と乗算が両方あり、有効パネル4枚以上なら×22。',effect:({own})=>
+    amplify(own.length>=4&&effectCount(own,'pct')&&effectCount(own,'mul'),22)},
+  comet:{name:'彗尾の箒',desc:'指数パネルが2枚以上なら×160。',effect:({own})=>amplify(effectCount(own,'exp')>=2,160)},
+  crown:{name:'方陣の冠',desc:'累乗と割合が両方あるBURSTなら×65。',effect:({own})=>amplify(effectCount(own,'pow')&&effectCount(own,'pct'),65)},
+  bell:{name:'破邪の鐘',desc:'敵の演算妨害が盤にあり、有効パネル3枚以上なら×28。',effect:({cards,count})=>
+    amplify(count>=3&&cards.some(c=>c.enemy&&c.kind!=='sealed'),28)},
+  rootGem:{name:'地脈の心核',desc:'基礎値に+15。戦闘開始時にHPを7失う。',flatBase:15,entry:7},
+  lensGuard:{name:'日蝕の単眼鏡',desc:'戦闘開始時に結界。初ターンのドロー−1。',ward:true,firstDraw:-1},
+  dam:{name:'山門の閂',desc:'有効な加算を4枚以上含むと×80。',effect:({own})=>amplify(effectCount(own,'add')>=4,80)},
+  aurora:{name:'極光の王環',desc:'有効パネル6枚以上、演算3種類以上で×120。',effect:({own})=>
+    amplify(own.length>=6&&new Set(own.map(c=>c.kind)).size>=3,120)}
+});
+
+export const relicRanks=[
+  {name:'コモン',shop:15,drop:10},
+  {name:'レア',shop:13,drop:14},
+  {name:'エピック',shop:8,drop:16},
+  {name:'レジェンド',shop:3,drop:10}
+];
+const rankedRelics=[
+  ['short','key','reserve','chalk','lens','paper','sealwax','quartette','compass','mirror','ember'],
+  ['tail','order','chain','furnace','rack','spring','mantle','ratio','brazier','anvil','helix','vigil','pulse','bell','lensGuard'],
+  ['prism','codex','sum','lattice','tithe','star','mosaic','comet','crown','rootGem','dam'],
+  ['grimoire','abacus','aurora']
+];
+for(const [rank,ids] of rankedRelics.entries()) for(const id of ids) relics[id].rank=rank;
+const originalRelics=new Set(Object.keys(relics).slice(0,20));
+export function drawRelic(rng,owned,act,{shop=false}={}) {
+  const available=Object.keys(relics).filter(id=>!owned.includes(id));
+  const eligible=available.filter(id=>(act>=2||!['comet','crown'].includes(id))&&(!shop||relics[id].rank<3||act>=3));
+  const added=eligible.filter(id=>!originalRelics.has(id));
+  const original=eligible.filter(id=>originalRelics.has(id));
+  const pool=added.length&&rng()<.24?added:original.length?original:eligible;
+  if(!pool.length) return null;
+  const weighted=pool.map(id=>{
+    const rank=relicRanks[relics[id].rank];
+    return {id,weight:shop?rank.shop:rank.drop};
+  });
+  let pick=rng()*weighted.reduce((total,entry)=>total+entry.weight,0);
+  return weighted.find(entry=>(pick-=entry.weight)<0).id;
+}
+
+const effectOrder=['grimoire','tail','order','short','chain','star','sum','abacus','lattice','mosaic','ratio',
+  ...Object.keys(relics).slice(20).filter(id=>relics[id].effect)];
+
+export function evaluate({base=20,board=[],deb=[] ,owned=[],armor=1,holds=0}) {
   const cards=[];
   for(let i=0;i<=board.length;i++) {
     cards.push(...deb.filter(c=>Math.min(c.at,board.length)===i));
@@ -77,9 +139,9 @@ export function evaluate({base=20,board=[],deb=[] ,owned=[],armor=1}) {
   const activeCards=steps.map(({card,op})=>op?card:{kind:'sealed',enemy:true});
   const own=steps.filter(({card,op})=>op&&!card.enemy).map(({card})=>card);
   const count=own.length;
-  for(const id of ['grimoire','tail','order','short','chain','star','sum','abacus','lattice','mosaic','ratio']) {
+  for(const id of effectOrder) {
     if(!owned.includes(id)) continue;
-    const op=relics[id].effect({cards:activeCards,count,combo:count,own});
+    const op=relics[id].effect({cards:activeCards,count,combo:count,own,holds});
     if(!op) continue;
     result=apply(result,op);
     factors.push(op);

@@ -1,6 +1,6 @@
 import {random,shuffle,starter,generate,upgraded,fused} from './cards.mjs';
-import {evaluate,relics} from './relics.mjs';
-import {makeEnemy,intent,impact} from './enemies.mjs';
+import {evaluate,relics,drawRelic} from './relics.mjs';
+import {makeEnemy,intent,impact,attackHits,attackPatterns} from './enemies.mjs';
 import {CAP,label} from './math.mjs';
 import {makeMap} from './map.mjs';
 import {events} from './events.mjs';
@@ -24,10 +24,10 @@ export class Run {
   }
   bonus(key){return this.owned.reduce((n,id)=>n+(relics[id][key]||0),0);}
   get base(){return this.baseAt(this.drain);}
-  baseAt(drain){return Math.max(1,Math.floor((20+(this.act-1)*15)*(100+this.bonus('base')-drain)/100));}
+  baseAt(drain=0){return Math.max(1,Math.floor((20+(this.act-1)*15)*(100+this.bonus('base')-drain)/100)+this.bonus('flatBase'));}
   get slots(){return Math.min(8,5+this.act)+this.bonus('slots');}
-  get capacity(){return Math.max(1,(this.act>=3?4:3)+this.bonus('energy')+(this.turn===0?this.bonus('firstEnergy'):0));}
-  get drawCount(){return Math.max(2,5+this.bonus('draw')+(this.turn===0?this.bonus('firstDraw'):0));}
+  get capacity(){return Math.max(1,(this.act>=3?4:3)+this.bonus('energy')-(this.energyPenalty??0)+(this.turn===0?this.bonus('firstEnergy'):0));}
+  get drawCount(){return Math.max(2,5+this.bonus('draw')-(this.drawPenalty??0)+(this.turn===0?this.bonus('firstDraw'):0));}
   get next(){return intent(this.enemy,this.turn,this.act);}
   beginMap(){
     this.phase='map';
@@ -47,6 +47,8 @@ export class Run {
     this.hp=Math.max(1,this.hp-this.bonus('entry'));
     this.maxHp=100;
     this.drain=0;
+    this.drawPenalty=0;
+    this.energyPenalty=0;
     this.battlePeak=0n;
     this.lastBurst=null;
     this.deckDraw=shuffle(this.deck,this.rng);
@@ -110,33 +112,38 @@ export class Run {
     return true;
   }
   preview(){
-    const result=evaluate({base:this.base,board:this.board,deb:this.deb,owned:this.owned,armor:this.enemy.armor});
+    const result=evaluate({base:this.base,board:this.board,deb:this.deb,owned:this.owned,armor:this.enemy.armor,holds:this.holds});
     return {...result,impact:impact(this.enemy,result.final)};
   }
   enemyOutcome(action=this.next) {
     let {hp,maxHp,drain,ward,deb}=this;
-    let blocked=false;
-    if(action.kind==='attack'||action.kind==='double') {
-      hp=Math.max(0,hp-action.value*(action.kind==='double'?2:1));
-    } else if(ward) {
-      ward=false;
-      blocked=true;
-    } else if(action.kind==='wither') {
-      maxHp=Math.max(35,maxHp-action.value);
-      hp=Math.min(hp,maxHp);
-    } else if(action.kind==='drain') drain=Math.min(65,drain+action.value);
-    else deb=[...deb,action];
-    return {hp,maxHp,drain,ward,deb,blocked};
+    let blocked=false,drawPenalty=0,energyPenalty=0;
+    const hits=attackHits(action);
+    const penalty=attackPatterns[action.kind]?.penalty;
+    hp=Math.max(0,hp-action.value*hits);
+    if(!hits||penalty) {
+      if(ward) {ward=false;blocked=true;}
+      else if(penalty==='jam') drawPenalty=1;
+      else if(penalty==='tax') energyPenalty=1;
+      else if(penalty==='fracture') deb=[...deb,{...action,kind:'seal'}];
+      else if(penalty==='scorch') deb=[...deb,{...action,kind:'sub',value:20*this.act}];
+      else if(action.kind==='wither') {
+        maxHp=Math.max(35,maxHp-action.value);
+        hp=Math.min(hp,maxHp);
+      } else if(action.kind==='drain') drain=Math.min(65,drain+action.value);
+      else deb=[...deb,action];
+    }
+    return {hp,maxHp,drain,ward,deb,blocked,drawPenalty,energyPenalty};
   }
   holdPreview(outcome=this.enemyOutcome()) {
     if(this.holds>=2||!outcome.hp||!this.board.length) return null;
-    const result=evaluate({base:this.baseAt(outcome.drain),board:this.board,deb:outcome.deb,owned:this.owned,armor:this.enemy.armor});
+    const result=evaluate({base:this.baseAt(outcome.drain),board:this.board,deb:outcome.deb,owned:this.owned,armor:this.enemy.armor,holds:this.holds+1});
     return result.final;
   }
   enemyAction() {
     this.uncommittedCards.clear();
-    const {hp,maxHp,drain,ward,deb}=this.enemyOutcome();
-    Object.assign(this,{hp,maxHp,drain,ward,deb});
+    const {hp,maxHp,drain,ward,deb,drawPenalty,energyPenalty}=this.enemyOutcome();
+    Object.assign(this,{hp,maxHp,drain,ward,deb,drawPenalty,energyPenalty});
     this.turn++;
     if(!this.hp) this.phase='loss';
     else this.refill();
@@ -180,11 +187,8 @@ export class Run {
       this.hp=Math.min(100,this.hp+(boss?28:elite?13:7));
       this.victoryHeal=this.hp-hpBefore;
       if(elite||boss||this.act===4) {
-        const pool=Object.keys(relics).filter(id=>!this.owned.includes(id));
-        const powerful=pool.filter(id=>!['short','key','mantle'].includes(id));
-        const choices=elite&&powerful.length?powerful:pool;
-        if(choices.length) {
-          this.relicDrop=choices[Math.floor(this.rng()*choices.length)];
+        this.relicDrop=drawRelic(this.rng,this.owned,this.act);
+        if(this.relicDrop) {
           if(elite&&this.act<=2) {
             const alternatives=earlyRelicChoices.filter(id=>id!==this.relicDrop&&!this.owned.includes(id));
             const rewardRng=random(this.seed+'/relic/'+this.act+'/'+this.node.id);
@@ -266,7 +270,9 @@ export class Run {
     this.facility=node.kind;
     if(node.kind==='shop') {
       this.shop=Array.from({length:4},()=>generate(this.rng,this.act,16));
-      this.stockRelics=shuffle(Object.keys(relics).filter(key=>!this.owned.includes(key)),this.rng).slice(0,2);
+      const first=drawRelic(this.rng,this.owned,this.act,{shop:true});
+      const second=drawRelic(this.rng,[...this.owned,first],this.act,{shop:true});
+      this.stockRelics=[first,second].filter(Boolean);
       this.shopUsed={relic:false,fuse:false,remove:false};
     }
     if(node.kind==='event') this.event=shuffle(Object.keys(events),this.rng)[0];

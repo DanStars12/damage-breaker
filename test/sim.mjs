@@ -12,8 +12,8 @@ const additionRelics=['sum','abacus'];
 const hasAdditionRelic=r=>additionRelics.some(key=>r.owned.includes(key));
 const compare=(a,b)=>a.score>b.score?-1:a.score<b.score?1:0;
 function plan(run) {
-  const {board,hand,deb,owned,base,enemy,energy,slots}=run;
-  const score=(board,deb)=>evaluate({base,board,deb,owned,armor:enemy.armor}).final;
+  const {board,hand,deb,owned,base,enemy,energy,slots,holds}=run;
+  const score=(board,deb)=>evaluate({base,board,deb,owned,armor:enemy.armor,holds}).final;
   const first={board,deb,energy,used:0,moves:[],score:score(board,deb)};
   let beam=[first],best=first;
   for(let depth=0;depth<4;depth++) {
@@ -97,7 +97,7 @@ function play(seed,id) {
     if(r.enemy.barrier&&r.preview().final>0n) {r.burst();continue;}
     plan(r);
     const p=r.preview();
-    const survive=r.next.kind==='double'?r.hp>r.next.value*2:r.next.kind!=='attack'||r.hp>r.next.value;
+    const survive=r.enemyOutcome().hp>0;
     if(p.impact.kind!=='gate'&&p.final<r.enemy.hp&&r.holds<2&&survive&&r.board.length<r.slots) r.hold();
     else r.burst();
   }

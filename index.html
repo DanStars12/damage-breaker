@@ -683,6 +683,203 @@ header nav { flex-wrap: wrap; }
   0% { opacity:1; transform:scale(.35); }
   100% { opacity:0; transform:scale(1.5); }
 }
+
+.relic-icon { width:28px; height:28px; flex:none; vertical-align:middle; }
+.relic-rank { font:700 10px/1.2 var(--interface); white-space:nowrap; }
+.relic-rank.r0 { color:#a9dabb; }
+.relic-rank.r1 { color:#97d4ff; }
+.relic-rank.r2 { color:#e2b1fa; }
+.relic-rank.r3 { color:#ffda8d; }
+.rune-heading { align-items:center; justify-content:flex-start; gap:6px; }
+.rune-heading .relic-rank { display:block; }
+.rune-heading .rune-state { margin-left:auto; }
+.relic-option h3 { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.relic-detail .relic-icon { width:45px; height:45px; }
+#stepName .relic-icon { width:21px; height:21px; }
+.pager { display:inline-flex; gap:5px; align-items:center; white-space:nowrap; }
+.pager button { padding:1px 7px; font-size:17px; line-height:1.18; }
+.deck-dialog { width:min(900px,94vw); max-width:94vw; max-height:93dvh; }
+.deck-toolbar { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:8px 0; }
+.deck-toolbar .pager { margin-left:auto; }
+.deck-cards { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:7px; }
+.deck-cards .card { width:auto; margin:0; min-width:0; }
+.base-banner { position:relative; display:flex; align-items:center; gap:9px; padding:.43rem .7rem; margin:.45rem 0;
+  color:#ffe6a4; border:1px solid #aa915c; background:#29271b; max-width:max-content; }
+.base-banner > b { color:#c9f4bd; border-left:1px solid #a59a68; padding-left:.55rem; }
+.base-banner del { color:#cbbd9d; }
+.base-awaken,.base-banner { animation:base-awaken 710ms ease-out both; }
+.base-spark { animation:base-spark 700ms ease-out both; }
+@keyframes base-awaken {
+  0% { filter:brightness(.85); }
+  32% { filter:brightness(1.7); box-shadow:0 0 18px #ffc87580; }
+  100% { filter:none; }
+}
+@keyframes base-spark { 0% { transform:translateY(8px) scale(.5); } 45% { transform:translateY(-3px) scale(1.5); } }
+.workshop-output { position:relative; isolation:isolate; }
+.workshop-forge[data-motion="full"] { --smith:880ms; }
+.workshop-forge[data-motion="fast"] { --smith:280ms; }
+.workshop-forge.workshop-reveal:not([data-motion="off"]) .result-card {
+  animation:forge-temper var(--smith) ease-out both;
+}
+.workshop-forge .workshop-arrow { color:#e7bd7d; font-size:30px; }
+.forge-strike,.forge-embers { position:absolute; inset:-28%; pointer-events:none; opacity:0; }
+.forge-strike { background:linear-gradient(135deg,transparent 44%,#fff2b1 49%,transparent 53%); }
+.forge-embers { background:
+  radial-gradient(circle at 22% 30%,#ffbd74 0 2px,transparent 3px),
+  radial-gradient(circle at 71% 22%,#fff4a5 0 2px,transparent 3px),
+  radial-gradient(circle at 88% 55%,#fd8a54 0 3px,transparent 4px),
+  radial-gradient(circle at 24% 80%,#fd8a54 0 2px,transparent 3px),
+  radial-gradient(circle at 71% 73%,#ffd997 0 2px,transparent 3px); }
+.workshop-forge:not([data-motion="off"]) .forge-strike { animation:forge-strike var(--smith) both; }
+.workshop-forge:not([data-motion="off"]) .forge-embers { animation:forge-embers var(--smith) both; }
+@keyframes forge-temper {
+  0%,24% { filter:brightness(.55); transform:translateY(7px); }
+  42% { filter:brightness(1.8) saturate(1.3); transform:translateY(-4px) scale(1.05); }
+  100% { filter:none; transform:none; }
+}
+@keyframes forge-strike { 0%,23%,100% { opacity:0; } 39% { opacity:1; } 54% { opacity:0; } }
+@keyframes forge-embers {
+  0%,28% { opacity:0; transform:scale(.2); }
+  42% { opacity:1; }
+  100% { opacity:0; transform:translateY(-20px) scale(1.7); }
+}
+.boss-entry {
+  position:absolute; z-index:4; inset:0; pointer-events:none; display:none;
+  place-content:center; text-align:center; gap:3px; color:#ffdf9c;
+  background:linear-gradient(92deg,#10101beb,#2a1e30da 49%,#10101bf2);
+  text-shadow:0 2px 5px #080712,0 0 18px #eb886c; font-size:clamp(15px,2vw,28px);
+}
+.boss-entry span { font:700 10px/1.2 var(--interface); letter-spacing:.24em; }
+.boss-entry i { position:absolute; inset:26% 0; border-block:1px solid #e1a362a0; transform:skewY(-6deg); }
+.encounter-arrival .boss-entry { display:grid; animation:boss-title 1120ms both; }
+#app[data-motion="fast"] .encounter-arrival .boss-entry { animation-duration:410ms; }
+@keyframes boss-title {
+  0% { opacity:0; clip-path:inset(35% 28%); }
+  20%,64% { opacity:1; clip-path:inset(0); }
+  100% { opacity:0; clip-path:inset(46% 0); }
+}
+.boss-attack { position:absolute; inset:0; z-index:1; pointer-events:none; }
+.boss-attack i { position:absolute; inset:0; opacity:0; transform-origin:27% 61%; }
+.enemy-strike:is([data-move="cleave"],[data-move="wave"],[data-move="meteor"],[data-move="dust"],[data-move="flare"],[data-move="eclipse"]) .enemy-cast { visibility:hidden; }
+.enemy-strike[data-move="cleave"] .boss-attack i:first-child {
+  background:linear-gradient(140deg,transparent 39%,#ff644777 44%,#fff1ca 47%,#fb9a6a 48%,transparent 51%);
+}
+.enemy-strike[data-move="wave"] .boss-attack i:first-child {
+  background:repeating-radial-gradient(ellipse at 79% 75%,transparent 0 15%,#7bcbe381 18%,#c3f5ff 20%,transparent 23%);
+}
+.enemy-strike[data-move="meteor"] .boss-attack i:first-child {
+  background:conic-gradient(from 33deg at 24% 67%,transparent 0 3deg,#ffe6a1 8deg,#e36f648c 19deg,transparent 27deg);
+}
+.enemy-strike[data-move="meteor"] .boss-attack i:nth-child(2) {
+  background:radial-gradient(ellipse at 25% 69%,#ffce8c,transparent 32%);
+}
+.enemy-strike[data-move="dust"] .boss-attack i:first-child,.enemy-magic[data-move="jam"] .boss-attack i:first-child {
+  background:radial-gradient(ellipse at 30% 59%,#e4bffd9d,transparent 60%),
+    repeating-conic-gradient(from 34deg at 29% 63%,transparent 0 17deg,#d7aaff88 20deg,transparent 24deg 38deg);
+}
+.enemy-strike[data-move="flare"] .boss-attack i:first-child {
+  background:conic-gradient(from 48deg at 12% 79%,transparent 0 12deg,#ffdb83 25deg,#ff7b42ae 37deg,transparent 51deg);
+}
+.enemy-strike[data-move="eclipse"] .boss-attack i:first-child {
+  background:linear-gradient(107deg,transparent 25%,#f8b5ff 26%,#c77bff 27%,transparent 30%),
+    linear-gradient(134deg,transparent 40%,#c68bff 41%,#fbdeff 42%,transparent 43%);
+}
+.enemy-magic[data-move="tax"] .boss-attack i:first-child {
+  background:radial-gradient(ellipse at 20% 58%,#90e4fbda,transparent 29%);
+}
+.enemy-magic[data-move="fracture"] .boss-attack i:first-child {
+  background:repeating-linear-gradient(45deg,transparent 0 16px,#bc86e36d 18px 20px,transparent 23px 40px);
+}
+.enemy-strike:has(.boss-attack) .boss-attack i,.enemy-magic .boss-attack i { animation:boss-spell 520ms ease-out both; }
+@keyframes boss-spell {
+  0% { opacity:0; transform:translateX(14%) scaleX(.85); }
+  32% { opacity:.88; transform:none; }
+  100% { opacity:0; transform:translateX(-12%) scaleX(1.09); }
+}
+.enemy-triple .hero canvas { animation:recoil-triple .55s both; }
+@keyframes recoil-triple {
+  0%,23%,53%,83%,100% { transform:none; }
+  12%,39%,68% { transform:translateX(-6px); filter:brightness(1.55); }
+}
+.enemy.ward-answer .hero canvas { animation:ward-answer .46s both; }
+#app[data-motion="fast"] .boss-attack i,#app[data-motion="fast"] :is(.base-banner,.base-awaken,.base-spark) { animation-duration:175ms; }
+#app[data-motion="off"] :is(.base-banner,.base-awaken,.base-spark,.boss-attack i) { animation:none; }
+.last-strike,.battle-notice { font:11px/1.4 var(--interface); color:var(--sub); }
+.last-strike b { color:var(--gold); }
+.battle-notice { display:block; margin-top:3px; }
+.battle .frame { padding:10px 12px; }
+.battle .enemy { min-height:0; }
+.battle .controls { margin-top:6px; }
+.battle .heading { margin-bottom:6px; }
+.battle .card { min-height:92px; grid-template-rows:16px 34px 17px; }
+.battle .hand { grid-template-columns:repeat(auto-fit,minmax(min(68px,100%),1fr)); gap:5px; }
+.battle .slot { min-width:48px; min-height:49px; padding:3px 6px; }
+.battle .board { min-height:0; }
+.battle .preview { margin-top:6px; }
+.battle .preview > div { padding-block:5px; }
+.battle .enemy-info h1 { margin:2px 0 3px; }
+.battle .enemy-rule { margin:.14rem 0; }
+.battle .foe canvas { height:clamp(76px,17dvh,150px); }
+.battle .hero canvas { height:clamp(54px,12dvh,106px); }
+.battle .relic-pane .rune { margin-top:4px; }
+.battle .tactics { margin-top:6px; }
+.route-map { height:clamp(345px,calc(100dvh - 250px),570px); }
+@media (max-height:850px) and (min-width:851px) {
+  header { height:51px; }
+  main { padding-top:12px; padding-bottom:16px; }
+  .battle { gap:9px; }
+  .column,aside { gap:8px; }
+  .battle .enemy-info h1 { font-size:clamp(23px,3vw,34px); }
+  .chapter { padding:17px 24px; }
+  .chapter h1 { font-size:35px; margin-bottom:8px; }
+  .chapter h2 { margin:9px 0 5px; }
+  .route-map { margin-top:6px; }
+  .map-node { min-height:27px; padding:2px 5px; }
+  .map-legend { gap:2px 12px; font-size:11px; }
+}
+@media (max-width:850px) {
+  .battle { gap:7px; padding:10px; }
+  .battle aside { grid-template-columns:minmax(115px,.7fr) minmax(0,1.3fr); }
+  .battle .relic-pane { align-self:start; }
+  .deck-cards { grid-template-columns:repeat(4,minmax(0,1fr)); }
+}
+@media (max-width:510px) {
+  .battle .enemy { grid-template-columns:1fr 1fr; }
+  .battle .duel { padding-inline:3px; grid-template-columns:minmax(0,1fr) 12px minmax(0,1fr); }
+  .battle .foe canvas { height:60px; }
+  .battle .hero canvas { height:48px; }
+  .battle .hand { grid-template-columns:repeat(auto-fit,minmax(48px,1fr)); }
+  .battle .card { min-height:73px; grid-template-rows:14px 26px 17px; }
+  .battle .card .card-number { font-size:15px; }
+  .deck-cards { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .deck-dialog { padding:10px; }
+}
+.shop-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:space-between; }
+.shop-head button[aria-pressed="true"] { color:#ffdb91; background:#483b29; border-color:#c7a671; }
+.shop-cards { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); }
+.shop-cards .card { min-width:0; }
+.battle .board .slot { min-width:48px; }
+.battle .board-card strong { font-size:19px; }
+.battle .board-card small { font-size:10px; }
+.battle .enemy[data-rank] .foe canvas { height:clamp(70px,18dvh,157px); }
+@media (max-width:510px) {
+  .battle .enemy[data-rank] .foe canvas { height:64px; }
+  .battle .card .mana { inset:2px 2px auto auto; }
+  .battle .card .card-rank { padding-right:14px; }
+  .battle .card .card-type { font-size:8px; }
+  .shop-cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (min-width:1000px) {
+  .loot-grid.has-relic { display:grid; grid-template-columns:1fr 1.08fr; gap:10px; align-items:start; }
+  .loot-grid.has-relic .relic-options { grid-template-columns:1fr; gap:2px; }
+  .loot-grid.has-relic .relic-option { margin:2px 0; padding:6px 9px; }
+  .loot-grid.has-relic .relic-option p { margin:4px 0; }
+  .loot-grid.has-relic .relic-drop { padding:8px 12px; }
+  .loot-grid.has-relic .relic-drop > span { display:none; }
+  .loot-grid .choices:has(.card) { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .loot-grid .choices .card { min-width:0; }
+  .loot-grid .reward-block { margin-block:10px; }
+}
 </style>
 </head>
 <body>
@@ -796,7 +993,69 @@ const relics = {
   tithe:{name:'双刃の燭台',desc:'毎ターンのエナジー+1。戦闘開始時にHPを8失う（最低HP1）。',energy:1,entry:8},
   star:{name:'千星の象牙盤',desc:'指数を含むBURSTに×100。',effect:({cards})=>cards.some(c=>c.kind==='exp'&&!c.enemy)?{kind:'mul',value:100}:null}
 };
-function evaluate({base=20,board=[],deb=[] ,owned=[],armor=1}) {
+const effectCount=(own,kind)=>own.filter(c=>c.kind===kind).length;
+const amplify=(condition,value)=>condition?{kind:'mul',value}:null;
+Object.assign(relics,{
+  chalk:{name:'黎明の白墨',desc:'基礎値に+5。',flatBase:5},
+  brazier:{name:'暁火の香炉',desc:'基礎値+25%。初ターンのドロー−1。',base:25,firstDraw:-1},
+  lens:{name:'遠見の単眼鏡',desc:'初ターンのドロー+1。',firstDraw:1},
+  paper:{name:'折り紙の護符',desc:'初ターンだけエナジー+1。戦闘開始時にHPを4失う。',firstEnergy:1,entry:4},
+  sealwax:{name:'封蝋の羽根',desc:'有効パネル4枚以上で、最後が加算なら×12。',effect:({own})=>amplify(own.length>=4&&own.at(-1)?.kind==='add',12)},
+  quartette:{name:'四拍の鈴',desc:'有効パネルがちょうど4枚なら×12。',effect:({count})=>amplify(count===4,12)},
+  compass:{name:'降階の針',desc:'隣り合う数字パネル3枚の値が厳密な降順なら×18。',effect:({cards})=>
+    amplify(cards.some((c,i)=>i>=2&&cards.slice(i-2,i+1).every(numeric)&&cards[i-2].value>cards[i-1].value&&cards[i-1].value>c.value),18)},
+  ember:{name:'灰炉の熾石',desc:'最初と最後の有効パネルが加算で、計3枚以上なら×18。',effect:({own})=>amplify(own.length>=3&&own[0].kind==='add'&&own.at(-1).kind==='add',18)},
+  anvil:{name:'双刻の金床',desc:'強化済みパネルが2枚以上なら×32。',effect:({own})=>amplify(own.filter(c=>c.upgraded).length>=2,32)},
+  helix:{name:'螺旋の錫杖',desc:'加算と乗算が各2枚以上なら×30。',effect:({own})=>amplify(effectCount(own,'add')>=2&&effectCount(own,'mul')>=2,30)},
+  mirror:{name:'複写の鏡片',desc:'同じ演算・同じ値が隣接すると×16。',effect:({cards})=>
+    amplify(cards.some((c,i)=>i>0&&numeric(c)&&numeric(cards[i-1])&&c.kind===cards[i-1].kind&&c.value===cards[i-1].value),16)},
+  vigil:{name:'夜番の灯',desc:'HOLDを2回経たBURSTで、有効パネル3枚以上なら×26。',effect:({holds,count})=>amplify(holds===2&&count>=3,26)},
+  pulse:{name:'真珠の振り子',desc:'割合と乗算が両方あり、有効パネル4枚以上なら×22。',effect:({own})=>
+    amplify(own.length>=4&&effectCount(own,'pct')&&effectCount(own,'mul'),22)},
+  comet:{name:'彗尾の箒',desc:'指数パネルが2枚以上なら×160。',effect:({own})=>amplify(effectCount(own,'exp')>=2,160)},
+  crown:{name:'方陣の冠',desc:'累乗と割合が両方あるBURSTなら×65。',effect:({own})=>amplify(effectCount(own,'pow')&&effectCount(own,'pct'),65)},
+  bell:{name:'破邪の鐘',desc:'敵の演算妨害が盤にあり、有効パネル3枚以上なら×28。',effect:({cards,count})=>
+    amplify(count>=3&&cards.some(c=>c.enemy&&c.kind!=='sealed'),28)},
+  rootGem:{name:'地脈の心核',desc:'基礎値に+15。戦闘開始時にHPを7失う。',flatBase:15,entry:7},
+  lensGuard:{name:'日蝕の単眼鏡',desc:'戦闘開始時に結界。初ターンのドロー−1。',ward:true,firstDraw:-1},
+  dam:{name:'山門の閂',desc:'有効な加算を4枚以上含むと×80。',effect:({own})=>amplify(effectCount(own,'add')>=4,80)},
+  aurora:{name:'極光の王環',desc:'有効パネル6枚以上、演算3種類以上で×120。',effect:({own})=>
+    amplify(own.length>=6&&new Set(own.map(c=>c.kind)).size>=3,120)}
+});
+
+const relicRanks=[
+  {name:'コモン',shop:15,drop:10},
+  {name:'レア',shop:13,drop:14},
+  {name:'エピック',shop:8,drop:16},
+  {name:'レジェンド',shop:3,drop:10}
+];
+const rankedRelics=[
+  ['short','key','reserve','chalk','lens','paper','sealwax','quartette','compass','mirror','ember'],
+  ['tail','order','chain','furnace','rack','spring','mantle','ratio','brazier','anvil','helix','vigil','pulse','bell','lensGuard'],
+  ['prism','codex','sum','lattice','tithe','star','mosaic','comet','crown','rootGem','dam'],
+  ['grimoire','abacus','aurora']
+];
+for(const [rank,ids] of rankedRelics.entries()) for(const id of ids) relics[id].rank=rank;
+const originalRelics=new Set(Object.keys(relics).slice(0,20));
+function drawRelic(rng,owned,act,{shop=false}={}) {
+  const available=Object.keys(relics).filter(id=>!owned.includes(id));
+  const eligible=available.filter(id=>(act>=2||!['comet','crown'].includes(id))&&(!shop||relics[id].rank<3||act>=3));
+  const added=eligible.filter(id=>!originalRelics.has(id));
+  const original=eligible.filter(id=>originalRelics.has(id));
+  const pool=added.length&&rng()<.24?added:original.length?original:eligible;
+  if(!pool.length) return null;
+  const weighted=pool.map(id=>{
+    const rank=relicRanks[relics[id].rank];
+    return {id,weight:shop?rank.shop:rank.drop};
+  });
+  let pick=rng()*weighted.reduce((total,entry)=>total+entry.weight,0);
+  return weighted.find(entry=>(pick-=entry.weight)<0).id;
+}
+
+const effectOrder=['grimoire','tail','order','short','chain','star','sum','abacus','lattice','mosaic','ratio',
+  ...Object.keys(relics).slice(20).filter(id=>relics[id].effect)];
+
+function evaluate({base=20,board=[],deb=[] ,owned=[],armor=1,holds=0}) {
   const cards=[];
   for(let i=0;i<=board.length;i++) {
     cards.push(...deb.filter(c=>Math.min(c.at,board.length)===i));
@@ -826,15 +1085,55 @@ function evaluate({base=20,board=[],deb=[] ,owned=[],armor=1}) {
   const activeCards=steps.map(({card,op})=>op?card:{kind:'sealed',enemy:true});
   const own=steps.filter(({card,op})=>op&&!card.enemy).map(({card})=>card);
   const count=own.length;
-  for(const id of ['grimoire','tail','order','short','chain','star','sum','abacus','lattice','mosaic','ratio']) {
+  for(const id of effectOrder) {
     if(!owned.includes(id)) continue;
-    const op=relics[id].effect({cards:activeCards,count,combo:count,own});
+    const op=relics[id].effect({cards:activeCards,count,combo:count,own,holds});
     if(!op) continue;
     result=apply(result,op);
     factors.push(op);
     triggers.push({id,op,result});
   }
   return {normal,result,final:damage(apply(result,{kind:'div',value:armor})),steps,triggers,factors};
+}
+
+
+// Sixteen-pixel frames with individually drawn eight-pixel relic silhouettes.
+const relicPixels=[
+'3c 7e 5a 7e 5a 7e 3c 00', '3c 66 42 5a 5a 42 66 3c',
+'18 3c 76 ff 6e 3c 18 00', '00 3c 66 c3 c3 66 3c 00',
+'18 3c 7e ff 7e 3c 18 00', '30 78 78 3e 0e 0a 00 00',
+'7e 42 3c 18 18 3c 42 7e', '18 34 3a 76 7e 66 3c 00',
+'7e 5a 5a 7e 5a 5a 7e 00', '3c 7e ff c3 db db ff 7e',
+'18 5a 18 7e 18 3c 66 00', '42 66 7e 3c 3c 18 18 00',
+'18 3c 66 c3 ff 81 ff 00', '7e 42 7e 5a 7e 5a 42 7e',
+'3c 66 db 99 db 66 3c 00', '66 ff bd 7e 3c 7e 66 00',
+'3c 7e db ff 66 3c 18 00', '7e 42 5a 5a 42 7e 00 00',
+'24 24 66 7e 3c 18 18 7e', '42 24 18 ff 18 24 42 00',
+'03 07 0e 1c 38 70 e0 c0', '18 3c 3c 7e 42 7e 18 00',
+'3c 7e 7e 3c 18 0c 06 00', '80 c0 e0 ff 3e 1c 08 00',
+'06 0f 1e 3c 78 30 60 80', '18 3c 24 24 66 ff 18 00',
+'7e 7c 78 70 38 1c 0e 06', '0c 18 38 3c 7e 7e 3c 00',
+'00 fc 7e 3c 18 7e 7e 00', '18 3c 66 3c 18 30 60 00',
+'38 44 9e a1 85 79 22 1c', '18 18 3c 66 66 7e 18 7e',
+'18 18 18 3c 7e 7e 3c 00', '00 07 1e 3c 70 e0 c0 00',
+'81 c3 e7 ff 7e 7e 00 00', '18 3c 3c 3c 7e ff 18 00',
+'18 3c 7e db ff 7e 3c 18', '3c 66 db ff db 66 3c 00',
+'3c 3c 7e ff db 18 18 00', '18 5a 7e 3c 3c 7e 5a 18'
+];
+const rankInk=['#90d3ad','#85c9ff','#df9df5','#ffd379'];
+const relicIds=Object.keys(relics);
+function relicIcon(id) {
+  const index=relicIds.indexOf(id);
+  if(index<0) return '';
+  const color=rankInk[relics[id].rank];
+  const pixels=relicPixels[index].split(' ').flatMap((row,y)=>Array.from({length:8},(_,x)=>
+    Number.parseInt(row,16)&(128>>x)?'M'+(x+4)+' '+(y+4)+'h1v1h-1z':'')).join('');
+  return `<svg class="relic-icon" viewBox="0 0 16 16" aria-hidden="true" shape-rendering="crispEdges">
+    <path fill="#121622" d="M2 0h12v2h2v12h-2v2H2v-2H0V2h2z"/>
+    <path fill="${color}" opacity=".52" d="M2 1h12v1H2zm0 13h12v1H2zM1 2h1v12H1zm13 0h1v12h-1z"/>
+    <path fill="#050810" transform="translate(1 1)" d="${pixels}"/>
+    <path fill="${color}" d="${pixels}"/>
+    <path fill="#fff5d5" d="M3 3h1v1H3zm9 9h1v1h-1z"/></svg>`;
 }
 
 const rarity=['COMMON','UNCOMMON','RARE','EPIC','LEGENDARY'];
@@ -952,39 +1251,39 @@ function makeMap(seed,act) {
 
 const normalSpecs=[
   [['アッシュランタン','lantern','attack','sub'],['ラストテンプラー','knight','attack','div'],['グレイヴハウンド','hound','double','attack'],
-   ['エンバーウィスプ','wisp','sub','attack'],['ブラススカラベ','beetle','attack','pct'],['ラビリンスレイス','specter','pct','attack']],
+   ['エンバーウィスプ','wisp','sub','flare'],['ブラススカラベ','beetle','attack','fracture'],['ラビリンスレイス','specter','pct','attack']],
   [['セヴラ・オラクル','specter','div','attack'],['ヴェイルガード','knight','lock:add','attack'],['ジオードスカラベ','beetle','attack','div'],
-   ['ミストファング','hound','double','pct'],['アズールウィスプ','wisp','drain','attack'],['ルクス・ライブラリアン','lantern','attack','sub']],
+   ['ミストファング','hound','pursuit','pct'],['アズールウィスプ','wisp','drain','jam'],['ルクス・ライブラリアン','lantern','attack','sub']],
   [['アストラヴォア','specter','pct','attack'],['ファントムドラグーン','knight','attack','double'],['ノクスウィスプ','wisp','lock:pct','attack'],
-   ['スターフラクチャー','beetle','div','attack'],['アンブラハウンド','hound','double','sub'],['エーテルゲートキーパー','lantern','drain','attack']]
+   ['スターフラクチャー','beetle','div','fracture'],['アンブラハウンド','hound','double','sub'],['エーテルゲートキーパー','lantern','drain','tax']]
 ];
 const monsterForms=[['golem','hydra','wyrm'],['behemoth','golem','mantis'],['hydra','idol','wyrm']];
 const bossForms=[['titan','leviathan'],['colossus','moth'],['dragon','eclipse']];
 const eliteSpecs=[
   [
-    ['グラニト・タイタン',1,'衝撃波で二連打。','double','attack','sub'],
+    ['グラニト・タイタン',1,'衝撃波で三段追撃。','pursuit','attack','sub'],
     ['クリオヒュドラ',3,'加算を封じ、基礎値も冷却する。','lock:add','drain','attack'],
     ['サンドクロノス',0,'基礎値を半減し、除算を差し込む。','drain','attack','div']
   ],[
     ['ヴォイドベヒモス',7,'BURSTを1回だけ無効化する。', 'attack','div','double','barrier'],
     ['シジルゴーレム',4,'乗算を封じ、基礎値を削ぐ。','lock:mul','drain','attack'],
-    ['ルビーミラーマンティス',2,'二連撃と割合妨害を交互に使う。','pct','double','attack']
+    ['ルビーミラーマンティス',2,'割合妨害と三段追撃を使う。','pct','pursuit','attack']
   ],[
     ['アンチアストラ・ヒュドラ',6,'累乗を封じ、強い除算を差し込む。','lock:pow','div','double','attack'],
     ['デヴォーラ・イドル',5,'回復可能な範囲でHPを直接削り、基礎値を弱める。','wither','drain','double','attack'],
-    ['ジェミニワーム',9,'BURSTを1回無効化し、指数を封じる。','lock:exp','double','attack','barrier']
+    ['ジェミニワーム',9,'BURSTを1回無効化し、指数を封じる。','lock:exp','pursuit','attack','barrier']
   ]
 ];
 const bossSpecs=[
   [
-    ['オブシディアン・デューク',2,'開幕バリアが攻撃を2回無効化する。','attack','sub','double','barrier2'],
-    ['テラヴォア・リヴァイアサン',5,'基礎値を半減し、加算を封じる。','drain','attack','lock:add','double']
+    ['オブシディアン・デューク',2,'開幕バリアが攻撃を2回無効化する。','cleave','sub','pursuit','barrier2'],
+    ['テラヴォア・リヴァイアサン',5,'基礎値を半減し、加算を封じる。','drain','wave','lock:add','double']
   ],[
-    ['リブラ・コロッサス',5,'HP半分で耐える。撃破には最低2回の有効BURSTが必要。','pct','attack','drain','double','gate2'],
-    ['ルナリア・モスクイーン',3,'乗算と割合を交互に封じ、基礎値も削ぐ。','lock:mul','attack','lock:pct','drain','double']
+    ['リブラ・コロッサス',5,'HP半分で耐える。撃破には最低2回の有効BURSTが必要。','pct','meteor','drain','double','gate2'],
+    ['ルナリア・モスクイーン',3,'乗算と割合を交互に封じ、基礎値も削ぐ。','lock:mul','dust','lock:pct','drain','double']
   ],[
-    ['アエテル・ドラゴンロード',8,'HPの⅔と⅓で耐える。最低3回の有効BURSTが必要。','div','double','drain','attack','gate3'],
-    ['エクリプス・エンペラー',9,'2回の無効バリアに加え、最大HPを削る吸命と累乗封印を使う。','wither','lock:pow','double','attack','barrier2']
+    ['アエテル・ドラゴンロード',8,'HPの⅔と⅓で耐える。最低3回の有効BURSTが必要。','div','double','drain','flare','gate3'],
+    ['エクリプス・エンペラー',9,'2回の無効バリアに加え、最大HPを削る吸命と累乗封印を使う。','wither','lock:pow','double','eclipse','barrier2']
   ]
 ];
 const normalFloors=[330n,320000n,10n**11n];
@@ -992,8 +1291,8 @@ const eliteFloors=[1800n,6000000n,10n**13n];
 const bossFloors=[32000n,1500000000n];
 const bossAttack=[12,18,25];
 const finalBossBalance=[
-  {floor:8n*10n**18n, scaleDivisor:2n, armor:3, attack:24},
-  {floor:5n*10n**18n, scaleDivisor:3n, armor:2}
+  {floor:4n*10n**18n, scaleDivisor:3n, armor:2, attack:17},
+  {floor:3n*10n**18n, scaleDivisor:4n, armor:2, attack:18}
 ];
 const operationNames={add:'加算',mul:'乗算',pct:'割合',pow:'累乗',exp:'指数'};
 const extraEnemyName='エコー・オブ・インフィニティ';
@@ -1021,10 +1320,21 @@ function makeEnemy(act,kind,variant,row,bench=0n) {
   return {name,art,detail,kind,elite,title:boss?'ACT BOSS':elite?'DEFLATION ENEMY':'ENCOUNTER',
     hp:max,max,armor:balance?.armor??(1+a),attack:boss?(balance?.attack??bossAttack[a]):5+a*3+(elite?3:0),barrier:trait==='barrier2'?2:trait==='barrier'?1:0,gates,cycle:moves};
 }
+const attackPatterns={
+  attack:{name:'通常攻撃',hits:1},double:{name:'二連撃',hits:2},
+  cleave:{name:'黒鉄の斬撃',hits:1},wave:{name:'深淵の潮撃',hits:1},
+  meteor:{name:'天秤の隕鉄',hits:1},dust:{name:'月蛾の燐粉',hits:1,penalty:'jam'},
+  flare:{name:'竜炎の刻印',hits:1,penalty:'scorch'},eclipse:{name:'日蝕の落雷',hits:1},
+  pursuit:{name:'三段追撃',hits:3},jam:{name:'幻霧',penalty:'jam'},
+  tax:{name:'魔力徴収',penalty:'tax'},fracture:{name:'局所封印',penalty:'fracture'}
+};
+const attackHits=move=>attackPatterns[move.kind]?.hits??0;
 function intent(enemy,turn,act) {
   const [kind,target]=enemy.cycle[turn%enemy.cycle.length].split(':');
   const values={attack:enemy.attack,double:Math.ceil(enemy.attack*.65),wither:8+act*2,drain:50,
-    div:[2,4,8,10][act-1],pct:-20-act*5,sub:20*act};
+    div:[2,4,8,10][act-1],pct:-20-act*5,sub:20*act,
+    cleave:enemy.attack,wave:enemy.attack,meteor:enemy.attack,eclipse:enemy.attack,
+    dust:Math.floor(enemy.attack*.67),flare:Math.floor(enemy.attack*.88),pursuit:Math.round(enemy.attack*.42)};
   return {kind,...(target?{target}:{}),value:values[kind]??0,at:1+turn%2,enemy:true};
 }
 function impact(enemy,damage) {
@@ -1055,10 +1365,10 @@ class Run {
   }
   bonus(key){return this.owned.reduce((n,id)=>n+(relics[id][key]||0),0);}
   get base(){return this.baseAt(this.drain);}
-  baseAt(drain){return Math.max(1,Math.floor((20+(this.act-1)*15)*(100+this.bonus('base')-drain)/100));}
+  baseAt(drain=0){return Math.max(1,Math.floor((20+(this.act-1)*15)*(100+this.bonus('base')-drain)/100)+this.bonus('flatBase'));}
   get slots(){return Math.min(8,5+this.act)+this.bonus('slots');}
-  get capacity(){return Math.max(1,(this.act>=3?4:3)+this.bonus('energy')+(this.turn===0?this.bonus('firstEnergy'):0));}
-  get drawCount(){return Math.max(2,5+this.bonus('draw')+(this.turn===0?this.bonus('firstDraw'):0));}
+  get capacity(){return Math.max(1,(this.act>=3?4:3)+this.bonus('energy')-(this.energyPenalty??0)+(this.turn===0?this.bonus('firstEnergy'):0));}
+  get drawCount(){return Math.max(2,5+this.bonus('draw')-(this.drawPenalty??0)+(this.turn===0?this.bonus('firstDraw'):0));}
   get next(){return intent(this.enemy,this.turn,this.act);}
   beginMap(){
     this.phase='map';
@@ -1078,6 +1388,8 @@ class Run {
     this.hp=Math.max(1,this.hp-this.bonus('entry'));
     this.maxHp=100;
     this.drain=0;
+    this.drawPenalty=0;
+    this.energyPenalty=0;
     this.battlePeak=0n;
     this.lastBurst=null;
     this.deckDraw=shuffle(this.deck,this.rng);
@@ -1141,33 +1453,38 @@ class Run {
     return true;
   }
   preview(){
-    const result=evaluate({base:this.base,board:this.board,deb:this.deb,owned:this.owned,armor:this.enemy.armor});
+    const result=evaluate({base:this.base,board:this.board,deb:this.deb,owned:this.owned,armor:this.enemy.armor,holds:this.holds});
     return {...result,impact:impact(this.enemy,result.final)};
   }
   enemyOutcome(action=this.next) {
     let {hp,maxHp,drain,ward,deb}=this;
-    let blocked=false;
-    if(action.kind==='attack'||action.kind==='double') {
-      hp=Math.max(0,hp-action.value*(action.kind==='double'?2:1));
-    } else if(ward) {
-      ward=false;
-      blocked=true;
-    } else if(action.kind==='wither') {
-      maxHp=Math.max(35,maxHp-action.value);
-      hp=Math.min(hp,maxHp);
-    } else if(action.kind==='drain') drain=Math.min(65,drain+action.value);
-    else deb=[...deb,action];
-    return {hp,maxHp,drain,ward,deb,blocked};
+    let blocked=false,drawPenalty=0,energyPenalty=0;
+    const hits=attackHits(action);
+    const penalty=attackPatterns[action.kind]?.penalty;
+    hp=Math.max(0,hp-action.value*hits);
+    if(!hits||penalty) {
+      if(ward) {ward=false;blocked=true;}
+      else if(penalty==='jam') drawPenalty=1;
+      else if(penalty==='tax') energyPenalty=1;
+      else if(penalty==='fracture') deb=[...deb,{...action,kind:'seal'}];
+      else if(penalty==='scorch') deb=[...deb,{...action,kind:'sub',value:20*this.act}];
+      else if(action.kind==='wither') {
+        maxHp=Math.max(35,maxHp-action.value);
+        hp=Math.min(hp,maxHp);
+      } else if(action.kind==='drain') drain=Math.min(65,drain+action.value);
+      else deb=[...deb,action];
+    }
+    return {hp,maxHp,drain,ward,deb,blocked,drawPenalty,energyPenalty};
   }
   holdPreview(outcome=this.enemyOutcome()) {
     if(this.holds>=2||!outcome.hp||!this.board.length) return null;
-    const result=evaluate({base:this.baseAt(outcome.drain),board:this.board,deb:outcome.deb,owned:this.owned,armor:this.enemy.armor});
+    const result=evaluate({base:this.baseAt(outcome.drain),board:this.board,deb:outcome.deb,owned:this.owned,armor:this.enemy.armor,holds:this.holds+1});
     return result.final;
   }
   enemyAction() {
     this.uncommittedCards.clear();
-    const {hp,maxHp,drain,ward,deb}=this.enemyOutcome();
-    Object.assign(this,{hp,maxHp,drain,ward,deb});
+    const {hp,maxHp,drain,ward,deb,drawPenalty,energyPenalty}=this.enemyOutcome();
+    Object.assign(this,{hp,maxHp,drain,ward,deb,drawPenalty,energyPenalty});
     this.turn++;
     if(!this.hp) this.phase='loss';
     else this.refill();
@@ -1211,11 +1528,8 @@ class Run {
       this.hp=Math.min(100,this.hp+(boss?28:elite?13:7));
       this.victoryHeal=this.hp-hpBefore;
       if(elite||boss||this.act===4) {
-        const pool=Object.keys(relics).filter(id=>!this.owned.includes(id));
-        const powerful=pool.filter(id=>!['short','key','mantle'].includes(id));
-        const choices=elite&&powerful.length?powerful:pool;
-        if(choices.length) {
-          this.relicDrop=choices[Math.floor(this.rng()*choices.length)];
+        this.relicDrop=drawRelic(this.rng,this.owned,this.act);
+        if(this.relicDrop) {
           if(elite&&this.act<=2) {
             const alternatives=earlyRelicChoices.filter(id=>id!==this.relicDrop&&!this.owned.includes(id));
             const rewardRng=random(this.seed+'/relic/'+this.act+'/'+this.node.id);
@@ -1297,7 +1611,9 @@ class Run {
     this.facility=node.kind;
     if(node.kind==='shop') {
       this.shop=Array.from({length:4},()=>generate(this.rng,this.act,16));
-      this.stockRelics=shuffle(Object.keys(relics).filter(key=>!this.owned.includes(key)),this.rng).slice(0,2);
+      const first=drawRelic(this.rng,this.owned,this.act,{shop:true});
+      const second=drawRelic(this.rng,[...this.owned,first],this.act,{shop:true});
+      this.stockRelics=[first,second].filter(Boolean);
       this.shopUsed={relic:false,fuse:false,remove:false};
     }
     if(node.kind==='event') this.event=shuffle(Object.keys(events),this.rng)[0];
@@ -2124,6 +2440,13 @@ const cues={
   hex:[[410,145,0,.27,.10,'triangle'],[405,166,.04,.29,.045,'sawtooth']],
   seal:[[180,205,0,.18,.09,'triangle'],[105,80,.11,.13,.15,'triangle']],
   drain:[[270,72,0,.34,.15,'triangle'],[311,79,.035,.28,.05,'sine']],
+  triple:[[185,72,0,.115,.13,'triangle'],[218,61,.14,.13,.145,'triangle'],[245,52,.28,.17,.16,'triangle']],
+  boss:[[73,58,0,.48,.15,'triangle'],[110,92,.10,.38,.13,'triangle'],[155,147,.22,.45,.095,'sine']],
+  wave:[[360,92,0,.36,.125,'triangle'],[120,56,.12,.28,.13,'sine']],
+  meteor:[[400,210,0,.13,.09,'triangle'],[139,48,.14,.30,.20,'triangle']],
+  flare:[[165,90,0,.26,.13,'sawtooth'],[480,65,.09,.28,.09,'triangle']],
+  eclipse:[[640,124,0,.17,.11,'sawtooth'],[220,54,.07,.28,.16,'triangle']],
+  ascend:[[392,587,0,.19,.10,'sine'],[587,784,.10,.24,.08,'triangle'],[880,880,.22,.34,.08,'sine']],
   launch:[[160,640,0,.14,.07,'triangle']],
   hit:[[182,65,0,.17,.16,'triangle'],[495,330,.045,.11,.075,'sine']],
   barrier:[[590,735,0,.20,.13,'triangle'],[813,650,.050,.24,.07,'sine']],
@@ -2193,6 +2516,7 @@ const book=load();
 let suspended=readCheckpoint(book.checkpoint);
 let run=null, selected=null, storageWarning=false, notice='';
 let sequence=null, lastPage=null, craftResult=null, lastDeal=null, lastBattle=null;
+let relicPage=0, deckFilter='all', deckPage=0, shopTab='cards', baseGlow=null;
 const motionMode=()=>matchMedia('(prefers-reduced-motion: reduce)').matches?'off':book.prefs.motion||'full';
 const sound=createSound(globalThis.AudioContext,()=>book.prefs);
 const cue=(id,options={})=>sound.play(id,{fast:motionMode()==='fast',signal:sequence?.signal,...options});
@@ -2229,30 +2553,54 @@ function saveProgress() {
   persist();
 }
 function modal(title,content) {
+  dialog.className='';
   dialog.innerHTML=`<h2>${title}</h2>${content}<form method="dialog"><button>閉じる</button></form>`;
   if(!dialog.open) dialog.showModal();
 }
 function routeName(act=run.act){return act===4?'EXTRA':'ACT '+['','I','II','III'][act];}
-const direct=a=>a.kind==='attack'||a.kind==='double';
+const rankMark=id=>`<span class="relic-rank r${relics[id].rank}">${relicRanks[relics[id].rank].name}</span>`;
 function intentText(a=run.next) {
   if(a.kind==='attack') return `HPに ${a.value} ダメージ`;
-  if(a.kind==='double') return `二連撃 · ${a.value} × 2 ダメージ`;
+  const pattern=attackPatterns[a.kind];
+  if(pattern) {
+    const hits=attackHits(a);
+    const hit=hits>1?`${a.value} × ${hits} ダメージ`:hits?`${a.value} ダメージ`:'';
+    const penalty={jam:'次のドロー −1',tax:'次のエナジー −1',fracture:'指定位置の次の演算を1枚封印',scorch:`演算盤に −${20*run.act}`}[pattern.penalty];
+    return pattern.name+' · '+[hit,penalty].filter(Boolean).join(' ＋ ');
+  }
   if(a.kind==='wither') return `吸命 · 戦闘中の最大HP −${a.value}（下限35）`;
   if(a.kind==='drain') return `弱体 · 戦闘中の基礎値 −${a.value}%`;
   if(a.kind==='lock') return `封印 · 次のBURSTまで${operationNames[a.target]}を無効化`;
   return `${a.at}枠目の後に ${label(a)} を挿入${run.ward?'（結界で防御可能）':''}`;
 }
+function pager(page,pages,attribute) {
+  if(pages<=1) return '';
+  return `<div class="pager"><button type="button" ${attribute}="${page-1}" aria-label="前のページ" ${page===0?'disabled':''}>‹</button>
+    <small>${page+1} / ${pages}</small><button type="button" ${attribute}="${page+1}" aria-label="次のページ" ${page===pages-1?'disabled':''}>›</button></div>`;
+}
+function baseBanner(gain=baseGlow) {
+  if(!gain) return '';
+  return `<p class="base-banner" role="status"><span class="base-spark" aria-hidden="true">✦</span>
+    <span>基礎値上昇 <del>${gain.from}</del> → <strong>${gain.to}</strong></span><b>+${gain.to-gain.from}</b></p>`;
+}
+function markBaseGain(from) {
+  const to=run.baseAt();
+  if(to>from) {baseGlow={from,to};cue('ascend');}
+}
 function sidebar(p) {
   const active=relicActivations(p);
+  const owned=[...run.owned].sort((a,b)=>Number(active.has(b))-Number(active.has(a)));
+  const pages=Math.max(1,Math.ceil(owned.length/3));
+  relicPage=Math.min(relicPage,pages-1);
   return `<aside>
     <section class="frame"><h2>術師の記録</h2><div class="data">
     <span>HP <b>${run.hp}/${run.maxHp}</b></span><span>金貨 <b>${run.gold}</b></span>
     <span>基礎 <b>${run.base}</b></span><span>装甲 <b>÷${run.enemy.armor}</b></span></div>
     <small>歴代最高</small><div class="record">${fmt(BigInt(book.best.max))}</div>
     <div class="actions" style="margin-top:9px">${btn('デッキ '+run.deck.length,'deck')}${btn('履歴','history')}</div></section>
-    <section class="frame"><h2>所持レリック</h2>${run.owned.map(id=>
+    <section class="frame relic-pane"><div class="heading"><h2>所持レリック ${owned.length}</h2>${pager(relicPage,pages,'data-relic-page')}</div>${owned.slice(relicPage*3,relicPage*3+3).map(id=>
       `<button class="rune${active.has(id)?' rune-ready':''}" data-relic="${id}" data-action="relic:${id}">
-        <span class="rune-heading"><span>${relics[id].name}</span><span class="rune-state">${active.has(id)?'発動可能':''}</span></span>
+        <span class="rune-heading">${relicIcon(id)}<span>${relics[id].name} ${rankMark(id)}</span><span class="rune-state">${active.has(id)?'発動可能':''}</span></span>
         <small>${relics[id].desc}</small></button>`
     ).join('')||'<p class="muted">所持なし</p>'}</section></aside>`;
 }
@@ -2271,14 +2619,14 @@ function tacticalReadout(p) {
   const held=run.holdPreview(outcome);
   const lethal=!outcome.hp;
   const victory=p.impact.dealt===run.enemy.hp;
-  const holdText=run.holds>=2?'HOLD上限':lethal?'反撃で敗北':outcome.blocked?'結界で妨害を防ぐ':
+  const holdText=run.holds>=2?'HOLD上限':lethal?'反撃で敗北':
     outcome.hp<run.hp?'HP −'+(run.hp-outcome.hp):outcome.maxHp<run.maxHp?'最大HP −'+(run.maxHp-outcome.maxHp):
     outcome.drain!==run.drain?'基礎 '+run.base+' → '+run.baseAt(outcome.drain):
-    outcome.deb!==run.deb?'妨害が盤に入る':'追加の変化なし';
+    outcome.drawPenalty?'次のドロー −1':outcome.energyPenalty?'次のエナジー −1':outcome.deb!==run.deb?'妨害が盤に入る':outcome.blocked?'HP変化なし':'追加の変化なし';
   const burstText=victory?'このBURSTで撃破':p.impact.kind==='gate'?'耐久段階を突破':
     p.impact.kind==='barrier'?'バリアを1枚破る':p.impact.kind==='miss'?'攻撃が通らない':'敵HP −'+compact(p.impact.dealt,false);
   return `<div class="tactics" aria-label="HOLDとBURSTの比較">
-    <div class="${lethal&&run.holds<2?'tactics-danger':''}"><b>HOLD</b><span>${holdText}${held!==null&&held!==p.final?` <small title="${held}"> · 引く前の予測 ${compact(held)}</small>`:''}</span></div>
+    <div class="${lethal&&run.holds<2?'tactics-danger':''}"><b>HOLD</b><span>${holdText}${outcome.blocked&&run.holds<2&&!lethal?' · 結界で妨害を防ぐ':''}${held!==null&&held!==p.final?` <small title="${held}"> · 引く前の予測 ${compact(held)}</small>`:''}</span></div>
     <div class="${victory?'tactics-win':lethal?'tactics-danger':''}"><b>BURST</b><span>${burstText}${lethal&&!victory?' · 反撃で敗北':''}</span></div></div>`;
 }
 function battle() {
@@ -2305,6 +2653,8 @@ function battle() {
         <figcaption>${e.name}</figcaption><div class="hpBar foe-hp" aria-hidden="true"><span style="width:${Number(e.hp*1000n/e.max)/10}%"></span></div><small id="foeHp" title="${e.hp} / ${e.max}">HP ${compact(e.hp)} / ${compact(e.max)}</small></figure>
         <span class="burst-scene" aria-hidden="true"><i class="burst-seal"></i><i class="burst-bolt"></i>
           <i class="burst-ring"></i><i class="burst-ring echo"></i></span>
+        ${e.kind==='boss'?`<div class="boss-entry" aria-hidden="true"><i></i><span>ACT BOSS</span><strong>${e.name}</strong></div>`:''}
+        <span class="boss-attack" aria-hidden="true"><i></i><i></i><i></i></span>
         <span class="slash" aria-hidden="true"></span><span class="enemy-cast" aria-hidden="true"></span><span id="incoming" aria-hidden="true"></span><span id="outgoing" aria-hidden="true"></span>
       </div>
       <div class="enemy-info"><div class="eyebrow">${routeName()} · 第${run.stage}地点</div><h1>${e.name}</h1><small class="enemy-title">${e.title}${e.elite?' · ELITE':''}</small>
@@ -2312,14 +2662,14 @@ function battle() {
       ${e.barrier||gate!==undefined?`<p class="enemy-rule defense-status">${e.barrier?'バリア残り '+e.barrier+'回':`耐久段階あと ${e.gates.length} · 次の突破に <b title="${e.hp-gate}">${compact(e.hp-gate,false)}</b> ダメージ`}</p>`:''}
       <div class="intent" data-move="${run.next.kind}"><small>敵の次の行動</small><strong>${intentText()}</strong></div></div></section>
     <section class="frame board-frame"><div class="heading"><h2>演算盤</h2><small>${run.board.length} / ${run.slots} 枠 · コンボ ${run.board.length}${run.ward?' · 結界あり':''}</small></div>
-      <div class="board"><span class="slot base"><small>基礎</small>${run.base}</span>${slots}${tail}</div>
+      <div class="board"><span class="slot base${baseGlow?' base-awaken':''}"><small>基礎</small>${run.base}</span>${slots}${tail}</div>
       ${selected!==null?`<div class="actions" style="margin-top:8px">${btn('← 左へ','shift:-1','',selected===0)}${btn('右へ →','shift:1','',selected===run.board.length-1)}${run.canReturn(selected)?btn('手札に戻す','unplay'):''}</div>`:''}
-      ${damageReceipt()}
       <div class="preview"><div><small>通常演算</small><strong title="${exactRat(p.normal)}">${visibleNumber(p.normal)}</strong></div><div><small>レリック適用後</small><strong title="${exactRat(p.result)}">${visibleNumber(p.result)}</strong></div>
       <div><small>最終ダメージ予測</small><strong title="${p.final}">${compact(p.final)}</strong><small title="${p.impact.dealt}">敵HP −${compact(p.impact.dealt,false)}${p.impact.kind==='barrier'?' · バリアで無効':p.impact.kind==='gate'?' · 耐久段階まで':''}</small></div></div>
       <div id="reel" class="reel" hidden><div class="reel-head"><span id="stepName"></span><span id="stepCombo"></span></div>
       <strong id="reelNumber"></strong><div class="reel-foot"><div id="stepProgress"></div>${btn('演出をスキップ','skip')}</div></div>
-      ${notice?`<small role="status">${esc(notice)}</small>`:''}</section>
+      ${run.lastBurst?`<div class="last-strike" title="${[...relicActivations(run.lastBurst)].map(id=>relics[id].name).join(' ／ ')}">直前BURST <b title="${run.lastBurst.final}">${compact(run.lastBurst.final)}</b> · 敵HP −${compact(run.lastBurst.impact.dealt,false)}</div>`:''}
+      ${notice?`<small class="battle-notice" role="status">${esc(notice)}</small>`:''}</section>
     <section class="frame"><div class="heading"><h2>手札</h2><span class="energy">エネルギー ${run.energy} / ${run.capacity} <small>· ドロー ${run.drawCount}枚</small></span></div>
       <div class="hand" data-hand-return>${run.hand.map((c,i)=>cardButton(c,'hand:'+i,i,c.cost>run.energy||
         (c.kind==='clean'?!run.deb.length:c.kind==='ward'?run.ward:run.board.length>=run.slots))).join('')}</div>
@@ -2369,7 +2719,7 @@ function relicReward() {
   const choices=[run.relicDrop,run.relicAlternative].filter(Boolean);
   const pending=run.relicDecision==='pending';
   const relicTile=(id,i)=>`<article class="relic-option">
-    <h3>${relics[id].name}</h3><p>${relics[id].desc}</p>
+    <h3>${relicIcon(id)} ${relics[id].name} ${rankMark(id)}</h3><p>${relics[id].desc}</p>
     ${pending?btn(relics[id].name+'を獲得','relicTake:'+i,'primary'):''}</article>`;
   return `<section class="relic-drop"><span aria-hidden="true">✧</span><div class="relic-reward-content">
     <small>${run.enemy.name}からドロップ</small><h2>レリック</h2>
@@ -2385,7 +2735,7 @@ function workshopStage(kind,body,reveal=false) {
     <div class="workshop-sigil" aria-hidden="true"><span>${theme.symbol}</span><i></i></div><div class="workshop-content">${body}</div></div>`;
 }
 function workResult() {
-  const {kind,sources,result,relic,price}=craftResult;
+  const {kind,sources,result,relic,price,baseGain}=craftResult;
   if(kind==='event') return chapter(routeName(),'イベントの結果',`<section class="reward-block">
     ${result?`<div class="reward-result">${rewardCard(result)}<p>デッキに <strong>${label(result)}</strong> を追加しました。</p></div>`:''}
     ${rewardChanges(craftResult)}${!result&&!craftResult.hp&&!craftResult.gold?'<p>HPは満タンでした。</p>':''}
@@ -2405,13 +2755,16 @@ function workResult() {
   }
   const previous=sources.map(c=>`<span>${label(c)}</span>`).join('')+(price?`<span>${price} 金貨</span>`:'');
   const output=result?`<div class="card result-card t${result.tier}">${cardFace(result)}</div>`:
-    relic?`<div class="relic-drop"><div><h2>${relics[relic].name}</h2><p>${relics[relic].desc}</p></div></div>`:'<strong>消去</strong>';
+    relic?`<div class="relic-drop"><div><h2>${relicIcon(relic)} ${relics[relic].name} ${rankMark(relic)}</h2><p>${relics[relic].desc}</p></div></div>`:'<strong>消去</strong>';
   return chapter(routeName(),theme.title,workshopStage(kind,`
-    <div class="workshop-transform"><div class="workshop-sources">${previous}</div><span aria-hidden="true">→</span>${output}</div>
+    <div class="workshop-transform">${kind==='forge'?rewardCard(sources[0]):`<div class="workshop-sources">${previous}</div>`}
+    <span class="workshop-arrow" aria-hidden="true">→</span><div class="workshop-output">${output}${kind==='forge'?'<i class="forge-strike" aria-hidden="true"></i><i class="forge-embers" aria-hidden="true"></i>':''}</div></div>
+    ${baseBanner(baseGain??null)}
     <p role="status">${theme.done}</p><div class="actions">${btn(run.phase==='facility'?'店へ戻る':'地図へ戻る','craftNext','primary')}</div>`,true));
 }
 function useService(action,i=NaN,mode) {
   sound.unlock();
+  const oldBase=run.baseAt();
   const transaction=run.service({action,i:action!=='remove'&&Number.isNaN(i)?Number(document.querySelector('#i')?.value):i,
     j:Number(document.querySelector('#j')?.value),mode,digit:Number(document.querySelector('#digit')?.value)});
   if(!transaction) {
@@ -2421,7 +2774,8 @@ function useService(action,i=NaN,mode) {
   }
   if(action==='remove') dialog.close();
   cue(({buy:'gold',relic:'relic',fuse:'fuse',forge:'forge',remove:'remove',heal:'ward'})[action]||'page');
-  if(transaction.kind) craftResult=transaction;
+  markBaseGain(oldBase);
+  if(transaction.kind) craftResult={...transaction,...(baseGlow?{baseGain:baseGlow}:{})};
   else notice=transaction.message;
   saveProgress();
   render();
@@ -2454,13 +2808,22 @@ function facility() {
   const unable=key=>run.shopUsed[key]||run.gold<prices[key];
   const body=f==='rest'?`<p>HP ${run.hp}/100 · 回復か鍛冶を1回選択</p><div class="choices">${btn('HPを35回復','service:heal','primary')}</div>${workshopStage('forge',forge)}`:
     f==='event'?eventPreview(run.eventOffer):
-    workshopStage('shop',`<p>所持金 ${run.gold} · カード各${prices.buy}金貨</p><div class="choices shop-cards">${run.shop.map((c,i)=>c?cardButton(c,'buy:'+i,-1,unable('buy')):'<span class="sold">売約済み</span>').join('')}</div>
-    <h2>レリック · ${run.shopUsed.relic?'購入済み':prices.relic+'金貨／1個まで'}</h2><div class="choices">${run.stockRelics.map((id,i)=>btn(relics[id].name+'<small>'+relics[id].desc+'</small>','relicBuy:'+i,'',unable('relic'))).join('')||'在庫なし'}</div>
-    <h2>工房 · デッキ下限12枚</h2><div class="choices"><label>対象 <select id="i">${options}</select></label><label>合成相手 <select id="j">${options}</select></label>
-    ${btn(run.shopUsed.fuse?'合成済み':'合成 · '+prices.fuse+'金貨','fuse','',unable('fuse')||run.deck.length<=12)}</div><p id="forgePreview"></p>
-    <div class="actions">${btn(run.shopUsed.remove?'削除済み':'削除するカードを選ぶ · '+prices.remove+'金貨','remove','',unable('remove')||run.deck.length<=12)}</div>`);
+    workshopStage('shop',shopContents(options,unable));
   return chapter(routeName(),places[f].name,body+`<p role="status">${esc(notice)}</p>`
     +(f!=='event'?`<div class="actions">${btn('地図へ戻る','leave','primary')}</div>`:''));
+}
+function shopContents(options,unable) {
+  const tabs=[['cards','カード'],['relics','レリック'],['forge','工房']];
+  let contents;
+  if(shopTab==='cards') contents=`<h2>カード各 ${prices.buy} 金貨</h2><div class="choices shop-cards">${run.shop.map((c,i)=>
+    c?cardButton(c,'buy:'+i,-1,unable('buy')):'<span class="sold">売約済み</span>').join('')}</div>`;
+  else if(shopTab==='relics') contents=`<h2>レリック · ${run.shopUsed.relic?'購入済み':prices.relic+'金貨／1個まで'}</h2>
+    <div class="choices">${run.stockRelics.map((id,i)=>btn(relicIcon(id)+' '+relics[id].name+' '+rankMark(id)+'<small>'+relics[id].desc+'</small>','relicBuy:'+i,'',unable('relic'))).join('')||'在庫なし'}</div>`;
+  else contents=`<h2>工房 · デッキ下限12枚</h2><div class="choices"><label>対象 <select id="i">${options}</select></label><label>合成相手 <select id="j">${options}</select></label>
+    ${btn(run.shopUsed.fuse?'合成済み':'合成 · '+prices.fuse+'金貨','fuse','',unable('fuse')||run.deck.length<=12)}</div>
+    <p id="forgePreview"></p>${btn(run.shopUsed.remove?'削除済み':'削除するカードを選ぶ · '+prices.remove+'金貨','remove','',unable('remove')||run.deck.length<=12)}`;
+  return `<div class="shop-head"><p>所持金 <b>${run.gold}</b></p><div class="actions" aria-label="売り場">${tabs.map(([key,name])=>
+    `<button data-action="shopTab:${key}" aria-pressed="${key===shopTab}">${name}</button>`).join('')}</div></div>${contents}`;
 }
 function mapView() {
   const xy=n=>[17+n.col*33,100-(n.row+.5)*100/run.map.length];
@@ -2486,7 +2849,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.6.1</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.6.2</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -2497,9 +2860,9 @@ function view() {
   if(craftResult) return workResult();
   switch(run.phase) {
     case 'battle':return battle();
-    case 'reward':return chapter(routeName(),'勝利報酬',`<p>HP ${run.hp}/100 ${run.victoryHeal?'（勝利時回復 +'+run.victoryHeal+'）':''} · 所持金 ${run.gold} 枚</p>
+    case 'reward':return chapter(routeName(),'勝利報酬',`${baseBanner()}<p>HP ${run.hp}/100 ${run.victoryHeal?'（勝利時回復 +'+run.victoryHeal+'）':''} · 所持金 ${run.gold} 枚</p>
       ${damageReceipt()}
-      ${cardReward()}${goldReward()}${relicReward()}${takeReport()}
+      <div class="loot-grid${run.relicDrop?' has-relic':''}"><div>${cardReward()}${goldReward()}</div>${relicReward()}</div>${takeReport()}
       ${btn('ページをめくる','advance','primary',run.rewardPending)}`);
     case 'map':return mapView();
     case 'facility':return facility();
@@ -2517,6 +2880,7 @@ function render() {
   app.dataset.motion=mode;
   app.innerHTML=`<header><div class="brand">◇ DAMAGE BREAKER</div><nav>${run&&run.phase!=='battle'?btn('デッキ '+run.deck.length,'deck'):''}${run&&suspended?btn('中断','pause'):''}${btn('遊び方','help')}${btn('記録帳','records')}${btn('設定','settings')}</nav></header>${view()}
     ${storageWarning?'<p role="status" style="text-align:center">保存できませんでした。画面を閉じると、今回の進行や記録が失われる場合があります。</p>':''}`;
+  if(baseGlow&&run?.phase==='map'&&!craftResult) app.querySelector('.map-heading')?.insertAdjacentHTML('afterend',baseBanner());
   const hero=app.querySelector('[data-sprite]');
   if(hero) paintSprite(hero,10);
   const enemy=app.querySelector('[data-enemy-art]');
@@ -2526,6 +2890,7 @@ function render() {
     const dealKey=battleKey+':'+run.turn;
     if(lastBattle!==battleKey&&run.turn===0&&mode!=='off') {
       app.querySelector('.enemy').classList.add('encounter-arrival');
+      if(run.enemy.kind==='boss') cue('boss');
     }
     lastBattle=battleKey;
     if(lastDeal!==dealKey&&mode!=='off') {
@@ -2548,6 +2913,7 @@ function render() {
     });
   }
   lastPage=page;
+  baseGlow=null;
   updateFacility();
 }
 function updateFacility() {
@@ -2592,15 +2958,26 @@ const prefsHTML=()=>`<p><label><input type="checkbox" id="scientific" ${book.pre
     `<option value="${id}" ${(book.prefs.motion||'full')===id?'selected':''}>${t}</option>`).join('')}</select></label></p>
   <p><label><input type="checkbox" id="mute" ${book.prefs.mute?'checked':''}> 効果音を消す</label></p>
   <p><label>効果音の音量 <input type="range" id="volume" min="0" max="100" value="${Number(book.prefs.volume??55)}"></label> <output for="volume">${Number(book.prefs.volume??55)}%</output></p>`;
+const deckKinds=['add','mul','pct','pow','exp','ward','clean'];
+const deckNames={...types,ward:'結界',clean:'浄化'};
+function deckContents() {
+  const stock=[...run.deck].sort((a,b)=>deckKinds.indexOf(a.kind)-deckKinds.indexOf(b.kind)||a.value-b.value||a.cost-b.cost);
+  const shown=stock.filter(card=>deckFilter==='all'||card.kind===deckFilter);
+  const pages=Math.max(1,Math.ceil(shown.length/12));
+  return `<div class="deck-toolbar"><label>種類 <select id="deckFilter">
+    ${['all',...deckKinds].map(kind=>`<option value="${kind}" ${kind===deckFilter?'selected':''}>${deckNames[kind]??'すべて（種類順）'}</option>`).join('')}</select></label>
+    <small>${shown.length}枚</small>${pager(deckPage,pages,'data-deck-page')}</div>
+    ${shown.length?`<div class="deck-cards">${shown.slice(deckPage*12,(deckPage+1)*12).map(rewardCard).join('')}</div>`:'<p>この種類のカードはありません。</p>'}`;
+}
 function openDeck() {
-  const groups=[['add','加算'],['mul','乗算'],['pct','割合'],['pow','累乗'],['exp','指数'],['aux','補助']];
-  const sections=groups.flatMap(([kind,name])=>{
-    const cards=run.deck.filter(c=>kind==='aux'?c.kind==='clean'||c.kind==='ward':c.kind===kind);
-    if(!cards.length) return [];
-    return [`<details open><summary>${name} · ${cards.length}枚</summary><ul>
-      ${cards.map(c=>`<li>${label(c)}${c.upgraded?' ✧':''} · ${rarity[c.tier]} · 消費 ${c.cost}</li>`).join('')}</ul></details>`];
-  });
-  modal('デッキ '+run.deck.length+'枚',`<div class="deck-groups">${sections.join('')}</div>`);
+  deckFilter='all';
+  deckPage=0;
+  modal('デッキ '+run.deck.length+'枚',`<div id="deckContents">${deckContents()}</div>`);
+  dialog.classList.add('deck-dialog');
+}
+function refreshDeck(focus) {
+  dialog.querySelector('#deckContents').innerHTML=deckContents();
+  (dialog.querySelector(focus)||dialog.querySelector('#deckFilter')).focus({preventScroll:true});
 }
 function openRecords() {
   modal('記録帳',`<h3>歴代最高 ${fmt(BigInt(book.best.max))}</h3><p>${esc(book.best.formula||'記録なし')}</p>
@@ -2620,7 +2997,10 @@ function action(command) {
   if(name==='settings') return modal('設定',prefsHTML());
   if(name==='records') return openRecords();
   if(name==='deck') return openDeck();
-  if(name==='relic') return modal(relics[arg].name,'<p>'+relics[arg].desc+'</p>');
+  if(name==='shopTab') {
+    shopTab=arg;render();app.querySelector('[data-action="shopTab:'+arg+'"]').focus();return;
+  }
+  if(name==='relic') return modal(relics[arg].name,`<p class="relic-detail">${relicIcon(arg)} ${rankMark(arg)} ${relics[arg].desc}</p>`);
   if(name==='history') return modal('計算履歴',run.history.map(p=>`<details><summary>${fmt(p.final)} · ${esc(p.formula)}</summary>
     <ol>${p.steps.map(s=>`<li>${label(s.card)}${s.op?.kind!==s.card.kind?' → '+(s.op?label(s.op):'無効'):''} → ${rat(s.result)}</li>`).join('')}
     ${p.triggers.map(t=>`<li>${relics[t.id].name} → ${rat(t.result)}</li>`).join('')}</ol></details>`).join('')||'<p>まだBURSTしていません。</p>');
@@ -2641,6 +3021,7 @@ function action(command) {
   }
   const keepNotice=name==='craftNext'||name==='slot'||name==='shift'||name==='hand'||name==='unplay';
   if(!keepNotice) notice='';
+  const oldBase=run.baseAt();
   let feedback=null;
   switch(name) {
     case 'hand': feedback=playCard(i);break;
@@ -2667,7 +3048,9 @@ function action(command) {
     case 'relicTake':if(run.chooseRelic(true,i)) cue('relic');break;
     case 'relicSkip':run.chooseRelic(false);break;
     case 'advance':run.advance();cue('page');break;
-    case 'route':if(run.route(arg)) cue(run.phase==='battle'?'draw':'page');break;
+    case 'route':
+      if(run.route(arg)) {shopTab='cards';cue(run.phase==='battle'?'draw':'page');}
+      break;
     case 'leave':run.leaveNode();break;
     case 'extra':run.extra();cue('draw');break;
     case 'craftNext':craftResult=null;break;
@@ -2678,6 +3061,7 @@ function action(command) {
     case 'remove':openRemoval();return;
     case 'fuse':useService(name);return;
   }
+  markBaseGain(oldBase);
   saveProgress();
   render();
   animateCard(feedback);
@@ -2704,6 +3088,15 @@ function animateCard(feedback) {
 app.addEventListener('click',e=>{
   const b=e.target.closest('[data-action]');
   if(b&&!b.disabled) action(b.dataset.action);
+  const page=e.target.closest('[data-relic-page]');
+  if(page&&!page.disabled&&!sequence) {
+    relicPage=Number(page.dataset.relicPage);
+    const pane=app.querySelector('.relic-pane');
+    const newAside=document.createElement('template');
+    newAside.innerHTML=sidebar(run.preview());
+    pane.replaceWith(newAside.content.querySelector('.relic-pane'));
+    (app.querySelector('.relic-pane .pager button:not(:disabled)')||app.querySelector('.rune'))?.focus({preventScroll:true});
+  }
 });
 app.addEventListener('submit',e=>{
   if(e.target.id!=='start') return;
@@ -2713,6 +3106,7 @@ app.addEventListener('submit',e=>{
   sound.unlock();
   cue('page');
   run=new Run(seed);
+  relicPage=0;
   lastDeal=null;
   lastBattle=null;
   selected=null;
@@ -2755,6 +3149,7 @@ app.addEventListener('dragend',()=>{dragging=null;});
 app.addEventListener('change',updateFacility);
 dialog.addEventListener('change',e=>{
   const {id,checked,value}=e.target;
+  if(id==='deckFilter') {deckFilter=value;deckPage=0;refreshDeck('#deckFilter');return;}
   if(id==='removeCard') {
     const selectedCard=value===''?null:run.deck[Number(value)];
     dialog.querySelector('#removePreview').innerHTML=selectedCard?rewardCard(selectedCard):'';
@@ -2765,6 +3160,13 @@ dialog.addEventListener('change',e=>{
   book.prefs[id]=id==='motion'?value:checked;
   if(id==='mute') {sound.unlock();sound.refresh();}
   persist();render();
+});
+dialog.addEventListener('click',e=>{
+  const page=e.target.closest('[data-deck-page]');
+  if(!page||page.disabled) return;
+  const forward=Number(page.dataset.deckPage)>deckPage;
+  deckPage=Number(page.dataset.deckPage);
+  refreshDeck(`[aria-label="${forward?'次':'前'}のページ"]:not(:disabled)`);
 });
 dialog.addEventListener('input',e=>{
   if(e.target.id!=='volume') return;
@@ -2784,17 +3186,20 @@ render();
 function reactionText(move,message,hpLost) {
   if(!hpLost) return message;
   const loss='術師 HP −'+hpLost;
-  return direct(move)?loss+(move.kind==='double'?' · 二連撃':''):message+' · '+loss;
+  return attackHits(move)&&!attackPatterns[move.kind]?.penalty?loss+(move.kind==='attack'?'':' · '+attackPatterns[move.kind].name):message+' · '+loss;
 }
 function enemyReaction(move,message,hpLost) {
   const blocked=message.startsWith('結界');
-  cue(blocked?'ward':({attack:'melee',double:'double',lock:'seal',drain:'drain',wither:'drain'}[move.kind]||'hex'));
+  cue(({cleave:'melee',wave:'wave',meteor:'meteor',dust:'hex',flare:'flare',eclipse:'eclipse',pursuit:'triple',lock:'seal',fracture:'seal',drain:'drain',wither:'drain',double:'double',attack:'melee'}[move.kind]||'hex'));
+  if(blocked) cue('ward');
   const field=app.querySelector('.enemy');
   if(!field||motionMode()==='off') return;
   field.classList.remove('player-strike','player-landed','player-blocked','player-miss','gate-shatter');
-  field.classList.add(!blocked&&direct(move)?'enemy-strike':'enemy-magic');
-  field.dataset.move=blocked?'ward':move.kind;
+  field.classList.add(attackHits(move)?'enemy-strike':'enemy-magic');
+  field.dataset.move=blocked&&!attackHits(move)?'ward':move.kind;
+  field.classList.toggle('ward-answer',blocked);
   field.classList.toggle('enemy-double',move.kind==='double');
+  field.classList.toggle('enemy-triple',move.kind==='pursuit');
   field.querySelector('#incoming').textContent=reactionText(move,message,hpLost);
 
 }
@@ -2826,7 +3231,7 @@ function updateHeroDisplay(field) {
 async function showHold() {
   const move=run.next;
   const hpBefore=run.hp;
-  const prediction=run.enemyOutcome(move).blocked?'結界が妨害を防ぎました':intentText();
+  const prediction=run.enemyOutcome(move).blocked?'結界が妨害を防ぎました':intentText(move);
   if(!run.hold()) return;
   selected=null;
   notice=reactionText(move,prediction,hpBefore-run.hp)+(run.phase==='battle'?' ／ 次の手札を引きました':'');
@@ -2843,7 +3248,7 @@ async function showHold() {
   skip.focus({preventScroll:true});
   enemyReaction(move,prediction,hpBefore-run.hp);
   updateHeroDisplay(field);
-  try {await clock(mode==='fast'?160:510,control.signal);}
+  try {await clock(mode==='fast'?160:570,control.signal);}
   finally {
     sequence=null;
     if(!control.signal.aborted&&run.phase==='battle') cue('draw');
@@ -2854,7 +3259,7 @@ async function showHold() {
 async function showBurst() {
   const base=run.base, armor=run.enemy.armor, move=run.next;
   const hpBefore=run.hp;
-  const prediction=run.enemyOutcome(move).blocked?'結界が妨害を防ぎました':intentText();
+  const prediction=run.enemyOutcome(move).blocked?'結界が妨害を防ぎました':intentText(move);
   const p=run.burst();
   if(!p) return;
   const best=p.final>BigInt(book.best.max);
@@ -2901,7 +3306,8 @@ async function showBurst() {
         const level=magnitude(step.value);
         reel.dataset.kind=step.type;
         reel.dataset.level=level;
-        name.textContent=step.relic?'✦ 発動 · '+step.name:step.name;
+        if(step.relic) name.innerHTML=relicIcon(step.relic)+' 発動 · '+esc(step.name);
+        else name.textContent=step.name;
         combo.textContent=step.combo+' COMBO';
         counter.title=exactRat(step.value);
         counter.classList.remove('count-pop');

@@ -1,38 +1,38 @@
 const normalSpecs=[
   [['アッシュランタン','lantern','attack','sub'],['ラストテンプラー','knight','attack','div'],['グレイヴハウンド','hound','double','attack'],
-   ['エンバーウィスプ','wisp','sub','attack'],['ブラススカラベ','beetle','attack','pct'],['ラビリンスレイス','specter','pct','attack']],
+   ['エンバーウィスプ','wisp','sub','flare'],['ブラススカラベ','beetle','attack','fracture'],['ラビリンスレイス','specter','pct','attack']],
   [['セヴラ・オラクル','specter','div','attack'],['ヴェイルガード','knight','lock:add','attack'],['ジオードスカラベ','beetle','attack','div'],
-   ['ミストファング','hound','double','pct'],['アズールウィスプ','wisp','drain','attack'],['ルクス・ライブラリアン','lantern','attack','sub']],
+   ['ミストファング','hound','pursuit','pct'],['アズールウィスプ','wisp','drain','jam'],['ルクス・ライブラリアン','lantern','attack','sub']],
   [['アストラヴォア','specter','pct','attack'],['ファントムドラグーン','knight','attack','double'],['ノクスウィスプ','wisp','lock:pct','attack'],
-   ['スターフラクチャー','beetle','div','attack'],['アンブラハウンド','hound','double','sub'],['エーテルゲートキーパー','lantern','drain','attack']]
+   ['スターフラクチャー','beetle','div','fracture'],['アンブラハウンド','hound','double','sub'],['エーテルゲートキーパー','lantern','drain','tax']]
 ];
 const monsterForms=[['golem','hydra','wyrm'],['behemoth','golem','mantis'],['hydra','idol','wyrm']];
 const bossForms=[['titan','leviathan'],['colossus','moth'],['dragon','eclipse']];
 const eliteSpecs=[
   [
-    ['グラニト・タイタン',1,'衝撃波で二連打。','double','attack','sub'],
+    ['グラニト・タイタン',1,'衝撃波で三段追撃。','pursuit','attack','sub'],
     ['クリオヒュドラ',3,'加算を封じ、基礎値も冷却する。','lock:add','drain','attack'],
     ['サンドクロノス',0,'基礎値を半減し、除算を差し込む。','drain','attack','div']
   ],[
     ['ヴォイドベヒモス',7,'BURSTを1回だけ無効化する。', 'attack','div','double','barrier'],
     ['シジルゴーレム',4,'乗算を封じ、基礎値を削ぐ。','lock:mul','drain','attack'],
-    ['ルビーミラーマンティス',2,'二連撃と割合妨害を交互に使う。','pct','double','attack']
+    ['ルビーミラーマンティス',2,'割合妨害と三段追撃を使う。','pct','pursuit','attack']
   ],[
     ['アンチアストラ・ヒュドラ',6,'累乗を封じ、強い除算を差し込む。','lock:pow','div','double','attack'],
     ['デヴォーラ・イドル',5,'回復可能な範囲でHPを直接削り、基礎値を弱める。','wither','drain','double','attack'],
-    ['ジェミニワーム',9,'BURSTを1回無効化し、指数を封じる。','lock:exp','double','attack','barrier']
+    ['ジェミニワーム',9,'BURSTを1回無効化し、指数を封じる。','lock:exp','pursuit','attack','barrier']
   ]
 ];
 const bossSpecs=[
   [
-    ['オブシディアン・デューク',2,'開幕バリアが攻撃を2回無効化する。','attack','sub','double','barrier2'],
-    ['テラヴォア・リヴァイアサン',5,'基礎値を半減し、加算を封じる。','drain','attack','lock:add','double']
+    ['オブシディアン・デューク',2,'開幕バリアが攻撃を2回無効化する。','cleave','sub','pursuit','barrier2'],
+    ['テラヴォア・リヴァイアサン',5,'基礎値を半減し、加算を封じる。','drain','wave','lock:add','double']
   ],[
-    ['リブラ・コロッサス',5,'HP半分で耐える。撃破には最低2回の有効BURSTが必要。','pct','attack','drain','double','gate2'],
-    ['ルナリア・モスクイーン',3,'乗算と割合を交互に封じ、基礎値も削ぐ。','lock:mul','attack','lock:pct','drain','double']
+    ['リブラ・コロッサス',5,'HP半分で耐える。撃破には最低2回の有効BURSTが必要。','pct','meteor','drain','double','gate2'],
+    ['ルナリア・モスクイーン',3,'乗算と割合を交互に封じ、基礎値も削ぐ。','lock:mul','dust','lock:pct','drain','double']
   ],[
-    ['アエテル・ドラゴンロード',8,'HPの⅔と⅓で耐える。最低3回の有効BURSTが必要。','div','double','drain','attack','gate3'],
-    ['エクリプス・エンペラー',9,'2回の無効バリアに加え、最大HPを削る吸命と累乗封印を使う。','wither','lock:pow','double','attack','barrier2']
+    ['アエテル・ドラゴンロード',8,'HPの⅔と⅓で耐える。最低3回の有効BURSTが必要。','div','double','drain','flare','gate3'],
+    ['エクリプス・エンペラー',9,'2回の無効バリアに加え、最大HPを削る吸命と累乗封印を使う。','wither','lock:pow','double','eclipse','barrier2']
   ]
 ];
 const normalFloors=[330n,320000n,10n**11n];
@@ -40,8 +40,8 @@ const eliteFloors=[1800n,6000000n,10n**13n];
 const bossFloors=[32000n,1500000000n];
 const bossAttack=[12,18,25];
 const finalBossBalance=[
-  {floor:8n*10n**18n, scaleDivisor:2n, armor:3, attack:24},
-  {floor:5n*10n**18n, scaleDivisor:3n, armor:2}
+  {floor:4n*10n**18n, scaleDivisor:3n, armor:2, attack:17},
+  {floor:3n*10n**18n, scaleDivisor:4n, armor:2, attack:18}
 ];
 export const operationNames={add:'加算',mul:'乗算',pct:'割合',pow:'累乗',exp:'指数'};
 const extraEnemyName='エコー・オブ・インフィニティ';
@@ -69,10 +69,21 @@ export function makeEnemy(act,kind,variant,row,bench=0n) {
   return {name,art,detail,kind,elite,title:boss?'ACT BOSS':elite?'DEFLATION ENEMY':'ENCOUNTER',
     hp:max,max,armor:balance?.armor??(1+a),attack:boss?(balance?.attack??bossAttack[a]):5+a*3+(elite?3:0),barrier:trait==='barrier2'?2:trait==='barrier'?1:0,gates,cycle:moves};
 }
+export const attackPatterns={
+  attack:{name:'通常攻撃',hits:1},double:{name:'二連撃',hits:2},
+  cleave:{name:'黒鉄の斬撃',hits:1},wave:{name:'深淵の潮撃',hits:1},
+  meteor:{name:'天秤の隕鉄',hits:1},dust:{name:'月蛾の燐粉',hits:1,penalty:'jam'},
+  flare:{name:'竜炎の刻印',hits:1,penalty:'scorch'},eclipse:{name:'日蝕の落雷',hits:1},
+  pursuit:{name:'三段追撃',hits:3},jam:{name:'幻霧',penalty:'jam'},
+  tax:{name:'魔力徴収',penalty:'tax'},fracture:{name:'局所封印',penalty:'fracture'}
+};
+export const attackHits=move=>attackPatterns[move.kind]?.hits??0;
 export function intent(enemy,turn,act) {
   const [kind,target]=enemy.cycle[turn%enemy.cycle.length].split(':');
   const values={attack:enemy.attack,double:Math.ceil(enemy.attack*.65),wither:8+act*2,drain:50,
-    div:[2,4,8,10][act-1],pct:-20-act*5,sub:20*act};
+    div:[2,4,8,10][act-1],pct:-20-act*5,sub:20*act,
+    cleave:enemy.attack,wave:enemy.attack,meteor:enemy.attack,eclipse:enemy.attack,
+    dust:Math.floor(enemy.attack*.67),flare:Math.floor(enemy.attack*.88),pursuit:Math.round(enemy.attack*.42)};
   return {kind,...(target?{target}:{}),value:values[kind]??0,at:1+turn%2,enemy:true};
 }
 export function impact(enemy,damage) {

@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {apply,CAP,format,damage,label} from '../src/math.mjs';
-import {evaluate} from '../src/relics.mjs';
+import {evaluate,relics,relicRanks,drawRelic} from '../src/relics.mjs';
 import {Run,prices} from '../src/run.mjs';
 import {makeMap} from '../src/map.mjs';
-import {makeEnemy} from '../src/enemies.mjs';
+import {makeEnemy,intent,attackHits} from '../src/enemies.mjs';
+import {relicIcon} from '../src/relic-art.mjs';
 import {card,fused,generate,random,upgraded} from '../src/cards.mjs';
 
 const a=(kind,value)=>card(kind,value);
@@ -279,14 +280,14 @@ test('only early elites offer a seeded, distinct second choice when eligible rel
 test('ACT III boss HP curves preserve dragon gates and the emperor barrier',()=>{
   const dragon=makeEnemy(3,'boss',0,9);
   const emperor=makeEnemy(3,'boss',1,9);
-  assert.equal(dragon.max,8n*10n**18n);
+  assert.equal(dragon.max,4n*10n**18n);
   assert.deepEqual(dragon.gates,[dragon.max*2n/3n,dragon.max/3n]);
-  assert.equal(emperor.max,5n*10n**18n);
+  assert.equal(emperor.max,3n*10n**18n);
   assert.equal(emperor.armor,2);
   assert.equal(emperor.barrier,2);
   const bench=6n*10n**19n;
-  assert.equal(makeEnemy(3,'boss',0,9,bench).max,bench/2n);
-  assert.equal(makeEnemy(3,'boss',1,9,bench).max,bench/3n);
+  assert.equal(makeEnemy(3,'boss',0,9,bench).max,bench/3n);
+  assert.equal(makeEnemy(3,'boss',1,9,bench).max,bench/4n);
   assert.equal(makeEnemy(3,'boss',1,9,10n**80n).max,emperor.max*400n);
 });
 
@@ -294,7 +295,7 @@ test('ACT III boss HP curves preserve dragon gates and the emperor barrier',()=>
 test('boss attack follows the ACT curve and victory healing depends on encounter rank',()=>{
   for(const [i,attack] of [12,18,25].entries()) {
     for(const variant of [0,1]) {
-      assert.equal(makeEnemy(i+1,'boss',variant,9).attack,i===2&&variant===0?24:attack);
+      assert.equal(makeEnemy(i+1,'boss',variant,9).attack,i===2?[17,18][variant]:attack);
     }
   }
   const r=new Run('recovery-by-rank');
@@ -372,4 +373,62 @@ test('HOLD forecast agrees with the actual enemy response and does not mutate th
   r.hp=1;
   assert.equal(r.enemyOutcome().hp,0);
   assert.equal(r.holdPreview(),null);
+});
+
+test('40 ranked relics have distinct pixel icons and seeded, ownership-aware rolls',()=>{
+  const ids=Object.keys(relics);
+  assert.equal(ids.length,40);
+  assert.deepEqual(new Set(ids.map(id=>relics[id].rank)),new Set([0,1,2,3]));
+  assert.equal(relicRanks.length,4);
+  const icons=ids.map(relicIcon);
+  assert.equal(new Set(icons).size,40);
+  assert(icons.every(svg=>svg.includes('shape-rendering="crispEdges"')));
+  const roll=()=>Array.from({length:128},(_,i)=>drawRelic(random('rank-'+i),['grimoire','chalk'],1,{shop:true}));
+  const stock=roll();
+  assert.deepEqual(stock,roll());
+  assert(stock.every(id=>relics[id].rank<3&&!['grimoire','chalk','comet','crown'].includes(id)));
+  assert.equal(drawRelic(random('empty'),ids,3),null);
+});
+test('base relics, two HOLD relic, and enemy penalty forecasts use the resolved rules',()=>{
+  const r=new Run('vigil-and-curses');
+  r.owned=['chalk','brazier','vigil'];
+  r.route(r.routes[0]);
+  assert.equal(r.base,30);
+  r.enemy.cycle=['jam','flare','tax','attack','fracture'];
+  r.enemy.hp=100000n;
+  r.board=[a('add',10),a('add',10),a('mul',2)];
+  assert(r.hold());
+  assert.equal(r.hand.length,4);
+  assert.equal(r.enemyOutcome().deb[0].kind,'sub');
+  r.ward=true;
+  const protectedResult=r.holdPreview();
+  const initialHp=r.hp;
+  assert(r.hold());
+  assert.equal(r.hp,initialHp-intent(r.enemy,1,r.act).value);
+  assert.equal(r.ward,false);
+  assert.equal(r.deb.length,0);
+  assert.equal(r.preview().final,protectedResult);
+  assert(r.preview().triggers.some(t=>t.id==='vigil'));
+  r.burst();
+  assert.equal(r.energy,r.capacity);
+  assert.equal(r.capacity,2);
+  r.enemyAction();
+  assert.equal(r.capacity,3);
+  r.enemyAction();
+  assert.equal(r.deb[0].kind,'seal');
+  r.board=[a('add',10),a('mul',2),a('add',10)];
+  assert.equal(r.preview().steps.find(s=>s.card===r.board[1]).op,null);
+});
+test('ACT bosses each have a different signature attack, and the third hit counts',()=>{
+  const expected=[['cleave','wave'],['meteor','dust'],['flare','eclipse']];
+  for(const [i,kinds] of expected.entries()) for(const [variant,kind] of kinds.entries()) {
+    const boss=makeEnemy(i+1,'boss',variant,9);
+    const turn=boss.cycle.indexOf(kind);
+    assert(turn>=0);
+    assert.equal(attackHits(intent(boss,turn,i+1)),1);
+  }
+  const r=new Run('three-hits');r.route(r.routes[0]);
+  r.enemy.cycle=['pursuit'];r.hp=100;
+  assert.equal(attackHits(r.next),3);
+  assert.equal(r.enemyOutcome().hp,100-3*r.next.value);
 });

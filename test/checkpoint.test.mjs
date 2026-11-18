@@ -160,3 +160,22 @@ test('return rights follow the exact card after reorder and checkpoint reload',(
   assert.deepEqual(legacy.board,run.board);
   assert.equal(legacy.canReturn(1),false);
 });
+
+test('new boss moves, relics and one-turn penalties survive a reload',()=>{
+  const run=new Run('new-encounter-save');
+  run.act=2;
+  run.owned=['chalk','vigil','lens'];
+  run.beginMap();
+  routeKind(run,'boss');
+  run.enemy.cycle=['tax','dust'];
+  assert(run.hold());
+  const copy=restore(run).run;
+  assert.equal(copy.base,40);
+  assert.equal(copy.energyPenalty,1);
+  assert.equal(copy.capacity,2);
+  assert.deepEqual(copy.next,run.next);
+  assert(copy.hold());
+  assert.equal(copy.energyPenalty,0);
+  assert.equal(copy.drawPenalty,1);
+  assert.equal(copy.hand.length,4);
+});
