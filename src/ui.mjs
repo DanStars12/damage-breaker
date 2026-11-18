@@ -17,7 +17,8 @@ let run=null, selected=null, storageWarning=false, notice='';
 let sequence=null, lastPage=null, craftResult=null, lastDeal=null, lastBattle=null;
 let deckFilter='all', deckPage=0, shopTab='cards', baseGlow=null;
 const motionMode=()=>matchMedia('(prefers-reduced-motion: reduce)').matches?'off':book.prefs.motion||'full';
-const sound=createSound(globalThis.AudioContext,()=>book.prefs);
+const compactScreen=matchMedia('(max-width: 550px), (max-width: 850px) and (pointer: coarse), (max-height: 550px) and (max-width: 1100px) and (pointer: coarse)');
+const sound=createSound(globalThis.AudioContext??globalThis.webkitAudioContext,()=>book.prefs);
 const cue=(id,options={})=>sound.play(id,{fast:motionMode()==='fast',signal:sequence?.signal,...options});
 const cardCue=c=>({guard:'ward',ward:'ward',clean:'clean',mul:'multiply',pct:'multiply',pow:'mystic',exp:'mystic'}[c.kind]||'place');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
@@ -195,7 +196,7 @@ function battle() {
     <section class="frame board-frame"><div class="heading"><h2>演算盤</h2><small>${run.board.length} / ${run.slots} 枠 · コンボ ${run.board.length}${run.wardCharges?' · 結界 '+run.wardCharges:''}${run.guardPoints?' · 防御 '+run.guardPoints:''}</small></div>
       <div class="board-relics" aria-label="演算盤のレリック">${relicStrip(p)}</div>
       <div class="board"><span class="slot base${baseGlow?' base-awaken':''}"><small>基礎</small>${run.base}</span>${slots}${tail}</div>
-      ${selected!==null?`<div class="actions" style="margin-top:8px">${btn('← 左へ','shift:-1','',selected===0)}${btn('右へ →','shift:1','',selected===run.board.length-1)}${run.canReturn(selected)?btn('手札に戻す','unplay'):''}</div>`:''}
+      ${selected!==null?`<div class="actions board-actions">${btn('← 左へ','shift:-1','',selected===0)}${btn('右へ →','shift:1','',selected===run.board.length-1)}${run.canReturn(selected)?btn('手札に戻す','unplay'):''}</div>`:''}
       <div class="preview"><div><small>通常演算</small><strong title="${exactRat(p.normal)}">${visibleNumber(p.normal)}</strong></div><div><small>レリック適用後</small><strong title="${exactRat(p.result)}">${visibleNumber(p.result)}</strong></div>
       <div><small>最終ダメージ予測</small><strong title="${p.final}">${compact(p.final)}</strong><small title="${p.impact.dealt}">敵HP −${compact(p.impact.dealt,false)}${p.impact.kind==='barrier'?' · バリアで無効':p.impact.kind==='gate'?' · 耐久段階まで':''}</small></div></div>
       <div id="reel" class="reel" hidden><div class="reel-head"><span id="stepName"></span><span id="stepCombo"></span></div>
@@ -206,8 +207,8 @@ function battle() {
       <div class="hand" data-hand-return>${run.hand.map((c,i)=>cardButton(c,'hand:'+i,i,!run.canPlay(c))).join('')}</div>
       ${tacticalReadout(p)}
       <div class="controls"><small>仮置きは選択して手札に戻せます。HOLDまたはBURSTで確定。${run.holds===2?' 次はBURST。':''}</small>
-      <div class="actions">${btn('HOLD '+run.holds+'/2','hold','',run.holds>=2)}${btn('BURST','burst','primary')}
-      <button type="button" class="intercept-button" data-action="intercept" aria-describedby="intercept-condition" ${interceptBlock?'disabled':''}>迎撃BURST</button><button data-action="skip" class="skip-hold" hidden>演出をスキップ</button></div>
+      <div class="actions battle-commands">${btn('HOLD '+run.holds+'/2','hold','',run.holds>=2)}${btn('BURST','burst','primary')}
+      <button type="button" class="intercept-button" data-action="intercept" aria-describedby="intercept-condition" ${interceptBlock?'disabled':''}>迎撃BURST</button><button type="button" data-action="skip" class="skip-sequence" hidden>演出をスキップ</button></div>
       <small id="intercept-condition">${interceptBlock?`迎撃 · ${interceptBlock}`:`迎撃 · 消費1／この戦闘で1回 · HP損失を${interceptBenefit}軽減`}</small></div></section>
     </div>${sidebar(p)}</main>`;
 }
@@ -399,7 +400,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.1</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.1.1</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -428,7 +429,7 @@ function view() {
 function render() {
   const mode=motionMode();
   app.dataset.motion=mode;
-  app.innerHTML=`<header><div class="brand">◇ DAMAGE BREAKER</div><nav>${run&&run.phase!=='battle'?btn('デッキ '+run.deck.length,'deck'):''}${run&&suspended?btn('中断','pause'):''}${btn('遊び方','help')}${btn('数字の単位・読み方','numberUnits')}${btn('記録帳','records')}${btn('設定','settings')}</nav></header>${view()}
+  app.innerHTML=`<header><div class="brand">◇ DAMAGE BREAKER</div><button type="button" class="menu-toggle" data-action="menu" aria-controls="game-nav" aria-expanded="false">メニュー</button><nav id="game-nav" aria-label="ゲームメニュー">${run&&run.phase!=='battle'?btn('デッキ '+run.deck.length,'deck'):''}${run&&suspended?btn('中断','pause'):''}${btn('遊び方','help')}${btn('数字の単位・読み方','numberUnits')}${btn('記録帳','records')}${btn('設定','settings')}</nav></header>${view()}
     ${storageWarning?'<p role="status" style="text-align:center">保存できませんでした。画面を閉じると、今回の進行や記録が失われる場合があります。</p>':''}`;
   if(baseGlow&&run?.phase==='map'&&!craftResult) app.querySelector('.map-heading')?.insertAdjacentHTML('afterend',baseBanner());
   const hero=app.querySelector('[data-sprite]');
@@ -462,10 +463,15 @@ function render() {
     chapter.classList.add('turn-page');
     chapter.classList.toggle('turn-fast',mode==='fast');
     chapter.addEventListener('animationend',function finishPage(e) {
-      if(e.target!==chapter||e.animationName!=='turn-page') return;
+      if(e.target!==chapter||!['turn-page','mobile-arena-arrival'].includes(e.animationName)) return;
       chapter.classList.remove('turn-page','turn-fast');
       chapter.removeEventListener('animationend',finishPage);
     });
+  }
+  if(compactScreen.matches&&lastPage!==page) {
+    const route=page==='map'?app.querySelector('.map-node.live'):null;
+    if(route&&route.getBoundingClientRect().bottom>window.innerHeight) route.scrollIntoView({block:'center'});
+    else window.scrollTo(0,0);
   }
   lastPage=page;
   baseGlow=null;
@@ -551,6 +557,15 @@ function openRecords() {
 function action(command) {
   const [name,arg]=command.split(':');
   if(sequence) {if(name==='skip') sequence.abort();return;}
+  const menu=app.querySelector('.menu-toggle');
+  if(name==='menu') {
+    menu.setAttribute('aria-expanded',String(menu.getAttribute('aria-expanded')!=='true'));
+    return;
+  }
+  if(menu.getAttribute('aria-expanded')==='true') {
+    menu.setAttribute('aria-expanded','false');
+    menu.focus({preventScroll:true});
+  }
   sound.unlock();
   const i=Number(arg);
   if(name==='help') return modal('遊び方',`<p>手札の演算を盤に置き、基礎攻撃力から左順に計算します。地図は下から上へ、光っているマスを選びます。たとえば 20 → +10 → ×3 は90です。</p>
@@ -571,7 +586,7 @@ function action(command) {
   if(name==='deck') return openDeck();
   if(name==='relics') return openRelicCollection();
   if(name==='shopTab') {
-    shopTab=arg;render();app.querySelector('[data-action="shopTab:'+arg+'"]').focus();return;
+    shopTab=arg;render();app.querySelector('[data-action="shopTab:'+arg+'"]').focus({preventScroll:true});return;
   }
   if(name==='relic') return modal(relics[arg].name,`<p class="relic-detail">${relicIcon(arg)} ${rankMark(arg)} ${relics[arg].desc}</p>`);
   if(name==='history') return modal('計算履歴',run.history.map(p=>`<details><summary>${fmt(p.final)} · ${esc(p.formula)}</summary>
@@ -823,10 +838,11 @@ async function showHold() {
   sequence=control;
   const field=app.querySelector('.enemy');
   app.querySelectorAll('button:not(:disabled)').forEach(button=>button.disabled=true);
-  const skip=app.querySelector('.skip-hold');
+  const skip=app.querySelector('.skip-sequence');
   skip.hidden=false;
   skip.disabled=false;
   skip.focus({preventScroll:true});
+  if(compactScreen.matches) field.scrollIntoView({block:'nearest'});
   enemyReaction(move,prediction,hpBefore-run.hp,outcome);
   updateHeroDisplay(field);
   try {await clock(mode==='fast'?160:570,control.signal);}
@@ -884,7 +900,10 @@ async function showBurst(intercept=false) {
       field.classList.add('charging');
       const disabled=[...app.querySelectorAll('button:not(:disabled)')].filter(b=>b.dataset.action!=='skip');
       disabled.forEach(b=>b.disabled=true);
-      reel.querySelector('button').focus({preventScroll:true});
+      const skip=compactScreen.matches?app.querySelector('.skip-sequence'):reel.querySelector('button');
+      skip.hidden=false;
+      skip.focus({preventScroll:true});
+      if(compactScreen.matches) reel.scrollIntoView({block:'nearest'});
       const strip=app.querySelector('.board-relics');
       strip.innerHTML=relicStrip(p,true);
       let lit=null, firingRelic=null;
@@ -924,6 +943,7 @@ async function showBurst(intercept=false) {
       }
       if(!signal.aborted) {
         field.classList.remove('charging');
+        if(compactScreen.matches) field.scrollIntoView({block:'start'});
         field.dataset.force=impactForce(p);
         const visual=burstVisual([p.final,1n],p.final>CAP);
         field.dataset.burstLevel=visual.level;
