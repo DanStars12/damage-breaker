@@ -1,4 +1,5 @@
 import {random,shuffle} from './cards.mjs';
+import {encounterCount} from './enemies.mjs';
 export const places={
   fight:{name:'通常戦闘',icon:'⚔',desc:'金貨とカード'},
   event:{name:'封書の間',icon:'?',desc:'ランダムイベント'},
@@ -15,7 +16,7 @@ export function makeMap(seed,act) {
     ['fight','fight','elite'],['event','shop','rest'],['fight','elite','fight'],['boss']];
   const rows=types.map((kinds,row)=>shuffle(kinds,rng).map((kind,i)=>({
     id:row+'-'+i, row, col:kind==='boss'?1:i, kind,
-    variant:Math.floor(rng()*(kind==='boss'?2:kind==='fight'?6:3)),next:[]
+    variant:Math.floor(rng()*(encounterCount(act,kind)||3)),next:[]
   })));
   rows.forEach((nodes,row)=>nodes.forEach(node=>{
     const next=rows[row+1]||[];

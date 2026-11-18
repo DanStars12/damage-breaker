@@ -57,7 +57,7 @@ export function readCheckpoint(serialized) {
       (craftResult.kind!=='event'&&!validCards(craftResult.sources))||
       (craftResult.relic&&!validRelic(craftResult.relic)))) return null;
     if(state.phase==='battle'||state.phase==='reward') {
-      const variant=state.enemy.art?.palette%6;
+      const variant=state.enemy.variant??state.enemy.art?.palette%6;
       state.enemy.name=encounterName(state.act,state.enemy.kind,variant)??state.enemy.name;
     }
     if(!Array.isArray(returnableSlots)||returnableSlots.some(i=>state.phase!=='battle'||

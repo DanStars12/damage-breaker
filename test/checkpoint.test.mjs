@@ -130,6 +130,7 @@ test('loading an old enemy name updates the label while preserving battle state'
   run.enemy.hp-=1n;
   run.enemy.barrier=1;
   run.enemy.name='星蝕の虚空皇帝';
+  delete run.enemy.variant;
   const loaded=restore(run).run;
   assert.equal(loaded.enemy.name,'エクリプス・エンペラー');
   assert.equal(loaded.enemy.hp,run.enemy.hp);
@@ -229,4 +230,13 @@ test('new event options and art id are stable after reload, and only one option 
   assert.equal(opened.service({action:'event',i:0}),null);
   const copy=restore(opened,{craftResult:chosen});
   assert.equal(copy.craftResult.event,'bloom');
+});
+
+test('expanded combatants reload using their encounter variant rather than palette',()=>{
+  const run=new Run('checkpoint-new-foe');
+  run.act=3;
+  run.start({kind:'boss',variant:2,row:9});
+  assert.equal(run.enemy.art.palette,29);
+  assert.equal(run.enemy.name,'アストラ・グラーヴェ');
+  assert.deepEqual(restore(run).run.enemy,run.enemy);
 });

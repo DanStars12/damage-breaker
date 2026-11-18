@@ -177,10 +177,10 @@ function battle() {
       <div class="enemy-identity"><div class="eyebrow">${routeName()} · 第${run.stage}地点</div>
         <h1>${enemyNameHTML(e.name)}</h1><div class="enemy-title">${e.title}${e.elite?' · ELITE':''}</div></div>
       <div class="duel">
-        <figure class="combatant hero"><canvas data-sprite="10" width="48" height="44" aria-hidden="true"></canvas>
+        <figure class="combatant hero"><div class="idle-sprite"><canvas data-sprite="10" width="48" height="44" aria-hidden="true"></canvas></div>
         <figcaption>術師</figcaption><div class="hpBar hero-hp" aria-hidden="true"><span style="width:${100*run.hp/run.maxHp}%"></span></div><small id="heroHp">HP ${run.hp} / ${run.maxHp}</small></figure>
         <span class="arena-seal" aria-hidden="true">✧</span>
-        <figure class="combatant foe"><canvas data-enemy-art width="88" height="64" aria-hidden="true"></canvas>
+        <figure class="combatant foe"><div class="idle-sprite"><canvas data-enemy-art width="88" height="64" aria-hidden="true"></canvas></div>
         <figcaption>敵</figcaption><div class="hpBar foe-hp" aria-hidden="true"><span style="width:${Number(e.hp*1000n/e.max)/10}%"></span></div><small id="foeHp" title="${e.hp} / ${e.max}">HP ${compact(e.hp)} / ${compact(e.max)}</small></figure>
         <span class="burst-scene" aria-hidden="true"><i class="burst-seal"></i><i class="burst-bolt"></i>
           <i class="burst-ring"></i><i class="burst-ring echo"></i><i class="burst-wake"></i><i class="burst-nova"></i><i class="burst-crown"></i></span>
@@ -399,7 +399,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.0</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.1</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -435,6 +435,9 @@ function render() {
   if(hero) paintSprite(hero,10);
   const enemy=app.querySelector('[data-enemy-art]');
   if(enemy) {
+    const now=performance.now();
+    hero.parentElement.style.setProperty('--idle-delay',-(now%5000)+'ms');
+    enemy.parentElement.style.setProperty('--idle-delay',-((now+1700)%6400)+'ms');
     paintEnemy(enemy,run.enemy.art);
     const battleKey=run.act+':'+run.stage;
     const dealKey=battleKey+':'+run.turn;

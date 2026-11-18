@@ -10,6 +10,7 @@ const strategies={
   mixed:['mosaic','ratio','tail','order','short','chain','prism','star','key','grimoire'],
   additive:['sum','abacus','grimoire','tail','order','short','chain','key','prism']
 };
+const muryotaisu=10n**68n;
 const additionRelics=['sum','abacus'];
 const hasAdditionRelic=r=>additionRelics.some(key=>r.owned.includes(key));
 const compare=(a,b)=>a.score>b.score?-1:a.score<b.score?1:0;
@@ -51,8 +52,18 @@ function play(seed,id) {
   const r=new Run(seed);
   const reached=new Map();
   let cleared=false, clearedWithAdditionRelic=false;
+  const reach={numericBursts:0,infinityBursts:0,landedBursts:0,firstAct:null};
+  const fire=intercept=>{
+    const burst=r.burst(intercept);
+    if(!burst||burst.final<muryotaisu) return;
+    reach.firstAct??=r.act;
+    if(burst.final>CAP) reach.infinityBursts++;
+    else reach.numericBursts++;
+    // Effective BURST after defenses. HP removed itself is capped at the enemy's HP.
+    if(burst.impact.dealt>0n) reach.landedBursts++;
+  };
   for(let guard=0;guard<500;guard++) {
-    if(r.phase==='loss'||r.phase==='win') return {r,cleared,clearedWithAdditionRelic,reached};
+    if(r.phase==='loss'||r.phase==='win') return {r,cleared,clearedWithAdditionRelic,reached,reach};
     if(r.phase==='clear') {
       cleared=true;
       clearedWithAdditionRelic=hasAdditionRelic(r);
@@ -97,7 +108,7 @@ function play(seed,id) {
       continue;
     }
     if(r.enemy.kind==='boss') reached.set(r.act,r.enemy);
-    if(r.enemy.barrier&&r.preview().final>0n) {r.burst();continue;}
+    if(r.enemy.barrier&&r.preview().final>0n) {fire();continue;}
     plan(r);
     const p=r.preview();
     if(p.impact.dealt<r.enemy.hp) {
@@ -110,7 +121,7 @@ function play(seed,id) {
     }
     const survive=r.enemyOutcome().hp>0;
     if(p.impact.kind!=='gate'&&p.final<r.enemy.hp&&r.holds<2&&survive&&r.board.length<r.slots) r.hold();
-    else r.burst(!r.interceptReason(r.preview()));
+    else fire(!r.interceptReason(r.preview()));
   }
   throw Error('Simulation exceeded turn budget for '+seed);
 }
@@ -119,9 +130,10 @@ const offset=Number(process.argv[3]||0);
 const rows=[];
 for(const id of Object.keys(strategies)) {
   const metric={policy:id,seeds:total,clear:0,extra:0,infinity:0,intercepts:0,prevented:0,bossAttempts:[0,0,0],bossWins:[0,0,0],bossesByName:{},turns:0,used:{},relics:{},lossesByEnemy:{},actReached:[0,0,0,0],additionRelic:{ownedAtEnd:0,clearWith:0,lossWithoutByAct:[0,0,0,0]}};
-  let max=0n,bestSeed='';
+  metric.muryotaisu={runs:0,numericRuns:0,landedRuns:0,numericBursts:0,infinityBursts:0,landedBursts:0,firstByAct:[0,0,0,0]};
+  let max=0n,bestSeed='',bestFormula='';
   for(let i=0;i<total;i++) {
-    const {r,cleared,clearedWithAdditionRelic,reached}=play('db-'+(i+offset),id);
+    const {r,cleared,clearedWithAdditionRelic,reached,reach}=play('db-'+(i+offset),id);
     for(const [stage,enemy] of reached) {
       metric.bossAttempts[stage-1]++;
       const boss=metric.bossesByName[enemy.name]??={attempts:0,wins:0,lossAtFullHp:0,remainingHpPctSum:0};
@@ -144,16 +156,26 @@ for(const id of Object.keys(strategies)) {
     }
     metric.clear+=Number(cleared);
     metric.extra+=Number(r.phase==='win');
-    metric.infinity+=Number(r.stats.max>CAP);
+    metric.infinity+=Number(reach.infinityBursts>0);
+    if(reach.firstAct!==null) {
+      const result=metric.muryotaisu;
+      result.runs++;
+      result.numericRuns+=Number(reach.numericBursts>0);
+      result.landedRuns+=Number(reach.landedBursts>0);
+      result.numericBursts+=reach.numericBursts;
+      result.infinityBursts+=reach.infinityBursts;
+      result.landedBursts+=reach.landedBursts;
+      result.firstByAct[reach.firstAct-1]++;
+    }
     metric.turns+=r.stats.turns;
     metric.intercepts+=r.stats.intercepts;
     metric.prevented+=r.stats.prevented;
     for(const [k,n] of Object.entries(r.stats.usage)) metric.used[k]=(metric.used[k]||0)+n;
     for(const k of r.owned) metric.relics[k]=(metric.relics[k]||0)+1;
-    if(r.stats.max>max) {max=r.stats.max;bestSeed=r.seed;}
+    if(r.stats.max>max) {max=r.stats.max;bestSeed=r.seed;bestFormula=r.stats.formula;}
   }
   metric.avgTurns=Number((metric.turns/total).toFixed(2));
-  metric.max=format(max,true,false);metric.maxExact=String(max);metric.bestSeed=bestSeed;
+  metric.max=format(max,true,false);metric.maxExact=String(max);metric.bestSeed=bestSeed;metric.bestFormula=bestFormula;
   rows.push(metric);
 }
 console.log(JSON.stringify(rows,null,2));

@@ -1193,3 +1193,28 @@ header nav { flex-wrap: wrap; }
   .card .card-rank { font-size:8px; }
 }
 .reel:is([data-level="5"],[data-level="6"],[data-level="7"]) #reelNumber { color:hsl(var(--burst-hue) 95% 92%); }
+
+/* Move the sprite alone so the combat labels and HP bars stay steady. */
+#app[data-motion="full"] .enemy .idle-sprite {
+  animation: var(--idle-motion) var(--idle-period) ease-in-out var(--idle-delay) infinite;
+}
+.hero .idle-sprite { --idle-motion: mage-breath; --idle-period: 5s; transform-origin: center bottom; }
+.foe .idle-sprite { --idle-motion: foe-breath; --idle-period: 6.4s; transform-origin: center bottom; }
+.enemy:is([data-form="wisp"],[data-form="specter"],[data-form="moth"],[data-form="eclipse"]) .foe .idle-sprite {
+  --idle-motion: foe-hover;
+}
+#app .enemy:is(.charging,.burst-firing,.player-strike,.enemy-strike,.enemy-magic,.enemy-defeated) .idle-sprite {
+  animation-play-state: paused;
+}
+@keyframes mage-breath {
+  50% { transform: translateY(-2px) scaleY(1.018); }
+}
+@keyframes foe-breath {
+  50% { transform: translateY(-1px) scaleY(1.025); }
+}
+@keyframes foe-hover {
+  50% { transform: translateY(-5px) rotate(-1deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #app[data-motion="full"] .enemy .idle-sprite { animation: none; }
+}
