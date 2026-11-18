@@ -564,3 +564,47 @@ header nav { flex-wrap: wrap; }
 }
 #app[data-motion="fast"] .rune.relic-firing { animation-duration: 95ms; }
 #app[data-motion="off"] .rune.relic-firing { animation: none; }
+
+.board-card .returnable-label { color: #e9ceff; font-weight: 700; }
+.removal-scene {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: min(170px,100%);
+  margin-block: 6px 16px;
+  isolation: isolate;
+}
+.removed-card { width: min(130px,100%); }
+.removal-ring,.removal-cut { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.removal-ring {
+  inset: 8% 12%;
+  border: 2px solid #ef9eac;
+  border-radius: 50%;
+  box-shadow: inset 0 0 14px #e791a94d;
+  z-index: -1;
+}
+.removal-cut {
+  inset: 46% -5%;
+  background: linear-gradient(90deg,transparent,#ec9aae,#fff3e0,#ec9aae,transparent);
+}
+.workshop-remove[data-motion="full"] .removal-scene { --erase-time: 710ms; }
+.workshop-remove[data-motion="fast"] .removal-scene { --erase-time: 260ms; }
+.workshop-remove:not([data-motion="off"]) .removed-card { animation: erase-card var(--erase-time) ease-in both; }
+.workshop-remove:not([data-motion="off"]) .removal-ring { animation: erase-ring var(--erase-time) ease-out both; }
+.workshop-remove:not([data-motion="off"]) .removal-cut { animation: erase-cut var(--erase-time) ease-out both; }
+@keyframes erase-card {
+  0%,24% { opacity: 1; transform: none; clip-path: inset(0); }
+  47% { opacity: 1; transform: rotate(-8deg) scale(1.06); clip-path: inset(0); }
+  100% { opacity: 0; transform: rotate(-15deg) scale(.68); clip-path: inset(50% 0); }
+}
+@keyframes erase-ring {
+  0% { opacity: .1; transform: scale(.55) rotate(-10deg); }
+  42% { opacity: .95; }
+  100% { opacity: 0; transform: scale(1.3) rotate(15deg); }
+}
+@keyframes erase-cut {
+  0%,27% { opacity: 0; transform: rotate(-24deg) scaleX(.2); }
+  50% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(-24deg) scaleX(1.05); }
+}
+.hand[data-hand-return]:empty { min-height: 44px; }

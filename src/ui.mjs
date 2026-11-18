@@ -86,7 +86,7 @@ function battle() {
     const deb=i<=run.board.length?run.deb.filter(d=>Math.min(d.at,run.board.length)===i).map(d=>
       `<span class="slot debuff" data-calc="${p.steps.findIndex(s=>s.card===d)}" title="敵の妨害 · ${d.at}枠目の後">${label(d)}</span>`).join(''):'';
     return deb+(c?`<button type="button" class="slot board-card t${c.tier} ${i===selected?'selected':''}" style="border-color:var(--tone)"
-      data-calc="${p.steps.indexOf(status)}" data-action="slot:${i}" data-at="${i}" data-board="${i}" draggable="true" aria-pressed="${i===selected}" title="選択して移動"><strong>${label(c)}</strong><small>${types[c.kind]}</small>${status?.op===null?'<small>封印</small>':''}</button>`:
+      data-calc="${p.steps.indexOf(status)}" data-action="slot:${i}" data-at="${i}" data-board="${i}" draggable="true" aria-pressed="${i===selected}" title="${run.canReturn(i)?'選択して移動・取り消し':'選択して移動'}"><strong>${label(c)}</strong><small>${types[c.kind]}</small>${run.canReturn(i)?'<small class="returnable-label">仮置き</small>':''}${status?.op===null?'<small>封印</small>':''}</button>`:
       `<button type="button" class="slot empty" data-at="${at}" data-action="slot:${at}" aria-label="空き枠 ${i+1}">${i+1}</button>`);
   }).join('');
   const tail=run.board.length===run.slots?run.deb.filter(d=>d.at>=run.slots).map(d=>`<span class="slot debuff" data-calc="${p.steps.findIndex(s=>s.card===d)}">${label(d)}</span>`).join(''):'';
@@ -108,7 +108,7 @@ function battle() {
       <div class="intent"><small>敵の次の行動</small><strong>${intentText()}</strong></div></div></section>
     <section class="frame board-frame"><div class="heading"><h2>演算盤</h2><small>${run.board.length} / ${run.slots} 枠 · コンボ ${run.board.length}${run.ward?' · 結界あり':''}</small></div>
       <div class="board"><span class="slot base"><small>基礎</small>${run.base}</span>${slots}${tail}</div>
-      ${selected!==null?`<div class="actions" style="margin-top:8px">${btn('← 左へ','shift:-1','',selected===0)}${btn('右へ →','shift:1','',selected===run.board.length-1)}</div>`:''}
+      ${selected!==null?`<div class="actions" style="margin-top:8px">${btn('← 左へ','shift:-1','',selected===0)}${btn('右へ →','shift:1','',selected===run.board.length-1)}${run.canReturn(selected)?btn('手札に戻す','unplay'):''}</div>`:''}
       ${damageReceipt()}
       <div class="preview"><div><small>通常演算</small><strong title="${exactRat(p.normal)}">${visibleNumber(p.normal)}</strong></div><div><small>レリック適用後</small><strong title="${exactRat(p.result)}">${visibleNumber(p.result)}</strong></div>
       <div><small>最終ダメージ予測</small><strong title="${p.final}">${compact(p.final)}</strong><small title="${p.impact.dealt}">敵HP −${compact(p.impact.dealt,false)}${p.impact.kind==='barrier'?' · バリアで無効':p.impact.kind==='gate'?' · 耐久段階まで':''}</small></div></div>
@@ -116,9 +116,9 @@ function battle() {
       <strong id="reelNumber"></strong><div class="reel-foot"><div id="stepProgress"></div>${btn('演出をスキップ','skip')}</div></div>
       ${notice?`<small role="status">${esc(notice)}</small>`:''}</section>
     <section class="frame"><div class="heading"><h2>手札</h2><span class="energy">エネルギー ${run.energy} / ${run.capacity} <small>· ドロー ${run.drawCount}枚</small></span></div>
-      <div class="hand">${run.hand.map((c,i)=>cardButton(c,'hand:'+i,i,c.cost>run.energy||
+      <div class="hand" data-hand-return>${run.hand.map((c,i)=>cardButton(c,'hand:'+i,i,c.cost>run.energy||
         (c.kind==='clean'?!run.deb.length:c.kind==='ward'?run.ward:run.board.length>=run.slots))).join('')}</div>
-      <div class="controls"><small>クリックで配置・移動。ドラッグで挿入。${run.holds===2?' 次はBURST。':''}</small>
+      <div class="controls"><small>仮置きは選択して手札に戻せます。HOLDまたはBURSTで確定。${run.holds===2?' 次はBURST。':''}</small>
       <div class="actions">${btn('HOLD '+run.holds+'/2','hold','',run.holds>=2)}${btn('BURST','burst','primary')}</div></div></section>
     </div>${sidebar(p)}</main>`;
 }
@@ -186,6 +186,17 @@ function workResult() {
     <p role="status">現在のHP ${run.hp}/100 · 所持金 ${run.gold} 枚</p>
     <div class="actions">${btn('地図へ戻る','craftNext','primary')}</div></section>`);
   const theme=workshopThemes[kind];
+  if(kind==='remove'&&sources[0]) {
+    const card=sources[0];
+    return chapter(routeName(),theme.title,workshopStage(kind,`
+      <div class="removal-scene" aria-hidden="true">
+        <div class="card removed-card t${card.tier}">${cardFace(card)}</div>
+        <i class="removal-ring"></i><i class="removal-cut"></i>
+      </div>
+      <p role="status">「${label(card)}」をデッキから削除しました。</p>
+      <p class="muted">${price} 金貨を支払い · デッキ残り ${run.deck.length} 枚</p>
+      <div class="actions">${btn('店へ戻る','craftNext','primary')}</div>`,true));
+  }
   const previous=sources.map(c=>`<span>${label(c)}</span>`).join('')+(price?`<span>${price} 金貨</span>`:'');
   const output=result?`<div class="card result-card t${result.tier}">${cardFace(result)}</div>`:
     relic?`<div class="relic-drop"><div><h2>${relics[relic].name}</h2><p>${relics[relic].desc}</p></div></div>`:'<strong>消去</strong>';
@@ -267,7 +278,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.5.9</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.6.0</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -430,13 +441,16 @@ function action(command) {
     render();
     return;
   }
-  const keepNotice=name==='craftNext'||name==='slot'||name==='shift'||name==='hand';
+  const keepNotice=name==='craftNext'||name==='slot'||name==='shift'||name==='hand'||name==='unplay';
   if(!keepNotice) notice='';
   switch(name) {
     case 'hand':run.play(i);break;
     case 'slot':
       if(selected!==null&&selected!==i) {run.move(selected,Math.min(i,run.board.length-1));selected=null;}
       else selected=i===selected||!run.board[i]?null:i;
+      break;
+    case 'unplay':
+      if(run.returnToHand(selected)) selected=null;
       break;
     case 'shift': {
       const to=selected+i;
@@ -494,15 +508,22 @@ app.addEventListener('dragstart',e=>{
   e.dataTransfer.effectAllowed='move';
 });
 app.addEventListener('dragover',e=>{
-  if(dragging&&e.target.closest('[data-at]')) e.preventDefault();
+  if(!dragging||sequence) return;
+  if(e.target.closest('[data-at]')||
+    (e.target.closest('[data-hand-return]')&&run.canReturn(dragging.board))) e.preventDefault();
 });
 app.addEventListener('drop',e=>{
+  if(!dragging||sequence) return;
   const el=e.target.closest('[data-at]');
-  if(!el||!dragging||sequence) return;
-  e.preventDefault();
-  const at=Number(el.dataset.at);
-  if(dragging.hand!==undefined) run.play(dragging.hand,at);
-  else run.move(dragging.board,Math.min(at,run.board.length-1));
+  if(e.target.closest('[data-hand-return]')&&run.canReturn(dragging.board)) {
+    e.preventDefault();
+    run.returnToHand(dragging.board);
+  } else if(el) {
+    e.preventDefault();
+    const at=Number(el.dataset.at);
+    if(dragging.hand!==undefined) run.play(dragging.hand,at);
+    else run.move(dragging.board,Math.min(at,run.board.length-1));
+  } else return;
   dragging=null;selected=null;saveProgress();render();
 });
 app.addEventListener('dragend',()=>{dragging=null;});

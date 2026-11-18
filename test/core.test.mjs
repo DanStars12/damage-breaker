@@ -311,3 +311,29 @@ test('boss attack follows the ACT curve and victory healing depends on encounter
   assert.equal(r.hp,100);
   assert.equal(r.victoryHeal,2);
 });
+
+test('only cards staged this turn can go back to hand and refund their exact cost',()=>{
+  const r=new Run('return-to-hand');
+  r.act=2;
+  r.start({kind:'fight',variant:0,row:0});
+  const locked=card('add',21), first=card('pow',2), second=card('mul',5);
+  r.hand=[locked];
+  assert(r.play(0));
+  assert(r.hold());
+  assert.equal(r.returnToHand(0),false);
+  r.hand=[first,second];
+  assert(r.play(0,0));
+  assert(r.move(0,1));
+  assert.equal(r.canReturn(0),false);
+  assert.equal(r.canReturn(1),true);
+  assert.equal(r.energy,0);
+  assert(r.returnToHand(1));
+  assert.equal(r.hand.at(-1),first);
+  assert.equal(r.energy,first.cost);
+  assert.equal(r.stats.usage.pow,undefined);
+  assert(r.play(0));
+  assert.equal(r.stats.usage.mul,1);
+  r.burst();
+  assert.equal(r.uncommittedCards.size,0);
+  assert.equal(r.returnToHand(0),false);
+});

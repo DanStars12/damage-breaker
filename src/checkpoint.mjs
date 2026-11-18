@@ -16,8 +16,9 @@ const nonnegativeBigInt=n=>typeof n==='bigint'&&n>=0n;
 const rewardDecisions=['pending','taken','skipped'];
 
 export function writeCheckpoint({run,notice='',craftResult=null}) {
-  const {rng,...state}=run;
-  return JSON.stringify({version:checkpointVersion,state,randomState:rng.state(),notice,craftResult},
+  const {rng,uncommittedCards,...state}=run;
+  const returnableSlots=state.board?.flatMap((card,i)=>uncommittedCards.has(card)?[i]:[])??[];
+  return JSON.stringify({version:checkpointVersion,state,randomState:rng.state(),notice,craftResult,returnableSlots},
     (_,value)=>typeof value==='bigint'?{$bigint:String(value)}:value);
 }
 export function readCheckpoint(serialized) {
@@ -28,7 +29,7 @@ export function readCheckpoint(serialized) {
       if(typeof value.$bigint!=='string'||! /^-?\d+$/.test(value.$bigint)) throw new TypeError('Invalid BigInt');
       return BigInt(value.$bigint);
     });
-    const {version,state,randomState,notice,craftResult}=data;
+    const {version,state,randomState,notice,craftResult,returnableSlots=[]}=data;
     if(version!==checkpointVersion||!state||!integerBetween(randomState,-2147483648,2147483647)||
       !resumablePhases.includes(state.phase)||typeof state.seed!=='string'||typeof notice!=='string'||
       !integerBetween(state.act,1,4)||!integerBetween(state.stage,0,30)||!integerBetween(state.hp,1,100)||
@@ -56,6 +57,9 @@ export function readCheckpoint(serialized) {
       const variant=state.enemy.art?.palette%6;
       state.enemy.name=encounterName(state.act,state.enemy.kind,variant)??state.enemy.name;
     }
+    if(!Array.isArray(returnableSlots)||returnableSlots.some(i=>state.phase!=='battle'||
+      !integerBetween(i,0,state.board.length-1)||!state.stats.usage?.[state.board[i].kind])) return null;
+    state.uncommittedCards=new Set(returnableSlots.map(i=>state.board[i]));
     Object.setPrototypeOf(state,Run.prototype);
     state.rng=random(state.seed,randomState);
     return {run:state,notice,craftResult};

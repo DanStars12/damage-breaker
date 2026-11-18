@@ -7,6 +7,7 @@ import {events} from './events.mjs';
 const earlyRelicChoices=['sum','abacus','lattice','ratio','order','tail'];
 export const prices={buy:30,relic:96,fuse:24,remove:30};
 export class Run {
+  uncommittedCards=new Set();
   constructor(seed) {
     this.seed=seed;
     this.rng=random(seed);
@@ -51,6 +52,7 @@ export class Run {
     this.discard=[];
     this.hand=[];
     this.board=[];
+    this.uncommittedCards.clear();
     this.deb=[];
     this.turn=0;
     this.holds=0;
@@ -83,7 +85,22 @@ export class Run {
       if(c.kind==='ward') this.ward=true;
       else this.deb.shift();
       this.discard.push(c);
-    } else this.board.splice(at,0,c);
+    } else {
+      this.board.splice(at,0,c);
+      this.uncommittedCards.add(c);
+    }
+    return true;
+  }
+  canReturn(i) {
+    return this.phase==='battle'&&this.uncommittedCards.has(this.board[i]);
+  }
+  returnToHand(i) {
+    if(!this.canReturn(i)) return false;
+    const [card]=this.board.splice(i,1);
+    this.uncommittedCards.delete(card);
+    this.hand.push(card);
+    this.energy+=card.cost;
+    if(--this.stats.usage[card.kind]===0) delete this.stats.usage[card.kind];
     return true;
   }
   move(from,to) {
@@ -96,6 +113,7 @@ export class Run {
     return {...result,impact:impact(this.enemy,result.final)};
   }
   enemyAction() {
+    this.uncommittedCards.clear();
     const action=this.next;
     if(action.kind==='attack'||action.kind==='double') {
       this.hp=Math.max(0,this.hp-action.value*(action.kind==='double'?2:1));
@@ -136,6 +154,7 @@ export class Run {
     this.enemy.hp-=p.impact.dealt;
     this.discard.push(...this.board);
     this.board=[];
+    this.uncommittedCards.clear();
     this.deb=[];
     this.holds=0;
     if(!this.enemy.hp) {

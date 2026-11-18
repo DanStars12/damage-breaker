@@ -137,3 +137,26 @@ test('loading an old enemy name updates the label while preserving battle state'
   assert.deepEqual(loaded.enemy.gates,run.enemy.gates);
   assert.deepEqual(loaded.next,run.next);
 });
+
+test('return rights follow the exact card after reorder and checkpoint reload',()=>{
+  const run=new Run('pending-board');
+  routeKind(run,'fight');
+  const pick=()=>run.hand.findIndex(c=>c.kind==='add'||c.kind==='mul');
+  assert(run.play(pick()));
+  assert(run.hold());
+  assert(run.play(pick(),0));
+  assert(run.move(0,1));
+  const restored=restore(run).run;
+  assert.equal(restored.canReturn(0),false);
+  assert.equal(restored.canReturn(1),true);
+  const energy=restored.energy, cost=restored.board[1].cost;
+  assert(restored.returnToHand(1));
+  assert.equal(restored.energy,energy+cost);
+  assert.deepEqual(restored.board,[run.board[0]]);
+
+  const old=JSON.parse(writeCheckpoint({run}));
+  delete old.returnableSlots;
+  const legacy=readCheckpoint(JSON.stringify(old)).run;
+  assert.deepEqual(legacy.board,run.board);
+  assert.equal(legacy.canReturn(1),false);
+});
