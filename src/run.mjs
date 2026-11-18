@@ -4,6 +4,7 @@ import {makeEnemy,intent,impact} from './enemies.mjs';
 import {CAP,label} from './math.mjs';
 import {makeMap} from './map.mjs';
 import {events} from './events.mjs';
+const earlyRelicChoices=['sum','abacus','lattice','ratio','order','tail'];
 export const prices={buy:30,relic:96,fuse:24,remove:30};
 export class Run {
   constructor(seed) {
@@ -38,6 +39,7 @@ export class Run {
     const bench=samples[Math.floor((samples.length-1)/2)]??0n;
     this.phase='battle';
     this.relicDrop=null;
+    this.relicAlternative=null;
     this.relicDecision=null;
     this.enemy=makeEnemy(this.act,node?.kind,node?.variant,node?.row,bench);
     this.hp=Math.max(1,this.hp-this.bonus('entry'));
@@ -150,6 +152,11 @@ export class Run {
         const choices=elite&&powerful.length?powerful:pool;
         if(choices.length) {
           this.relicDrop=choices[Math.floor(this.rng()*choices.length)];
+          if(elite&&this.act<=2) {
+            const alternatives=earlyRelicChoices.filter(id=>id!==this.relicDrop&&!this.owned.includes(id));
+            const rewardRng=random(this.seed+'/relic/'+this.act+'/'+this.node.id);
+            this.relicAlternative=alternatives[Math.floor(rewardRng()*alternatives.length)]??null;
+          }
           this.relicDecision='pending';
         }
       }
@@ -185,9 +192,15 @@ export class Run {
     this.goldDecision=take?'taken':'skipped';
     return true;
   }
-  chooseRelic(take) {
+  chooseRelic(take,index=0) {
     if(this.phase!=='reward'||this.relicDecision!=='pending') return false;
-    if(take) this.owned.push(this.relicDrop);
+    if(take) {
+      const choice=[this.relicDrop,this.relicAlternative][index];
+      if(!choice||this.owned.includes(choice)) return false;
+      this.owned.push(choice);
+      this.relicDrop=choice;
+      this.relicAlternative=null;
+    }
     this.relicDecision=take?'taken':'skipped';
     return true;
   }

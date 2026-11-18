@@ -202,9 +202,19 @@ test('enemy seals target one operation type, HP/base curses resolve and relic tr
 });
 
 test('additive relic requires only active addition panels and scales by count',()=>{
-  assert.equal(evaluate({board:[a('add',10),a('add',20)],owned:['sum']}).final,4500n);
+  assert.equal(evaluate({board:[a('add',10),a('add',20)],owned:['sum']}).final,6000n);
   assert.equal(evaluate({board:[a('add',10),a('mul',2)],owned:['sum']}).final,60n);
   assert.equal(evaluate({board:[],owned:['sum']}).final,20n);
+  const two=[a('add',10),a('add',20)];
+  assert.equal(evaluate({board:two,owned:['abacus']}).final,50n);
+  assert.equal(evaluate({board:[...two,a('add',30)],owned:['abacus']}).final,6400n);
+  assert.equal(evaluate({board:[...two,a('mul',3)],owned:['abacus']}).final,150n);
+  const four=[...two,a('add',30),a('add',40)];
+  assert.equal(evaluate({board:four,owned:['abacus']}).final,120n**2n);
+  const five=[...four,a('add',50)];
+  assert.equal(evaluate({board:five,owned:['abacus']}).final,170n**3n);
+  assert.equal(evaluate({board:[...five,a('mul',2)],owned:['abacus']}).final,340n);
+  assert.equal(evaluate({board:five,deb:[d('seal',0,1)],owned:['abacus']}).final,150n**2n);
 });
 test('random events charge only when their entire offer can be accepted',()=>{
   const r=new Run('event');forceNode(r,'event');r.event='courier';r.gold=14;
@@ -234,4 +244,40 @@ test('battle reward choices are independent and applied once',()=>{
   const card=r.offers[1];
   assert(r.takeCard(1));assert.deepEqual(r.cardDecision,{status:'taken',card});
   assert.equal(r.deck.at(-1),card);
+});
+
+test('only early elites offer a seeded, distinct second choice when eligible relics remain',()=>{
+  const collect=(act,kind,owned=[])=>{
+    const r=new Run('gear');
+    r.act=act;
+    r.owned=[...owned];
+    r.beginMap();
+    forceNode(r,kind);
+    kill(r);
+    return r;
+  };
+  const early=collect(1,'elite');
+  assert(early.relicAlternative);
+  assert.notEqual(early.relicDrop,early.relicAlternative);
+  assert.equal(early.relicAlternative,collect(1,'elite').relicAlternative);
+  assert.equal(collect(1,'boss').relicAlternative,null);
+  assert.equal(collect(3,'elite').relicAlternative,null);
+  assert.equal(collect(2,'elite',['sum','abacus','lattice','ratio','order','tail']).relicAlternative,null);
+  assert(early.chooseRelic(false));
+  assert.equal(early.chooseRelic(true,1),false);
+  assert.deepEqual(early.owned,[]);
+});
+
+test('ACT III boss HP curves preserve dragon gates and the emperor barrier',()=>{
+  const dragon=makeEnemy(3,'boss',0,9);
+  const emperor=makeEnemy(3,'boss',1,9);
+  assert.equal(dragon.max,8n*10n**18n);
+  assert.deepEqual(dragon.gates,[dragon.max*2n/3n,dragon.max/3n]);
+  assert.equal(emperor.max,5n*10n**18n);
+  assert.equal(emperor.armor,2);
+  assert.equal(emperor.barrier,2);
+  const bench=6n*10n**19n;
+  assert.equal(makeEnemy(3,'boss',0,9,bench).max,bench/2n);
+  assert.equal(makeEnemy(3,'boss',1,9,bench).max,bench/3n);
+  assert.equal(makeEnemy(3,'boss',1,9,10n**80n).max,emperor.max*400n);
 });

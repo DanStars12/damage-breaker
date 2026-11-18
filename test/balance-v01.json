@@ -1,0 +1,116 @@
+[
+  {
+    "policy": "grimoire",
+    "seeds": 96,
+    "clear": 96,
+    "extra": 96,
+    "infinity": 1,
+    "bossAttempts": [
+      96,
+      96,
+      96
+    ],
+    "bossWins": [
+      96,
+      96,
+      96
+    ],
+    "turns": 1456,
+    "used": {
+      "mul": 1578,
+      "add": 1663,
+      "pct": 641,
+      "exp": 167,
+      "pow": 59,
+      "clean": 18
+    },
+    "relics": {
+      "grimoire": 96,
+      "chain": 62,
+      "prism": 84,
+      "tail": 84,
+      "star": 45,
+      "order": 13
+    },
+    "avgTurns": 15.17,
+    "max": "2.0909e+77",
+    "maxExact": "209095839268846492253229814207500000000000000000000000000000000000000000000000",
+    "bestSeed": "db-88"
+  },
+  {
+    "policy": "power",
+    "seeds": 96,
+    "clear": 96,
+    "extra": 89,
+    "infinity": 0,
+    "bossAttempts": [
+      96,
+      96,
+      96
+    ],
+    "bossWins": [
+      96,
+      96,
+      96
+    ],
+    "turns": 2321,
+    "used": {
+      "mul": 2500,
+      "add": 1705,
+      "pct": 718,
+      "exp": 348,
+      "pow": 362,
+      "clean": 80
+    },
+    "relics": {
+      "prism": 90,
+      "chain": 79,
+      "short": 70,
+      "star": 83,
+      "tail": 40,
+      "order": 22
+    },
+    "avgTurns": 24.18,
+    "max": "1.0670e+61",
+    "maxExact": "10670055207044796948504600000000000000000000000000000000000000",
+    "bestSeed": "db-35"
+  },
+  {
+    "policy": "mixed",
+    "seeds": 96,
+    "clear": 95,
+    "extra": 63,
+    "infinity": 0,
+    "bossAttempts": [
+      96,
+      96,
+      96
+    ],
+    "bossWins": [
+      96,
+      96,
+      95
+    ],
+    "turns": 2455,
+    "used": {
+      "mul": 2667,
+      "add": 2055,
+      "pct": 767,
+      "exp": 492,
+      "pow": 239,
+      "clean": 122
+    },
+    "relics": {
+      "prism": 46,
+      "tail": 90,
+      "short": 78,
+      "star": 20,
+      "order": 84,
+      "chain": 65
+    },
+    "avgTurns": 25.57,
+    "max": "6.6547e+54",
+    "maxExact": "6654717797355468750000000000000000000000000000000000000",
+    "bestSeed": "db-67"
+  }
+]

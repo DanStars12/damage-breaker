@@ -336,6 +336,39 @@ main{position:relative;perspective:1300px}
 .reward-changes{display:flex;flex-wrap:wrap;gap:8px 16px;margin:8px 0 12px}
 .reward-changes span{padding:3px 8px;background:#382941;border:1px solid #a5835666}
 .loot-receipt{margin:15px 0;padding:12px;background:#392a34;border-left:3px solid #d3a567;word-break:break-word}
+
+.continue-run {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .6rem 1rem;
+  margin: 1rem 0;
+}
+.continue-run small { overflow-wrap: anywhere; min-width: 0; }
+header nav { flex-wrap: wrap; }
+
+.relic-reward-content { flex: 1; min-width: 0; }
+.relic-options, .deck-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,220px),1fr));
+  align-items: start;
+  gap: .75rem;
+}
+.relic-option {
+  border: 1px solid #957854;
+  background: #302824;
+  padding: .75rem;
+  margin: .3rem 0 .7rem;
+}
+.relic-option h3 { margin: 0; color: var(--gold); }
+.relic-option p { margin: .4rem 0 .6rem; }
+.deck-groups details { padding: .4rem .65rem; }
+.deck-groups li { margin-block: .2rem; }
+
+.enemy-rule.defense-status {
+  color: #f2cf92;
+  overflow-wrap: anywhere;
+}
 </style>
 </head>
 <body>
@@ -433,10 +466,10 @@ const relics = {
   rack:{name:'拡張の呪箱',desc:'演算枠+1。戦闘開始時にHPを5失う（最低HP1）。',slots:1,entry:5},
   spring:{name:'初動の砂漏れ',desc:'初ターンだけエナジー+2。初ターンのドロー−2。',firstEnergy:2,firstDraw:-2},
   mantle:{name:'護符の裏地',desc:'戦闘開始時に結界を張る。毎ターンのエナジー−1（最低1）。',ward:true,energy:-1},
-  sum:{name:'千和の石版',desc:'有効な自分のパネルがすべて加算なら、1枚につき×45（最大×405）。',effect:({own})=>
-    own.length&&own.every(c=>c.kind==='add')?{kind:'mul',value:own.length*45}:null},
-  abacus:{name:'万算の算盤',desc:'有効な自分のパネルが4枚以上で、すべて加算なら演算結果を二乗。',effect:({own})=>
-    own.length>=4&&own.every(c=>c.kind==='add')?{kind:'pow',value:2}:null},
+  sum:{name:'千和の石版',desc:'有効な自分のパネルがすべて加算なら、1枚につき×60（最大×540）。',effect:({own})=>
+    own.length&&own.every(c=>c.kind==='add')?{kind:'mul',value:own.length*60}:null},
+  abacus:{name:'万算の算盤',desc:'有効な自分のパネルが3枚以上で、すべて加算なら演算結果を二乗。5枚以上なら三乗。',effect:({own})=>
+    own.length>=3&&own.every(c=>c.kind==='add')?{kind:'pow',value:own.length>=5?3:2}:null},
   lattice:{name:'積算の六面晶',desc:'有効な自分のパネルが2枚以上で、すべて乗算なら×144。',effect:({own})=>
     own.length>=2&&own.every(c=>c.kind==='mul')?{kind:'mul',value:144}:null},
   mosaic:{name:'五紋の標本箱',desc:'違う演算を4種類以上使うと×360。',effect:({own})=>
@@ -498,15 +531,20 @@ const ranges={
   pow:[null,null,[2,2],[2,2],[3,3]],
   exp:[null,null,[2,2],[3,3],[4,5]]
 };
-function random(seed) {
-  let state=2166136261;
-  for(const c of String(seed)) state=Math.imul(state^c.codePointAt(0),16777619);
-  return ()=>{
+function random(seed, checkpoint) {
+  let state=checkpoint;
+  if(state===undefined) {
+    state=2166136261;
+    for(const c of String(seed)) state=Math.imul(state^c.codePointAt(0),16777619);
+  }
+  const next=()=>{
     state=(state+0x6D2B79F5)|0;
     let t=Math.imul(state^(state>>>15),1|state);
     t^=t+Math.imul(t^(t>>>7),61|t);
     return ((t^(t>>>14))>>>0)/4294967296;
   };
+  next.state=()=>state|0;
+  return next;
 }
 function shuffle(items,rng) {
   const a=[...items];
@@ -637,7 +675,11 @@ const bossSpecs=[
 ];
 const normalFloors=[330n,320000n,10n**11n];
 const eliteFloors=[1800n,6000000n,10n**13n];
-const bossFloors=[32000n,1500000000n,10n**19n];
+const bossFloors=[32000n,1500000000n];
+const finalBossBalance=[
+  {floor:8n*10n**18n, scaleDivisor:2n, armor:3},
+  {floor:5n*10n**18n, scaleDivisor:3n, armor:2}
+];
 const operationNames={add:'加算',mul:'乗算',pct:'割合',pow:'累乗',exp:'指数'};
 function makeEnemy(act,kind,variant,row,bench=0n) {
   if(act===4) return {name:'無限の残響',title:'EXTRA',detail:'耐久段階を越えて無限を破る。',art:{form:'eclipse',palette:17},kind:'extra',
@@ -650,18 +692,19 @@ function makeEnemy(act,kind,variant,row,bench=0n) {
   const art={form,palette:a*6+variant};
   const trait=moves.at(-1);
   if(trait.startsWith('barrier')||trait.startsWith('gate')) moves.pop();
-  const floor=elite?eliteFloors[a]*BigInt(Math.max(1,row-1)):boss?bossFloors[a]:normalFloors[a]*BigInt(1+row*2);
-  const target=bench/(boss?2n:elite?4n:7n);
+  const balance=boss&&act===3?finalBossBalance[variant]:null;
+  const floor=elite?eliteFloors[a]*BigInt(Math.max(1,row-1)):boss?(balance?.floor??bossFloors[a]):normalFloors[a]*BigInt(1+row*2);
+  const target=bench/(balance?.scaleDivisor??(boss?2n:elite?4n:7n));
   const max=target>floor?(target>floor*400n?floor*400n:target):floor;
   const gates=trait==='gate2'?[max/2n]:trait==='gate3'?[max*2n/3n,max/3n]:[];
   return {name,art,detail,kind,elite,title:boss?'ACT BOSS':elite?'DEFLATION ENEMY':'ENCOUNTER',
-    hp:max,max,armor:1+a,attack:5+a*3+(boss?4:elite?3:0),barrier:trait==='barrier2'?2:trait==='barrier'?1:0,gates,cycle:moves};
+    hp:max,max,armor:balance?.armor??(1+a),attack:5+a*3+(boss?4:elite?3:0),barrier:trait==='barrier2'?2:trait==='barrier'?1:0,gates,cycle:moves};
 }
 function intent(enemy,turn,act) {
   const [kind,target]=enemy.cycle[turn%enemy.cycle.length].split(':');
   const values={attack:enemy.attack,double:Math.ceil(enemy.attack*.65),wither:8+act*2,drain:50,
     div:[2,4,8,10][act-1],pct:-20-act*5,sub:20*act};
-  return {kind,target,value:values[kind]??0,at:1+turn%2,enemy:true};
+  return {kind,...(target?{target}:{}),value:values[kind]??0,at:1+turn%2,enemy:true};
 }
 function impact(enemy,damage) {
   if(damage<=0n) return {dealt:0n,kind:'miss'};
@@ -671,6 +714,7 @@ function impact(enemy,damage) {
   return {dealt:damage>enemy.hp?enemy.hp:damage,kind:'hit'};
 }
 
+const earlyRelicChoices=['sum','abacus','lattice','ratio','order','tail'];
 const prices={buy:30,relic:96,fuse:24,remove:30};
 class Run {
   constructor(seed) {
@@ -705,6 +749,7 @@ class Run {
     const bench=samples[Math.floor((samples.length-1)/2)]??0n;
     this.phase='battle';
     this.relicDrop=null;
+    this.relicAlternative=null;
     this.relicDecision=null;
     this.enemy=makeEnemy(this.act,node?.kind,node?.variant,node?.row,bench);
     this.hp=Math.max(1,this.hp-this.bonus('entry'));
@@ -817,6 +862,11 @@ class Run {
         const choices=elite&&powerful.length?powerful:pool;
         if(choices.length) {
           this.relicDrop=choices[Math.floor(this.rng()*choices.length)];
+          if(elite&&this.act<=2) {
+            const alternatives=earlyRelicChoices.filter(id=>id!==this.relicDrop&&!this.owned.includes(id));
+            const rewardRng=random(this.seed+'/relic/'+this.act+'/'+this.node.id);
+            this.relicAlternative=alternatives[Math.floor(rewardRng()*alternatives.length)]??null;
+          }
           this.relicDecision='pending';
         }
       }
@@ -852,9 +902,15 @@ class Run {
     this.goldDecision=take?'taken':'skipped';
     return true;
   }
-  chooseRelic(take) {
+  chooseRelic(take,index=0) {
     if(this.phase!=='reward'||this.relicDecision!=='pending') return false;
-    if(take) this.owned.push(this.relicDrop);
+    if(take) {
+      const choice=[this.relicDrop,this.relicAlternative][index];
+      if(!choice||this.owned.includes(choice)) return false;
+      this.owned.push(choice);
+      this.relicDrop=choice;
+      this.relicAlternative=null;
+    }
     this.relicDecision=take?'taken':'skipped';
     return true;
   }
@@ -970,6 +1026,64 @@ function load() {
 function save(data) {
   try {localStorage.setItem(key,JSON.stringify(data));return true;}
   catch {return false;}
+}
+
+
+const checkpointVersion=1;
+const resumablePhases=['map','battle','reward','facility','clear'];
+const shopKinds=['shop','forge','fuse','relic','remove','event'];
+const savedCardKinds=['add','mul','pct','pow','exp','clean','ward'];
+const integerBetween=(value,min,max)=>Number.isInteger(value)&&value>=min&&value<=max;
+const validCard=c=>c&&savedCardKinds.includes(c.kind)&&Number.isSafeInteger(c.value)&&
+  integerBetween(c.cost,1,4)&&integerBetween(c.tier,0,4);
+const validCards=cards=>Array.isArray(cards)&&cards.every(validCard);
+const validRelic=id=>typeof id==='string'&&Object.hasOwn(relics,id);
+const nonnegativeBigInt=n=>typeof n==='bigint'&&n>=0n;
+const rewardDecisions=['pending','taken','skipped'];
+
+function writeCheckpoint({run,notice='',craftResult=null}) {
+  const {rng,...state}=run;
+  return JSON.stringify({version:checkpointVersion,state,randomState:rng.state(),notice,craftResult},
+    (_,value)=>typeof value==='bigint'?{$bigint:String(value)}:value);
+}
+function readCheckpoint(serialized) {
+  if(typeof serialized!=='string') return null;
+  try {
+    const data=JSON.parse(serialized,(_,value)=>{
+      if(!value||typeof value!=='object'||!Object.hasOwn(value,'$bigint')) return value;
+      if(typeof value.$bigint!=='string'||! /^-?\d+$/.test(value.$bigint)) throw new TypeError('Invalid BigInt');
+      return BigInt(value.$bigint);
+    });
+    const {version,state,randomState,notice,craftResult}=data;
+    if(version!==checkpointVersion||!state||!integerBetween(randomState,-2147483648,2147483647)||
+      !resumablePhases.includes(state.phase)||typeof state.seed!=='string'||typeof notice!=='string'||
+      !integerBetween(state.act,1,4)||!integerBetween(state.stage,0,30)||!integerBetween(state.hp,1,100)||
+      !Number.isSafeInteger(state.gold)||state.gold<0||!validCards(state.deck)||!state.deck.length||
+      !Array.isArray(state.owned)||!state.owned.every(validRelic)||!Array.isArray(state.map)||
+      !Array.isArray(state.routes)||!Array.isArray(state.visited)||!Array.isArray(state.history)||
+      !Array.isArray(state.recent)||!state.recent.every(nonnegativeBigInt)||!nonnegativeBigInt(state.stats?.max)) return null;
+    if(state.phase==='battle'||state.phase==='reward') {
+      const e=state.enemy;
+      if(!nonnegativeBigInt(e?.hp)||!nonnegativeBigInt(e.max)||e.max===0n||
+        !Array.isArray(e.gates)||!e.gates.every(nonnegativeBigInt)||!Array.isArray(e.cycle)||!e.cycle.length||
+        !validCards(state.hand)||!validCards(state.board)||!validCards(state.deckDraw)||!validCards(state.discard)||
+        !Array.isArray(state.deb)||!integerBetween(state.maxHp,1,100)) return null;
+    }
+    if(state.phase==='reward'&&(!validCards(state.offers)||
+      ![...rewardDecisions,'none'].includes(state.cardDecision?.status)||
+      (state.cardDecision.status==='taken'&&!validCard(state.cardDecision.card))||
+      !rewardDecisions.includes(state.goldDecision)||
+      (state.relicAlternative!=null&&(!validRelic(state.relicAlternative)||state.relicAlternative===state.relicDrop))||
+      (state.relicDecision!==null&&(!rewardDecisions.includes(state.relicDecision)||!validRelic(state.relicDrop))))) return null;
+    if(craftResult&&(!shopKinds.includes(craftResult.kind)||(craftResult.result&&!validCard(craftResult.result))||
+      (craftResult.kind!=='event'&&!validCards(craftResult.sources))||
+      (craftResult.relic&&!validRelic(craftResult.relic)))) return null;
+    Object.setPrototypeOf(state,Run.prototype);
+    state.rng=random(state.seed,randomState);
+    return {run:state,notice,craftResult};
+  } catch {
+    return null;
+  }
 }
 
 function paint(canvas,shape,act) {
@@ -1091,15 +1205,323 @@ function paintSprite(canvas,id,elite=false) {
   }
 }
 
+// Each encounter has its own head silhouette. Coordinates are relative to the head anchor.
+const faces={
+  lantern:{
+    0:({p,b,d})=>{
+      p('edge',[-11,-12,8,-12,11,-8,10,9,5,13,-6,13,-11,8]);
+      p('steel',[-9,-9,8,-9,8,8,5,11,-6,11,-9,7]);
+      p('void',[-7,-7,5,-7,5,8,-7,8]);
+      p('fire',[-6,6,-7,1,-3,-3,-2,0,1,-6,4,1,3,6]);
+      p('white',[-3,6,-1,1,2,4,1,6]);
+      b('light',-8,-10,15,2);b('edge',-8,7,14,2);d('fire',11,-14,2);
+    },
+    11:({p,b,d})=>{
+      p('edge',[0,-16,9,-8,10,2,4,12,-2,14,-9,8,-12,-4]);
+      p('ivory',[0,-13,7,-7,8,1,2,10,-1,11,-7,6,-9,-4]);
+      p('shade',[-8,-4,-3,-7,1,-1,1,9,-2,11,-8,6]);
+      d('void',1,-1,5);d('fire',1,-1,3);b('white',0,-2,2,2);
+      p('light',[-12,-8,-5,-11,-5,-8,-11,-5]);b('edge',-3,6,5,1);
+    },
+    17:({p,b,d})=>{
+      p('edge',[-13,-2,-10,-14,-5,-8,0,-17,5,-8,10,-14,13,-2,10,11,0,14,-10,11]);
+      p('steel',[-11,-2,-10,-10,-5,-5,0,-13,5,-5,10,-10,11,0,8,9,0,12,-8,9]);
+      p('void',[-9,-2,0,-8,9,-2,7,7,0,10,-7,7]);
+      d('fire',0,-2,4);d('mint',-5,3,2);d('white',5,3,2);
+      b('light',-3,10,6,1);
+    }
+  },
+  knight:{
+    1:({p,b})=>{
+      p('edge',[-12,-5,-9,-12,1,-15,9,-11,12,-4,9,12,-2,14,-9,7,-13,7]);
+      p('steel',[-10,-4,-7,-10,1,-13,8,-9,10,-3,7,10,-2,12,-8,6,-11,5]);
+      p('light',[-9,-5,-6,-10,1,-12,6,-10,4,-7,-6,-6]);
+      p('void',[-12,-2,8,-4,8,1,-6,4,-11,3]);
+      b('fire',-8,0,5,1);b('rust',-2,6,2,4);b('rust',3,5,2,4);
+    },
+    7:({p,b,d})=>{
+      p('edge',[-10,-12,0,-17,10,-12,13,-3,10,4,9,13,0,9,-8,14,-11,3,-14,-4]);
+      p('ivory',[-8,-11,0,-14,8,-11,10,-3,7,10,0,6,-6,10,-8,2,-11,-4]);
+      b('shade',-8,-6,16,3);b('void',-7,-2,14,2);b('void',-2,-4,4,10);
+      d('mint',0,-4,2);b('light',-1,2,2,2);b('ink',-6,5,3,1);
+    },
+    13:({p,b,d})=>{
+      p('edge',[-16,-13,-5,-7,3,-9,12,-15,10,-6,13,1,7,8,-1,11,-8,8,-14,3,-9,-3]);
+      p('steel',[-13,-11,-5,-5,4,-7,10,-12,8,-4,11,1,5,6,-1,9,-7,6,-11,2,-7,-3]);
+      p('light',[-9,-4,4,-6,8,-4,1,-1,-10,2]);
+      p('void',[-7,1,6,-2,5,2,-1,4,-8,4]);b('mint',-3,1,5,1);
+      d('light',7,4,2);d('steel',-3,8,2);
+    }
+  },
+  hound:{
+    2:({p,b})=>{
+      p('edge',[-16,-2,-8,-4,-7,-13,-3,-14,2,-7,8,-9,12,-12,13,1,9,9,2,12,-7,10,-15,7]);
+      p('steel',[-14,-1,-6,-3,-6,-11,-3,-12,2,-5,10,-9,11,1,7,8,1,10,-7,8,-14,5]);
+      p('light',[-6,-11,-3,-12,-2,-6,-5,-7]);
+      p('void',[-15,1,-8,2,0,1,5,4,0,7,-11,6,-15,5]);
+      b('ivory',-9,3,2,4);b('ivory',-4,4,1,2);b('fire',-4,-3,3,2);
+    },
+    9:({p,b})=>{
+      p('edge',[-16,3,-13,-3,-8,-7,-5,-15,-1,-9,8,-13,13,-7,12,3,8,10,1,13,-8,12,-15,8]);
+      p('ivory',[-14,3,-11,-3,-6,-6,-4,-12,0,-7,8,-10,11,-6,10,3,5,10,-1,11,-8,10,-13,7]);
+      p('shade',[-12,3,-6,1,4,2,8,5,2,9,-6,9,-13,6]);
+      b('void',-14,2,4,2);b('mint',-6,-3,4,2);
+      p('white',[-10,6,-7,6,-7,12]);p('ivory',[-4,5,0,5,-1,10]);
+      b('steel',3,-3,1,6);
+    },
+    16:({p,b,d})=>{
+      p('edge',[-18,1,-9,-3,-12,-11,-6,-8,-2,-14,3,-9,12,-12,11,-4,16,-1,11,3,12,9,5,13,-3,9,-12,10,-17,6]);
+      p('shade',[-16,2,-7,-3,-9,-8,-5,-6,-2,-11,2,-7,10,-9,9,-3,13,-1,8,3,9,8,4,10,-3,7,-12,8,-15,5]);
+      p('light',[-12,3,-4,-2,2,-5,10,-6,6,-2,-2,2,-9,5]);
+      p('void',[-15,4,-4,3,2,3,-2,6,-12,7]);
+      d('mint',-4,0,2);d('mint',1,-3,2);b('ivory',-8,5,1,2);
+    }
+  },
+  wisp:{
+    3:({p,b,d})=>{
+      p('shade',[0,-16,9,-8,10,-2,14,2,9,10,1,14,-7,11,-13,5,-8,1,-10,-5,-4,-7]);
+      p('rust',[0,-13,6,-7,7,-1,11,3,7,8,1,12,-5,9,-10,5,-5,1,-7,-3,-3,-4]);
+      p('fire',[1,-9,4,-4,2,0,7,-2,7,5,3,9,-3,8,-6,5,-3,1,-3,-2]);
+      p('void',[-4,4,0,1,6,2,3,6,-2,6]);b('white',0,2,3,1);d('fire',9,-10,2);
+    },
+    10:({p,b,d})=>{
+      p('edge',[0,-14,10,-11,12,-6,10,8,7,10,4,6,0,14,-4,7,-9,11,-11,6,-12,-6]);
+      p('ivory',[0,-11,8,-9,10,-5,8,6,6,4,3,5,0,10,-3,5,-7,7,-9,4,-10,-5]);
+      p('shade',[0,-9,7,-7,5,-1,1,0,-7,-2,-8,-6]);
+      d('void',-4,-2,3);d('void',5,-3,3);b('mint',-5,-3,2,2);b('mint',4,-4,2,2);
+      d('void',1,4,2);d('mint',-13,9,2);
+    },
+    14:({p,b,d})=>{
+      p('edge',[0,-16,12,-9,15,1,7,12,0,15,-8,10,-14,0,-10,-10]);
+      p('light',[0,-13,10,-7,12,0,5,10,0,12,-6,8,-11,0,-8,-7]);
+      p('void',[0,-9,7,-5,8,3,0,9,-7,4,-7,-4]);
+      d('mint',0,0,5);b('edge',0,-3,1,6);
+      b('white',-7,-6,3,1);d('fire',14,-8,2);d('fire',-13,8,2);
+    }
+  },
+  beetle:{
+    4:({p,b})=>{
+      p('edge',[-13,-3,-10,-10,-2,-12,6,-10,11,-5,13,7,7,14,3,10,-4,10,-10,14,-14,8]);
+      p('steel',[-11,-3,-8,-8,-2,-10,5,-8,9,-4,11,6,7,11,4,8,-5,8,-9,11,-12,8]);
+      p('light',[-10,1,-6,-6,5,-7,8,-3,2,-3,-5,1]);
+      b('void',-9,1,4,4);b('void',5,0,4,4);
+      b('fire',-8,2,2,2);b('fire',6,1,2,2);
+      p('ivory',[-12,6,-7,9,-3,6,-4,11,-9,13]);p('ivory',[11,5,9,12,5,12,2,7,7,9]);
+    },
+    8:({p,b,d})=>{
+      p('edge',[-14,-2,-10,-9,-6,-7,0,-18,5,-8,10,-10,13,-4,13,6,7,12,-6,12,-13,7]);
+      p('steel',[-11,-2,-9,-7,-5,-4,0,-15,4,-5,9,-8,11,-3,11,5,6,10,-5,10,-11,6]);
+      p('light',[0,-15,4,-5,0,0,-3,-4]);d('mint',0,-6,2);
+      p('void',[-10,0,-3,1,-5,5,-10,4]);p('void',[10,-1,3,1,5,5,10,3]);
+      b('white',-9,2,2,1);b('white',7,1,2,1);b('shade',-4,7,8,2);
+    },
+    15:({p,d})=>{
+      p('edge',[-15,-8,-7,-7,0,-13,8,-8,14,-10,11,-3,14,8,7,14,2,9,-2,9,-8,14,-14,9,-11,-3]);
+      p('steel',[-12,-6,-6,-5,0,-10,7,-6,11,-7,9,-3,12,7,7,11,2,7,-2,7,-8,11,-12,8,-9,-3]);
+      for(const [x,y] of [[-8,-2],[8,-2],[-5,3],[5,3],[0,-5]]) {d('void',x,y,3);d('fire',x,y,1.5);}
+      p('light',[-11,6,-7,9,-3,6,-5,10,-8,11]);p('light',[11,6,8,11,5,10,3,6,7,9]);
+    }
+  },
+  specter:{
+    5:({p,b})=>{
+      p('edge',[-13,-9,-8,-14,0,-12,8,-14,14,-8,10,5,5,12,-7,12,-11,6]);
+      p('steel',[-11,-8,-7,-11,0,-9,7,-11,12,-7,8,5,4,10,-6,10,-9,5]);
+      p('light',[-10,-7,-6,-9,0,-7,2,-3,-7,-3]);
+      b('void',-8,-2,16,4);b('mint',-7,-1,4,1);b('mint',3,-1,4,1);
+      b('shade',-5,5,10,2);b('steel',0,0,2,7);
+    },
+    6:({p,b,d})=>{
+      p('edge',[0,-17,9,-10,12,-3,10,5,0,15,-9,5,-11,-3,-8,-10]);
+      p('ivory',[0,-14,7,-8,10,-3,8,4,0,12,-7,4,-9,-3,-6,-8]);
+      d('rust',0,-6,3);b('void',-7,-1,5,1);b('void',2,-1,5,1);
+      b('shade',-1,4,2,1);b('rust',-2,7,4,1);d('mint',0,-14,2);
+    },
+    12:({p,b,d})=>{
+      p('edge',[0,-18,9,-13,13,-3,8,9,0,15,-8,9,-13,-4,-9,-13]);
+      p('steel',[0,-15,7,-11,11,-3,6,8,0,12,-6,8,-11,-4,-7,-11]);
+      p('void',[0,-10,8,-3,0,6,-8,-3]);d('fire',0,-3,4);d('white',0,-3,1);
+      p('ivory',[-8,1,-2,7,-1,12,-6,9]);p('ivory',[8,1,6,9,1,12,2,7]);
+      b('light',-2,-13,4,1);
+    }
+  },
+  golem:{
+    0:({p,b,d})=>{
+      p('edge',[-16,-4,-10,-14,1,-16,13,-11,15,-2,11,12,-10,14,-16,8]);
+      p('steel',[-13,-3,-8,-12,1,-14,11,-9,13,-1,9,10,-9,12,-14,7]);
+      p('shade',[-14,2,-4,0,2,6,10,6,9,10,-9,12,-14,7]);
+      p('light',[-11,-7,-7,-12,-1,-12,-3,-6,-10,-4]);
+      p('void',[-6,-7,9,-9,10,-5,6,1,-2,0]);b('fire',1,-6,6,2);
+      b('edge',-8,6,12,2);d('rust',-5,3,2);
+    },
+    7:({p,b,d})=>{
+      p('edge',[0,-19,11,-12,15,-4,13,9,4,15,-7,15,-14,6,-13,-8]);
+      p('steel',[0,-16,9,-10,13,-3,11,8,3,13,-6,13,-12,5,-11,-7]);
+      p('void',[0,-13,10,-4,0,10,-9,-4]);d('mint',0,-3,6);d('void',0,-3,3);
+      b('white',-1,-5,2,2);b('light',-8,5,3,1);b('light',6,5,3,1);
+      b('rust',-4,11,8,1);
+    }
+  },
+  hydra:{
+    1:({p,b,d})=>{
+      p('edge',[-15,-4,-10,-7,-11,-15,-4,-10,0,-17,5,-10,10,-14,9,-7,14,-2,12,7,5,11,-5,11,-11,8]);
+      p('steel',[-13,-3,-8,-6,-9,-11,-4,-7,0,-13,4,-7,8,-11,7,-6,12,-1,10,6,4,9,-4,9,-9,7]);
+      p('mint',[-9,-9,-5,-6,0,-11,4,-6,7,-9,6,-4,-7,-4]);
+      b('void',-8,-2,5,3);b('void',3,-2,5,3);
+      b('white',-7,-2,2,1);b('white',5,-2,2,1);
+      p('light',[-10,3,-5,1,6,1,11,4,7,8,-7,8]);d('void',0,5,2);
+    },
+    12:({p,b,d})=>{
+      p('edge',[-15,-5,-12,-15,-6,-11,0,-13,5,-10,12,-16,15,-6,12,0,13,8,6,13,-4,12,-11,8,-12,1]);
+      p('shade',[-13,-5,-11,-12,-6,-9,0,-11,6,-8,11,-12,13,-6,10,0,11,7,5,11,-4,10,-9,7,-10,1]);
+      p('light',[-10,-11,-4,-9,0,-10,6,-8,11,-11,7,-5,-5,-6]);d('fire',0,-3,4);d('void',0,-3,2);
+      p('void',[-9,3,8,3,5,9,-4,9]);p('ivory',[-7,4,-3,4,-5,8]);p('ivory',[2,4,6,4,4,8]);
+      b('rust',-10,0,2,2);b('rust',8,0,2,2);
+    }
+  },
+  wyrm:{
+    2:({p,b})=>{
+      p('edge',[-16,1,-13,-5,-6,-6,-5,-13,2,-15,10,-10,15,-3,12,9,4,12,-9,9,-14,7]);
+      p('steel',[-14,1,-11,-3,-4,-4,-3,-11,2,-13,9,-8,13,-2,10,8,4,10,-8,7,-12,6]);
+      p('light',[-10,-2,-3,-6,1,-12,8,-8,5,-4,-4,-1]);
+      p('void',[-13,4,-3,2,6,3,3,7,-9,6]);b('ivory',-7,4,2,2);b('fire',-2,-3,4,2);
+      b('shade',7,0,2,7);
+    },
+    14:({p,b,d})=>{
+      p('edge',[-16,4,-9,-5,-13,-11,-5,-9,0,-14,7,-11,12,-15,14,-6,11,-2,12,7,5,11,-8,12,-14,9]);
+      p('shade',[-13,4,-7,-5,-10,-9,-4,-7,0,-11,7,-8,11,-12,12,-6,8,-1,10,6,4,9,-7,10,-12,8]);
+      p('light',[-9,2,-4,-5,5,-7,10,-6,7,-3,1,1,-5,3]);
+      d('mint',-2,-2,2);d('mint',4,-4,2);
+      p('void',[-12,6,-3,4,5,3,2,8,-7,9]);b('ivory',-8,6,2,2);b('ivory',-2,5,2,2);
+    }
+  },
+  behemoth:{
+    6:({p,b,d})=>{
+      p('edge',[-15,-12,-10,-8,-5,-9,-2,-15,5,-13,9,-8,15,-11,13,-1,14,9,7,14,-9,14,-14,8,-13,0]);
+      p('steel',[-13,-9,-9,-6,-4,-7,-1,-12,4,-11,8,-6,12,-8,11,0,12,8,6,12,-8,12,-12,7,-11,0]);
+      p('void',[-11,3,-6,-2,6,-2,11,4,8,11,-8,11]);
+      p('ivory',[-12,2,-6,8,-8,12,-12,9]);p('ivory',[12,2,12,9,8,12,6,8]);
+      b('fire',-8,-3,3,2);b('fire',5,-3,3,2);d('rust',0,3,2);
+    }
+  },
+  mantis:{
+    8:({p,b,d})=>{
+      p('edge',[-14,-11,-6,-9,-4,-14,0,-10,5,-15,7,-9,15,-11,14,-3,8,4,6,10,0,13,-6,10,-9,4,-14,-3]);
+      p('steel',[-12,-8,-6,-7,-3,-10,0,-7,4,-11,6,-7,12,-8,12,-4,6,3,4,9,0,11,-4,9,-7,3,-12,-4]);
+      p('light',[-12,-7,-5,-6,-2,-3,-5,2,-11,-2]);p('light',[12,-7,5,-6,2,-3,5,2,11,-2]);
+      b('void',-8,-4,2,3);b('void',6,-4,2,3);d('white',0,-4,2);
+      p('ivory',[-6,5,-2,8,-4,12]);p('ivory',[6,5,4,12,2,8]);
+    }
+  },
+  idol:{
+    13:({p,b,d})=>{
+      p('edge',[-14,-13,-8,-17,7,-17,14,-11,15,10,9,16,-9,16,-15,9]);
+      p('steel',[-12,-11,-7,-14,6,-14,12,-10,13,9,8,14,-8,14,-13,8]);
+      p('void',[-10,0,0,-6,10,0,11,8,7,13,-7,13,-11,8]);
+      for(const x of [-7,-2,3]) {b('ivory',x,2,3,4);b('ivory',x,10,3,3);}
+      d('fire',0,-10,3);b('shade',-10,-6,4,3);b('shade',6,-6,4,3);b('rust',-2,7,5,2);
+    }
+  },
+  titan:{
+    0:({p,b,d})=>{
+      p('edge',[-16,-14,-9,-10,-6,-19,0,-14,6,-19,9,-10,16,-14,13,5,9,13,0,16,-9,13,-13,5]);
+      p('steel',[-13,-11,-8,-7,-5,-15,0,-10,5,-15,8,-7,13,-11,11,4,7,11,0,13,-7,11,-11,4]);
+      p('light',[-12,-10,-8,-6,-6,-9,-5,-3,-10,1]);p('light',[12,-10,10,1,5,-3,6,-9,8,-6]);
+      p('void',[-9,0,0,-5,9,0,5,9,-5,9]);b('fire',-6,0,4,2);b('fire',2,0,4,2);d('white',0,6,2);
+    }
+  },
+  leviathan:{
+    1:({p,b,d})=>{
+      p('edge',[-19,2,-15,-5,-8,-10,-4,-18,0,-12,7,-16,8,-10,17,-7,16,5,10,13,-3,15,-14,11]);
+      p('steel',[-16,2,-12,-4,-6,-8,-4,-14,0,-9,5,-12,6,-8,14,-6,13,4,8,11,-3,13,-13,9]);
+      p('shade',[-15,3,-9,-4,0,-3,8,0,11,5,6,11,-5,12,-13,8]);
+      p('void',[-15,4,-7,0,4,1,9,5,3,9,-8,9,-14,7]);
+      for(const x of [-11,-6,-1,4]) b('ivory',x,4,2,3);
+      d('fire',-3,-5,4);d('ink',-3,-5,2);b('light',9,-2,3,2);
+    }
+  },
+  colossus:{
+    6:({p,b,d})=>{
+      p('edge',[-15,-11,-7,-15,-2,-15,0,-19,3,-15,10,-14,15,-10,13,13,-13,13]);
+      p('steel',[-13,-10,-7,-13,-1,-13,0,-16,2,-13,9,-12,13,-9,11,11,-11,11]);
+      p('light',[-13,-8,-6,-10,0,-8,6,-10,13,-8,11,-5,4,-5,0,-3,-4,-5,-11,-5]);
+      b('void',-10,-3,20,5);b('fire',-8,-2,5,1);b('fire',3,-2,5,1);
+      b('shade',-8,5,16,4);b('light',-7,6,14,1);d('mint',0,-10,2);
+    }
+  },
+  moth:{
+    7:({p,b,d})=>{
+      p('edge',[-15,-12,-7,-9,-2,-13,3,-13,8,-9,15,-14,12,-2,10,6,4,12,-4,12,-10,6,-12,-2]);
+      p('ivory',[-12,-10,-7,-7,-2,-10,3,-10,8,-7,12,-11,10,-1,8,5,3,10,-3,10,-8,5,-10,-1]);
+      p('void',[-9,-4,-5,-5,-2,-2,-5,4,-8,2]);p('void',[9,-4,5,-5,2,-2,5,4,8,2]);
+      d('mint',-6,-1,2);d('mint',6,-1,2);d('rust',0,-7,2);b('shade',-1,5,2,3);
+      b('white',-3,2,1,2);b('white',2,2,1,2);
+    }
+  },
+  dragon:{
+    12:({p,b,d})=>{
+      p('edge',[-17,-11,-8,-9,-6,-16,1,-11,7,-15,7,-8,13,-12,12,-4,17,2,11,5,8,12,0,15,-11,11,-17,7,-13,0]);
+      p('steel',[-14,-9,-7,-7,-5,-13,1,-9,5,-12,5,-6,11,-9,10,-3,14,1,9,4,7,10,0,12,-10,9,-14,6,-10,0]);
+      p('light',[-12,-7,-6,-6,2,-8,8,-5,6,-1,-6,1,-10,-1]);
+      p('void',[-13,6,-6,2,3,1,9,4,4,10,-9,9]);b('fire',-5,-2,4,2);d('white',-4,-1,1);
+      p('ivory',[-9,5,-5,4,-6,8]);p('ivory',[-2,3,2,3,0,7]);
+    }
+  },
+  eclipse:{
+    13:({p,b,d})=>{
+      p('edge',[-17,-15,-10,-10,-6,-18,0,-12,6,-18,10,-10,17,-15,14,-3,16,4,7,15,0,19,-7,15,-16,4,-14,-3]);
+      p('light',[-14,-12,-9,-7,-5,-15,0,-9,5,-15,9,-7,14,-12,12,-3,13,3,6,12,0,16,-6,12,-13,3,-12,-3]);
+      p('void',[-10,-6,0,-10,10,-6,9,5,0,14,-9,5]);d('fire',0,-2,6);d('void',0,-2,4);d('white',0,-2,1);
+      p('steel',[-8,4,-5,5,-1,13,-5,10]);p('steel',[8,4,5,5,1,13,5,10]);
+      b('white',-4,-9,1,2);b('white',3,-9,1,2);
+    },
+    17:({p,b,d})=>{
+      p('edge',[0,-18,11,-15,17,-8,21,0,15,10,6,17,0,19,-9,15,-17,8,-21,0,-16,-10,-8,-16]);
+      p('steel',[0,-15,9,-13,15,-7,18,0,13,8,5,14,0,16,-8,13,-14,6,-18,0,-14,-8,-7,-14]);
+      p('void',[-15,0,-9,-7,0,-11,9,-7,15,0,9,7,0,11,-9,7]);
+      d('mint',0,0,8);d('fire',0,0,5);d('void',0,0,3);b('white',-2,-2,2,2);
+      d('white',0,-14,2);d('white',0,14,2);b('light',-14,0,3,1);b('light',11,0,3,1);
+    }
+  }
+};
+
+function drawFace(context,form,palette,x,y,scale,colors) {
+  const draw=faces[form]?.[palette];
+  if(!draw) return;
+  const color={...colors,edge:'#100f1b',void:'#090813',white:'#fff5dc',ivory:'#d6c4a8',
+    fire:'#ffc271',mint:'#8be6e0',rust:'#af654e'};
+  const p=(tone,points)=>{
+    context.fillStyle=color[tone];
+    context.beginPath();
+    context.moveTo(x+points[0]*scale,y+points[1]*scale);
+    for(let i=2;i<points.length;i+=2) {
+      context.lineTo(x+points[i]*scale,y+points[i+1]*scale);
+    }
+    context.closePath();
+    context.fill();
+  };
+  const b=(tone,dx,dy,w,h)=>{
+    context.fillStyle=color[tone];
+    context.fillRect(x+dx*scale,y+dy*scale,w*scale,h*scale);
+  };
+  const d=(tone,dx,dy,r)=>p(tone,[dx,dy-r,dx+r,dy,dx,dy+r,dx-r,dy]);
+  draw({p,b,d});
+}
+
 // Original low-resolution sprites. Forms use distinct silhouettes, weapons and anatomy.
 const beastPalettes=[
   [23,38],[204,38],[7,55],[37,67],[68,55],[253,42],
   [181,51],[301,37],[42,53],[78,46],[195,66],[17,61],
   [267,52],[226,59],[24,71],[321,52],[159,47],[286,67]
 ];
+const paintOverrides={
+  'mantis:8':[348,62],
+  'moth:7':[249,29],
+  'dragon:12':[321,57],
+  'idol:13':[158,29]
+};
 function paintEnemy(canvas,{form,palette}) {
   const c=canvas.getContext('2d');
-  const [h,s]=beastPalettes[palette];
+  const [h,s]=paintOverrides[form+':'+palette]??beastPalettes[palette];
   const ink='#100e1b',shade=`hsl(${h} ${s}% 19%)`,mid=`hsl(${h} ${s}% 37%)`,light=`hsl(${h} ${s}% 64%)`;
   const glow=`hsl(${(h+24)%360} 88% 79%)`;
   const box=(color,x,y,w,d)=>{c.fillStyle=color;c.fillRect(x,y,w,d);};
@@ -1111,16 +1533,9 @@ function paintEnemy(canvas,{form,palette}) {
   const gem=(color,x,y,r)=>poly(color,[[x,y-r],[x+r,y],[x,y+r],[x-r,y]]);
   const mirror=points=>points.map(([x,y])=>[88-x,y]);
   const pair=(color,points)=>{poly(color,points);poly(color,mirror(points));};
-  const eye=(x,y)=>{box(ink,x-1,y-1,7,4);box(glow,x,y,4,1);};
+  const face=(x,y,scale=1)=>drawFace(c,form,palette,x,y,scale,{ink,shade,steel:mid,light});
   const ring=(x,y,r,color)=>{
     c.strokeStyle=color;c.lineWidth=1;c.beginPath();c.ellipse(x,y,r,r*.7,0,0,Math.PI*2);c.stroke();
-  };
-  const head=(x,y,r,horns=false)=>{
-    poly(ink,[[x-r-2,y+1],[x-r,y-r],[x+r,y-r],[x+r+2,y+2],[x+r/2,y+r],[x-r/2,y+r]]);
-    poly(mid,[[x-r,y],[x-r+2,y-r+1],[x+r-2,y-r+1],[x+r,y+1],[x+r/2,y+r-2],[x-r/2,y+r-2]]);
-    box(shade,x-r+2,y+3,r*2-4,3);
-    eye(x-r+2,y-1);eye(x+r-6,y-1);
-    if(horns) poly(light,[[x-r,y-r],[x-r-4,y-r-8],[x-r+3,y-r-4],[x+r-3,y-r-4],[x+r+4,y-r-8],[x+r,y-r]]);
   };
   const core=(x,y,r)=>{gem(ink,x,y,r+2);gem(light,x,y,r);gem(glow,x,y,r/2);};
   const wing=[[44,30],[34,14],[22,8],[5,6],[11,13],[3,20],[15,28],[10,44],[24,37],[28,48],[40,37]];
@@ -1138,9 +1553,19 @@ function paintEnemy(canvas,{form,palette}) {
       poly(mid,[[12,40],[25,y+4],[39,y+2],[59,y+8],[72,y+13],[78,y+10],[70,45],[61,53],[56,43],[27,43]]);
       poly(shade,[[22,44],[39,y+13],[63,y+12],[68,46],[63,52],[59,46],[33,46],[27,56],[20,56]]);
       if(form==='leviathan') pair(light,[[39,34],[21,7],[21,23],[9,18],[15,36],[33,39]]);
+      if(form==='hound'&&palette===9) {
+        poly(light,[[21,37],[28,25],[34,30],[40,21],[43,30],[51,26],[48,38],[38,43],[29,41]]);
+        poly(shade,[[27,38],[35,30],[38,36],[46,30],[43,37],[34,42]]);
+        for(const [x,y] of [[7,49],[43,50],[62,53],[76,49]]) box(light,x,y,8,1);
+      }
+      if(form==='hound'&&palette===16) {
+        poly(light,[[46,34],[52,22],[53,34],[59,25],[60,36],[67,30],[72,40],[61,36]]);
+        poly(shade,[[66,44],[75,31],[83,23],[80,35],[86,33],[76,44],[69,48]]);
+        box(glow,82,24,3,1);box(light,78,50,4,1);
+      }
       if(huge) for(let i=0;i<5;i++) gem(light,40+i*6,y+7+i,ridge(i));
-      head(21,y+11,huge?12:9,huge);
-      box(glow,14,y+17,3,2);break;
+      face(form==='behemoth'?26:23,y+8,huge?1.05:.84);
+      break;
     }
     case 'beetle':
     case 'mantis':
@@ -1157,33 +1582,63 @@ function paintEnemy(canvas,{form,palette}) {
       poly(shade,[[44,21],[61,33],[57,48],[44,58],[31,48],[27,33]]);
       poly(mid,[[44,25],[56,32],[55,43],[44,50],[33,43],[32,32]]);
       if(form==='mantis') pair(light,[[48,40],[74,29],[84,15],[81,31],[66,43]]);
-      head(44,26,9,form!=='beetle');core(44,42,5);break;
+      if(form==='beetle'&&palette===8) {
+        for(const [x,y,r] of [[31,40,4],[55,41,5],[42,48,6]]) {
+          gem(shade,x,y,r+1);gem(light,x,y,r);box(glow,x-1,y-1,2,2);
+        }
+      } else if(form==='beetle'&&palette===15) {
+        pair(mid,[[36,37],[29,28],[17,22],[20,35],[32,47]]);
+        pair(light,[[30,35],[20,25],[22,32],[28,40]]);
+        gem(glow,44,46,6);gem(ink,44,46,3);
+      } else {
+        core(44,45,5);
+      }
+      face(44,25,form==='beetle'?.83:1.03);
+      break;
     }
     case 'dragon':
     case 'hydra':
     case 'wyrm': {
+      if(form==='wyrm'&&palette===14) {
+        pair(ink,[[42,39],[26,24],[10,14],[17,31],[9,44],[24,38],[35,50]]);
+        pair(mid,[[35,42],[24,27],[14,18],[20,30],[15,39],[24,35]]);
+      }
       if(form==='dragon') {pair(ink,wing);pair(shade,[[44,29],[29,13],[8,8],[21,23],[17,37],[32,33],[35,42]]);
         pair(mid,[[36,31],[29,17],[16,12],[24,24],[22,34],[31,29]]);
       }
       poly(ink,[[13,53],[21,39],[33,42],[35,22],[40,12],[51,12],[57,23],[58,40],[75,44],[80,53],[64,59],[25,59]]);
       poly(mid,[[16,52],[25,43],[39,44],[41,24],[46,18],[54,23],[55,42],[71,47],[74,52],[65,56],[25,56]]);
       for(let i=0;i<4;i++) box(light,41+i,24+i*5,11,2);
-      if(form==='hydra') {head(22,33,8,true);head(69,32,8,true);}
-      head(46,17,10,true);core(46,41,5);break;
+      if(form==='hydra') {
+        pair(ink,[[37,48],[24,43],[17,30],[24,23],[30,29],[29,37],[40,43]]);
+        pair(mid,[[35,46],[26,41],[20,30],[24,27],[27,30],[27,38]]);
+        face(22,29,.64);face(66,29,.64);
+      }
+      core(46,42,5);
+      face(45,form==='hydra'?18:21,form==='dragon'?1.08:1);
+      break;
     }
     case 'wisp':
     case 'specter':
     case 'eclipse': {
       const abyss=form==='eclipse',r=abyss?23:14;
-      for(let i=0;i<3;i++) ring(44,31,r+4+i*5,i===1?mid:shade);
+      if(form==='wisp'&&palette===3) {
+        pair(mid,[[41,43],[25,33],[19,16],[15,29],[24,49],[36,54]]);
+        pair(light,[[24,43],[17,31],[14,34],[21,46]]);
+      } else if(form==='specter'&&palette===6) {
+        ring(44,22,23,light);
+        for(const [x,y] of [[19,26],[69,26],[27,49],[61,49]]) gem(glow,x,y,2);
+      } else {
+        for(let i=0;i<3;i++) ring(44,31,r+4+i*5,i===1?mid:shade);
+      }
       poly(ink,[[44,30-r],[44+r,22],[55,44],[66,58],[48,52],[43,58],[35,50],[23,56],[33,40],[44-r,23]]);
       poly(mid,[[44,32-r],[42+r,24],[53,43],[58,52],[44,47],[30,52],[36,40],[46-r,26]]);
-      core(44,29,abyss?13:7);box(ink,abyss?33:38,28,abyss?22:12,3);box(glow,42,29,4,1);
+      face(44,30,abyss?1.06:.92);
       if(abyss) for(let i=0;i<8;i++) {const ang=i*Math.PI/4;gem(light,44+Math.cos(ang)*33,30+Math.sin(ang)*23,3);}
       break;
     }
     default: {
-      const giant=big?1:.68;
+      const giant=big?1:.84;
       c.save();c.translate(44*(1-giant),58*(1-giant));c.scale(giant,giant);
       poly(ink,armor);
       poly(shade,[[44,14],[57,18],[66,28],[72,47],[64,55],[24,55],[15,47],[22,28],[31,18]]);
@@ -1197,9 +1652,28 @@ function paintEnemy(canvas,{form,palette}) {
       if(form==='colossus') for(let i=0;i<4;i++) box(light,28+i*8,46,4,4);
       if(form==='idol') for(let i=0;i<3;i++) core(26+i*18,40,5);
       else core(44,42,big?8:5);
-      head(44,22,11,form==='titan');
-      if(form==='lantern') {box(ink,18,27,3,23);core(17,43,8);}
-      if(form==='knight') {poly(light,[[59,55],[70,28],[76,19],[75,32],[64,56]]);box(mid,57,49,12,3);}
+      face(44,23,big?1.07:.9);
+      if(form==='lantern'&&palette===0) {
+        box(ink,18,27,3,23);core(17,43,8);
+      }
+      if(form==='lantern'&&palette===11) {
+        box(light,19,24,2,28);box(ink,18,17,6,8);box(glow,19,18,4,5);
+        poly(shade,[[61,51],[70,43],[81,46],[76,53]]);
+        poly(light,[[61,49],[70,40],[81,43],[76,50]]);
+      }
+      if(form==='lantern'&&palette===17) {
+        for(const [x,y] of [[17,29],[72,29],[14,46],[74,45]]) {
+          box(light,x,y-4,1,6);gem(ink,x,y,4);gem(glow,x,y,2);
+        }
+      }
+      if(form==='knight'&&palette===7) {
+        poly(ink,[[58,35],[73,32],[81,37],[80,49],[70,58],[60,50]]);
+        poly(mid,[[60,36],[73,34],[79,38],[78,48],[70,55],[62,49]]);
+        gem(light,70,44,5);box(ink,68,42,4,5);
+      } else if(form==='knight') {
+        poly(light,[[59,55],[70,28],[76,19],[75,32],[64,56]]);box(mid,57,49,12,3);
+        if(palette===13) poly(mid,[[32,28],[18,24],[8,34],[16,32],[10,44],[25,44]]);
+      }
       c.restore();
     }
   }
@@ -1250,6 +1724,7 @@ const app=document.querySelector('#app');
 const dialog=document.querySelector('#dialog');
 const effect=document.querySelector('#effect');
 const book=load();
+let suspended=readCheckpoint(book.checkpoint);
 let run=null, selected=null, storageWarning=false, audio=null, notice='';
 let sequence=null, lastPage=null, craftResult=null, lastDeal=null;
 const motionMode=()=>matchMedia('(prefers-reduced-motion: reduce)').matches?'off':book.prefs.motion||'full';
@@ -1277,11 +1752,18 @@ const cardButton=(c,act,i=-1,disabled=false)=>`<button type="button" class="card
   ${i<0?'':`draggable="${!disabled}" data-hand="${i}"`} title="${types[c.kind]}・消費 ${c.cost}" ${disabled?'disabled':''}>
   ${cardFace(c)}</button>`;
 function persist(){storageWarning=!save(book);}
+function saveProgress() {
+  const finished=run.phase==='loss'||run.phase==='win';
+  if(finished||run.phase==='clear') rememberRun();
+  suspended=finished?null:{run,notice,craftResult};
+  book.checkpoint=suspended?writeCheckpoint(suspended):null;
+  persist();
+}
 function modal(title,content) {
   dialog.innerHTML=`<h2>${title}</h2>${content}<form method="dialog"><button>閉じる</button></form>`;
   if(!dialog.open) dialog.showModal();
 }
-function routeName(){return run.act===4?'EXTRA':'ACT '+['','I','II','III'][run.act];}
+function routeName(act=run.act){return act===4?'EXTRA':'ACT '+['','I','II','III'][act];}
 const direct=a=>a.kind==='attack'||a.kind==='double';
 function intentText() {
   const a=run.next;
@@ -1318,9 +1800,10 @@ function damageReceipt() {
 }
 function battle() {
   const p=run.preview(), e=run.enemy;
+  const gate=e.gates[0];
   const slots=Array.from({length:run.slots},(_,i)=>{
     const c=run.board[i];
-    const status=p.steps.find(s=>s.card===c);
+    const status=c?p.steps.find(s=>s.card===c):null;
     const at=Math.min(i,run.board.length);
     const deb=i<=run.board.length?run.deb.filter(d=>Math.min(d.at,run.board.length)===i).map(d=>
       `<span class="slot debuff" data-calc="${p.steps.findIndex(s=>s.card===d)}" title="敵の妨害 · ${d.at}枠目の後">${label(d)}</span>`).join(''):'';
@@ -1333,20 +1816,22 @@ function battle() {
     <section class="frame enemy" data-act="${run.act}" data-rank="${e.kind}" data-form="${e.art.form}">
       <div class="duel">
         <figure class="combatant hero"><canvas data-sprite="10" width="48" height="44" aria-hidden="true"></canvas>
-        <figcaption>術師</figcaption><div class="hpBar hero-hp" aria-hidden="true"><span style="width:${run.hp}%"></span></div><small id="heroHp">HP ${run.hp} / ${run.maxHp}</small></figure>
+        <figcaption>術師</figcaption><div class="hpBar hero-hp" aria-hidden="true"><span style="width:${100*run.hp/run.maxHp}%"></span></div><small id="heroHp">HP ${run.hp} / ${run.maxHp}</small></figure>
         <span class="arena-seal" aria-hidden="true">✧</span>
         <figure class="combatant foe"><canvas data-enemy-art width="88" height="64" aria-hidden="true"></canvas>
         <figcaption>${e.name}</figcaption><div class="hpBar foe-hp" aria-hidden="true"><span style="width:${Number(e.hp*1000n/e.max)/10}%"></span></div><small id="foeHp" title="${e.hp} / ${e.max}">HP ${compact(e.hp)} / ${compact(e.max)}</small></figure>
         <span class="slash" aria-hidden="true"></span><span class="enemy-cast" aria-hidden="true"></span><span id="incoming" aria-hidden="true"></span><span id="outgoing" aria-hidden="true"></span>
       </div>
       <div class="enemy-info"><div class="eyebrow">${routeName()} · 第${run.stage}地点</div><h1>${e.name}</h1><small class="enemy-title">${e.title}${e.elite?' · ELITE':''}</small>
-      <p class="enemy-rule">${e.detail}${e.barrier?' 残りバリア ' +e.barrier+'回。':''}${e.gates.length?' 残り耐久段階 ' +e.gates.length+'。':''}</p><div class="intent"><small>敵の次の行動</small><strong>${intentText()}</strong></div></div></section>
+      ${e.detail?`<p class="enemy-rule">${e.detail}</p>`:''}
+      ${e.barrier||gate!==undefined?`<p class="enemy-rule defense-status">${e.barrier?'バリア残り '+e.barrier+'回':`耐久段階あと ${e.gates.length} · 次の突破に <b title="${e.hp-gate}">${compact(e.hp-gate,false)}</b> ダメージ`}</p>`:''}
+      <div class="intent"><small>敵の次の行動</small><strong>${intentText()}</strong></div></div></section>
     <section class="frame board-frame"><div class="heading"><h2>演算盤</h2><small>${run.board.length} / ${run.slots} 枠 · コンボ ${run.board.length}${run.ward?' · 結界あり':''}</small></div>
       <div class="board"><span class="slot base"><small>基礎</small>${run.base}</span>${slots}${tail}</div>
       ${selected!==null?`<div class="actions" style="margin-top:8px">${btn('← 左へ','shift:-1','',selected===0)}${btn('右へ →','shift:1','',selected===run.board.length-1)}</div>`:''}
       ${damageReceipt()}
       <div class="preview"><div><small>通常演算</small><strong title="${exactRat(p.normal)}">${visibleNumber(p.normal)}</strong></div><div><small>レリック適用後</small><strong title="${exactRat(p.result)}">${visibleNumber(p.result)}</strong></div>
-      <div><small>最終ダメージ予測</small><strong title="${p.final}">${compact(p.final)}</strong>${p.impact.kind==='barrier'?'<small>バリアで無効</small>':p.impact.kind==='gate'?'<small>耐久段階まで ' +compact(p.impact.dealt)+'</small>':''}</div></div>
+      <div><small>最終ダメージ予測</small><strong title="${p.final}">${compact(p.final)}</strong><small title="${p.impact.dealt}">敵HP −${compact(p.impact.dealt,false)}${p.impact.kind==='barrier'?' · バリアで無効':p.impact.kind==='gate'?' · 耐久段階まで':''}</small></div></div>
       <div id="reel" class="reel" hidden><div class="reel-head"><span id="stepName"></span><span id="stepCombo"></span></div>
       <strong id="reelNumber"></strong><div class="reel-foot"><div id="stepProgress"></div>${btn('演出をスキップ','skip')}</div></div>
       ${notice?`<small role="status">${esc(notice)}</small>`:''}</section>
@@ -1394,12 +1879,18 @@ function takeReport() {
   return `<p class="loot-receipt" role="status"><strong>今回の取得</strong>　${content}</p>`;
 }
 function relicReward() {
-  const relic=relics[run.relicDrop];
-  if(!relic) return '';
-  return `<section class="relic-drop"><span aria-hidden="true">✧</span><div><small>${run.enemy.name}からドロップ</small>
-    <h2>${relic.name}</h2><p>${relic.desc}</p>
-    ${run.relicDecision==='pending'?`<div class="choices">${btn('取得する','relicTake','primary')}${btn('見送る','relicSkip')}</div>`:
-      `<small>${run.relicDecision==='taken'?'取得済み':'見送り済み'}</small>`}</div></section>`;
+  if(!run.relicDrop) return '';
+  const choices=[run.relicDrop,run.relicAlternative].filter(Boolean);
+  const pending=run.relicDecision==='pending';
+  const relicTile=(id,i)=>`<article class="relic-option">
+    <h3>${relics[id].name}</h3><p>${relics[id].desc}</p>
+    ${pending?btn(relics[id].name+'を獲得','relicTake:'+i,'primary'):''}</article>`;
+  return `<section class="relic-drop"><span aria-hidden="true">✧</span><div class="relic-reward-content">
+    <small>${run.enemy.name}からドロップ</small><h2>レリック</h2>
+    ${pending?`<p>${choices.length>1?'候補から1つ選べます。':'効果を確認してから獲得できます。'}</p>
+      <div class="relic-options">${choices.map(relicTile).join('')}</div>${btn('レリックを見送る','relicSkip')}`:
+      run.relicDecision==='taken'?`${relicTile(run.relicDrop,0)}<small>取得済み</small>`:'<p>レリックは見送り済み</p>'}
+    </div></section>`;
 }
 function workshopStage(kind,body,reveal=false) {
   const theme=workshopThemes[kind];
@@ -1431,6 +1922,7 @@ function useService(action,i=NaN,mode) {
   }
   if(transaction.kind) craftResult=transaction;
   else notice=transaction.message;
+  saveProgress();
   render();
   app.querySelector('[data-action="craftNext"]')?.focus({preventScroll:true});
 }
@@ -1479,10 +1971,15 @@ function mapView() {
     <div class="route-map"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${links}</svg>${nodes}</div>
     <div class="map-legend">${Object.values(places).map(p=>`<span><b>${p.icon}</b> ${p.desc}</span>`).join('')}</div>`);
 }
+const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.5.1</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v0.5.5</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
-    <form id="start"><label><small>シード（任意）</small><input name="seed" maxlength="40" placeholder="空欄でランダム"></label><button class="primary">探索を始める</button></form>
+    ${suspended?`<section class="continue-run">
+      ${btn('つづきから','resume','primary')}
+      <small>${routeName(suspended.run.act)} · 第${suspended.run.stage}地点 · ${checkpointLabels[suspended.run.phase]}<br>シード ${esc(suspended.run.seed)}</small>
+    </section>`:''}
+    <form id="start"><label><small>シード（任意）</small><input name="seed" maxlength="40" placeholder="空欄でランダム"></label><button class="${suspended?'':'primary'}">${suspended?'新しい探索':'探索を始める'}</button></form>
     </div><canvas width="320" height="243" aria-hidden="true"></canvas></section></main>`;
   if(craftResult) return workResult();
   switch(run.phase) {
@@ -1495,7 +1992,7 @@ function view() {
     case 'facility':return facility();
     default: {
       const title={loss:'探索終了',clear:'無量門突破',win:'EXTRA 突破'}[run.phase];
-      return chapter('DAMAGE BREAKER',title,`<p>シード ${esc(run.seed)}</p><h2>今回の最大ダメージ</h2>
+      return chapter('DAMAGE BREAKER',title,`<p>シード ${esc(run.seed)}</p>${run.phase==='loss'?`<p>${routeName()} · 第${run.stage}地点 · ${run.enemy.name}との戦闘で敗北</p>`:''}<h2>今回の最大ダメージ</h2>
         <p class="record">${fmt(run.stats.max)}</p><p class="muted">${esc(run.stats.formula)}</p>
         <h2>コンボ ${run.stats.combo} · ∞ ${run.stats.infinity}回 · ${run.stats.turns}ターン</h2>
         <div class="actions">${run.phase==='clear'?btn('EXTRAへ挑む','extra','primary'):''}${btn('タイトルへ','title')}${btn('記録帳','records')}</div>`);
@@ -1503,8 +2000,8 @@ function view() {
   }
 }
 function render() {
-  app.innerHTML=`<header><div class="brand">◇ DAMAGE BREAKER</div><nav>${btn('遊び方','help')}${btn('記録帳','records')}${btn('設定','settings')}</nav></header>${view()}
-    ${storageWarning?'<p role="status" style="text-align:center">ブラウザの保存領域を使用できません。記録はこの画面内で保持されます。</p>':''}`;
+  app.innerHTML=`<header><div class="brand">◇ DAMAGE BREAKER</div><nav>${run&&run.phase!=='battle'?btn('デッキ '+run.deck.length,'deck'):''}${run&&suspended?btn('中断','pause'):''}${btn('遊び方','help')}${btn('記録帳','records')}${btn('設定','settings')}</nav></header>${view()}
+    ${storageWarning?'<p role="status" style="text-align:center">保存できませんでした。画面を閉じると、今回の進行や記録が失われる場合があります。</p>':''}`;
   const hero=app.querySelector('[data-sprite]');
   if(hero) paintSprite(hero,10);
   const enemy=app.querySelector('[data-enemy-art]');
@@ -1551,7 +2048,6 @@ function rememberRun() {
   run.archiveId ||= Date.now()+'-'+run.seed;
   book.runs.unshift({...snapshot,id:run.archiveId});
   book.runs.length=Math.min(book.runs.length,20);
-  persist();
 }
 function burstFX(n,best) {
   const mode=motionMode();
@@ -1584,6 +2080,16 @@ const prefsHTML=()=>`<p><label><input type="checkbox" id="scientific" ${book.pre
   <p><label>演出 <select id="motion">${[['full','通常'],['fast','高速・軽量'],['off','スキップ']].map(([id,t])=>
     `<option value="${id}" ${(book.prefs.motion||'full')===id?'selected':''}>${t}</option>`).join('')}</select></label></p>
   <p><label><input type="checkbox" id="mute" ${book.prefs.mute?'checked':''}> 効果音を消す</label></p>`;
+function openDeck() {
+  const groups=[['add','加算'],['mul','乗算'],['pct','割合'],['pow','累乗'],['exp','指数'],['aux','補助']];
+  const sections=groups.flatMap(([kind,name])=>{
+    const cards=run.deck.filter(c=>kind==='aux'?c.kind==='clean'||c.kind==='ward':c.kind===kind);
+    if(!cards.length) return [];
+    return [`<details open><summary>${name} · ${cards.length}枚</summary><ul>
+      ${cards.map(c=>`<li>${label(c)}${c.upgraded?' ✧':''} · ${rarity[c.tier]} · 消費 ${c.cost}</li>`).join('')}</ul></details>`];
+  });
+  modal('デッキ '+run.deck.length+'枚',`<div class="deck-groups">${sections.join('')}</div>`);
+}
 function openRecords() {
   modal('記録帳',`<h3>歴代最高 ${fmt(BigInt(book.best.max))}</h3><p>${esc(book.best.formula||'記録なし')}</p>
     <h3>探索履歴</h3>${book.runs.map(r=>`<details><summary>${esc(r.seed)} · ${{loss:'敗北',clear:'通常クリア',win:'EXTRAクリア'}[r.outcome]} · 第${r.stage}戦 · ${fmt(BigInt(r.max))}</summary>
@@ -1600,14 +2106,28 @@ function action(command) {
     <p>次の盤に入る妨害は、指定枠が空なら一時的に末尾で処理します。封印は直後の自分の演算を1枚無効化します。</p>`);
   if(name==='settings') return modal('設定',prefsHTML());
   if(name==='records') return openRecords();
-  if(name==='deck') return modal('デッキ '+run.deck.length+'枚',`<ul>${run.deck.map(c=>`<li>${label(c)} · ${rarity[c.tier]} · 消費 ${c.cost}</li>`).join('')}</ul>`);
+  if(name==='deck') return openDeck();
   if(name==='relic') return modal(relics[arg].name,'<p>'+relics[arg].desc+'</p>');
   if(name==='history') return modal('計算履歴',run.history.map(p=>`<details><summary>${fmt(p.final)} · ${esc(p.formula)}</summary>
     <ol>${p.steps.map(s=>`<li>${label(s.card)}${s.op?.kind!==s.card.kind?' → '+(s.op?label(s.op):'無効'):''} → ${rat(s.result)}</li>`).join('')}
     ${p.triggers.map(t=>`<li>${relics[t.id].name} → ${rat(t.result)}</li>`).join('')}</ol></details>`).join('')||'<p>まだBURSTしていません。</p>');
-  notice='';
+  if(name==='resume'&&suspended) {
+    ({run,notice,craftResult}=suspended);
+    selected=null;
+    lastDeal=null;
+    render();
+    return;
+  }
+  if(name==='pause'||name==='title') {
+    if(name==='pause') saveProgress();
+    run=null;
+    craftResult=null;
+    render();
+    return;
+  }
+  const keepNotice=name==='craftNext'||name==='slot'||name==='shift'||name==='hand';
+  if(!keepNotice) notice='';
   switch(name) {
-    case 'title':run=null;break;
     case 'hand':run.play(i);break;
     case 'slot':
       if(selected!==null&&selected!==i) {run.move(selected,Math.min(i,run.board.length-1));selected=null;}
@@ -1624,7 +2144,7 @@ function action(command) {
     case 'cardSkip':run.skipCard();break;
     case 'goldTake':run.chooseGold(true);break;
     case 'goldSkip':run.chooseGold(false);break;
-    case 'relicTake':run.chooseRelic(true);break;
+    case 'relicTake':run.chooseRelic(true,i);break;
     case 'relicSkip':run.chooseRelic(false);break;
     case 'advance':run.advance();break;
     case 'route':run.route(arg);break;
@@ -1638,7 +2158,7 @@ function action(command) {
     case 'remove':
     case 'fuse':useService(name);return;
   }
-  rememberRun();
+  saveProgress();
   render();
 }
 app.addEventListener('click',e=>{
@@ -1648,11 +2168,14 @@ app.addEventListener('click',e=>{
 app.addEventListener('submit',e=>{
   if(e.target.id!=='start') return;
   e.preventDefault();
+  if(suspended&&!window.confirm('保存中の探索を終了して、新しい探索を始めますか？')) return;
   const seed=new FormData(e.target).get('seed').trim()||crypto.getRandomValues(new Uint32Array(1))[0].toString(36);
   run=new Run(seed);
   lastDeal=null;
   selected=null;
+  craftResult=null;
   notice='';
+  saveProgress();
   render();
 });
 let dragging=null;
@@ -1674,7 +2197,7 @@ app.addEventListener('drop',e=>{
   const at=Number(el.dataset.at);
   if(dragging.hand!==undefined) run.play(dragging.hand,at);
   else run.move(dragging.board,Math.min(at,run.board.length-1));
-  dragging=null;selected=null;render();
+  dragging=null;selected=null;saveProgress();render();
 });
 app.addEventListener('dragend',()=>{dragging=null;});
 app.addEventListener('change',updateFacility);
@@ -1686,7 +2209,12 @@ dialog.addEventListener('change',e=>{
 });
 render();
 
-function enemyReaction(move,message) {
+function reactionText(move,message,hpLost) {
+  if(!hpLost) return message;
+  const loss='術師 HP −'+hpLost;
+  return direct(move)?loss+(move.kind==='double'?' · 二連撃':''):message+' · '+loss;
+}
+function enemyReaction(move,message,hpLost) {
   const field=app.querySelector('.enemy');
   if(!field||motionMode()==='off') return;
   const blocked=message.startsWith('結界');
@@ -1694,7 +2222,7 @@ function enemyReaction(move,message) {
   field.classList.add(!blocked&&direct(move)?'enemy-strike':'enemy-magic');
   field.dataset.move=blocked?'ward':move.kind;
   field.classList.toggle('enemy-double',move.kind==='double');
-  field.querySelector('#incoming').textContent=message;
+  field.querySelector('#incoming').textContent=reactionText(move,message,hpLost);
   const tones={attack:2,double:1,div:3,lock:5,drain:4,wither:1,pct:6,sub:2};
   chime(tones[move.kind]||1,'enemy');
 }
@@ -1734,38 +2262,40 @@ function chime(level,kind) {
   } catch {}
 }
 function updateHeroDisplay(field) {
-  field.querySelector('.hero-hp span').style.width=run.hp+'%';
+  field.querySelector('.hero-hp span').style.width=100*run.hp/run.maxHp+'%';
   field.querySelector('#heroHp').textContent='HP '+run.hp+' / '+run.maxHp;
 }
 async function showHold() {
   const move=run.next;
+  const hpBefore=run.hp;
   const prediction=run.ward&&!direct(move)?'結界が妨害を防ぎました':intentText();
   if(!run.hold()) return;
   selected=null;
-  notice=prediction+(run.phase==='battle'?' ／ 次の手札を引きました':'');
-  rememberRun();
+  notice=reactionText(move,prediction,hpBefore-run.hp)+(run.phase==='battle'?' ／ 次の手札を引きました':'');
+  saveProgress();
   const mode=motionMode();
   if(mode==='off'){render();return;}
   const control=new AbortController();
   sequence=control;
   const field=app.querySelector('.enemy');
   app.querySelectorAll('button:not(:disabled)').forEach(button=>button.disabled=true);
-  enemyReaction(move,prediction);
+  enemyReaction(move,prediction,hpBefore-run.hp);
   updateHeroDisplay(field);
   try {await clock(mode==='fast'?160:510,control.signal);}
   finally {sequence=null;render();}
 }
 async function showBurst() {
   const base=run.base, armor=run.enemy.armor, move=run.next;
+  const hpBefore=run.hp;
   const prediction=run.ward&&!direct(move)?'結界が妨害を防ぎました':intentText();
   const p=run.burst();
   if(!p) return;
   const best=p.final>BigInt(book.best.max);
-  if(best) {book.best={max:String(p.final),formula:run.stats.formula,seed:run.seed};persist();}
+  if(best) book.best={max:String(p.final),formula:run.stats.formula,seed:run.seed};
   selected=null;
-  const strike=p.impact.kind==='barrier'?'バリアがBURSTを無効化':p.impact.kind==='gate'?'耐久段階を突破 · '+compact(p.impact.dealt):'BURST '+fmt(p.final);
-  notice=strike+(best?' · 新記録':'');
-  rememberRun();
+  const strike=p.impact.kind==='barrier'?'バリアがBURSTを無効化':p.impact.kind==='gate'?'耐久段階を突破 · '+compact(p.impact.dealt,false):'BURST '+compact(p.final);
+  notice=strike+(best?' · 新記録':'')+(run.enemy.hp>0n?' ／ '+reactionText(move,prediction,hpBefore-run.hp):'');
+  saveProgress();
   const mode=motionMode();
   const control=new AbortController();
   sequence=control;
@@ -1814,13 +2344,15 @@ async function showBurst() {
         const e=run.enemy;
         field.classList.remove('charging');
         field.classList.add('player-strike',p.impact.kind==='barrier'?'player-blocked':'player-landed');
-        field.querySelector('#outgoing').textContent=p.impact.kind==='barrier'?'無効':p.impact.kind==='gate'?'段階突破 −'+compact(p.impact.dealt):'−'+compact(p.impact.dealt);
+        field.querySelector('#outgoing').textContent=p.impact.kind==='barrier'?'無効':p.impact.kind==='gate'?'段階突破 −'+compact(p.impact.dealt,false):'−'+compact(p.impact.dealt,false);
         field.querySelector('.foe-hp span').style.width=Number(e.hp*1000n/e.max)/10+'%';
-        field.querySelector('#foeHp').textContent='HP '+compact(e.hp)+' / '+compact(e.max);
+        const foeHp=field.querySelector('#foeHp');
+        foeHp.textContent='HP '+compact(e.hp)+' / '+compact(e.max);
+        foeHp.title=e.hp+' / '+e.max;
         if(p.impact.kind==='hit') burstFX(p.final,best);
         await clock(mode==='fast'?225:850,signal);
         if(e.hp>0n&&!signal.aborted) {
-          enemyReaction(move,prediction);
+          enemyReaction(move,prediction,hpBefore-run.hp);
           updateHeroDisplay(field);
           await clock(mode==='fast'?170:620,signal);
         }

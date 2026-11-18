@@ -1,0 +1,123 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Run,prices} from '../src/run.mjs';
+import {readCheckpoint,writeCheckpoint} from '../src/checkpoint.mjs';
+
+const restore=(run,ui={})=>readCheckpoint(writeCheckpoint({run,...ui}));
+const routeKind=(run,kind)=>{
+  const node=run.map.flat().find(n=>n.kind===kind);
+  run.routes=[node.id];
+  assert(run.route(node.id));
+};
+
+test('battle resumes with exact values, board order, shuffle state and future hand',()=>{
+  const run=new Run('checkpoint-battle');
+  routeKind(run,'fight');
+  run.enemy.hp=10n**80n;
+  run.enemy.max=run.enemy.hp;
+  run.enemy.cycle=['div','attack'];
+  for(let i=0;i<2;i++) assert(run.play(run.hand.findIndex(c=>c.kind==='add'||c.kind==='mul')));
+  assert(run.move(0,1));
+  assert(run.hold());
+  const copy=restore(run,{notice:'妨害'}).run;
+  assert.equal(copy.enemy.hp,run.enemy.hp);
+  assert.deepEqual(copy.preview(),run.preview());
+  assert.deepEqual(copy.next,run.next);
+  assert.deepEqual(copy.burst(),run.burst());
+  assert(copy.hold()&&run.hold());
+  assert.deepEqual(copy.hand,run.hand);
+  assert.deepEqual(copy.lastBurst,run.lastBurst);
+  assert.equal(copy.rng(),run.rng());
+});
+
+test('reward decisions survive reload independently without granting items twice',()=>{
+  let run=new Run('checkpoint-reward');
+  routeKind(run,'elite');
+  run.enemy.hp=1n;
+  run.enemy.barrier=0;
+  run.burst();
+  assert(run.takeCard(0));
+  const card=run.cardDecision.card;
+  const deckSize=run.deck.length;
+  run=restore(run).run;
+  assert.deepEqual(run.cardDecision.card,card);
+  assert.equal(run.takeCard(1),false);
+  assert.equal(run.deck.length,deckSize);
+  assert(run.chooseGold(false));
+  assert(run.chooseRelic(true));
+  run=restore(run).run;
+  assert.equal(run.chooseGold(true),false);
+  assert.equal(run.chooseRelic(true),false);
+  assert.deepEqual(run.owned,[run.relicDrop]);
+  run.advance();
+  assert.equal(run.phase,'map');
+});
+
+test('shop restores paid receipt, spent stock and the rest of the inventory',()=>{
+  let run=new Run('checkpoint-shop');
+  routeKind(run,'shop');
+  run.gold=200;
+  const craftResult=run.service({action:'buy',i:0});
+  const reopened=restore(run,{craftResult});
+  assert.deepEqual(reopened.craftResult,craftResult);
+  run=reopened.run;
+  assert.equal(run.gold,200-prices.buy);
+  assert.equal(run.service({action:'buy',i:0}),null);
+  assert(run.service({action:'buy',i:1}));
+});
+
+test('EXTRA is resumable, preserving the archive ID and exact record',()=>{
+  const run=new Run('checkpoint-extra');
+  run.phase='clear';
+  run.act=3;
+  run.archiveId='record-id';
+  run.stats.max=10n**90n;
+  const resumed=restore(run).run;
+  assert.equal(resumed.archiveId,'record-id');
+  assert.equal(resumed.stats.max,10n**90n);
+  resumed.extra();
+  assert.equal(resumed.phase,'battle');
+  assert.equal(restore(resumed).run.act,4);
+});
+
+test('malformed, incompatible and finished checkpoints do not offer resume',()=>{
+  const run=new Run('checkpoint-invalid');
+  const baseline=JSON.parse(writeCheckpoint({run}));
+  assert.equal(readCheckpoint('{'),null);
+  assert.equal(readCheckpoint(JSON.stringify({...baseline,version:2})),null);
+  assert.equal(readCheckpoint(JSON.stringify({...baseline,randomState:1.5})),null);
+  baseline.state.stats.max={$bigint:'bad'};
+  assert.equal(readCheckpoint(JSON.stringify(baseline)),null);
+  run.phase='loss';
+  assert.equal(restore(run),null);
+});
+
+test('a second elite relic can be chosen after reload and the other stays unowned',()=>{
+  let run=new Run('checkpoint-elite-choice');
+  routeKind(run,'elite');
+  run.enemy.hp=1n;
+  run.enemy.barrier=0;
+  run.burst();
+  const {relicDrop,relicAlternative}=run;
+  assert(relicAlternative);
+  assert.notEqual(relicDrop,relicAlternative);
+  run=restore(run).run;
+  assert.equal(run.chooseRelic(true,2),false);
+  assert.equal(run.relicDecision,'pending');
+  assert(run.chooseRelic(true,1));
+  assert.deepEqual(run.owned,[relicAlternative]);
+  assert.equal(run.relicDrop,relicAlternative);
+  assert.equal(run.chooseRelic(true,0),false);
+  run=restore(run).run;
+  assert.deepEqual(run.owned,[relicAlternative]);
+
+  // A pending reward saved in v0.5.2 has a single relic and no alternative field.
+  const old=JSON.parse(writeCheckpoint({run}));
+  old.state.owned=[];
+  old.state.relicDrop=relicDrop;
+  old.state.relicDecision='pending';
+  delete old.state.relicAlternative;
+  const migrated=readCheckpoint(JSON.stringify(old)).run;
+  assert(migrated.chooseRelic(true));
+  assert.deepEqual(migrated.owned,[relicDrop]);
+});

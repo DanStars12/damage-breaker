@@ -329,3 +329,36 @@ main{position:relative;perspective:1300px}
 .reward-changes{display:flex;flex-wrap:wrap;gap:8px 16px;margin:8px 0 12px}
 .reward-changes span{padding:3px 8px;background:#382941;border:1px solid #a5835666}
 .loot-receipt{margin:15px 0;padding:12px;background:#392a34;border-left:3px solid #d3a567;word-break:break-word}
+
+.continue-run {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .6rem 1rem;
+  margin: 1rem 0;
+}
+.continue-run small { overflow-wrap: anywhere; min-width: 0; }
+header nav { flex-wrap: wrap; }
+
+.relic-reward-content { flex: 1; min-width: 0; }
+.relic-options, .deck-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,220px),1fr));
+  align-items: start;
+  gap: .75rem;
+}
+.relic-option {
+  border: 1px solid #957854;
+  background: #302824;
+  padding: .75rem;
+  margin: .3rem 0 .7rem;
+}
+.relic-option h3 { margin: 0; color: var(--gold); }
+.relic-option p { margin: .4rem 0 .6rem; }
+.deck-groups details { padding: .4rem .65rem; }
+.deck-groups li { margin-block: .2rem; }
+
+.enemy-rule.defense-status {
+  color: #f2cf92;
+  overflow-wrap: anywhere;
+}

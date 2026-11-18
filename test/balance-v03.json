@@ -1,0 +1,122 @@
+[
+  {
+    "policy": "grimoire",
+    "seeds": 96,
+    "clear": 96,
+    "extra": 77,
+    "infinity": 0,
+    "bossAttempts": [
+      96,
+      96,
+      96
+    ],
+    "bossWins": [
+      96,
+      96,
+      96
+    ],
+    "turns": 2438,
+    "used": {
+      "mul": 2746,
+      "add": 2214,
+      "pct": 939,
+      "exp": 338,
+      "pow": 156,
+      "clean": 78
+    },
+    "relics": {
+      "order": 55,
+      "grimoire": 56,
+      "tail": 61,
+      "star": 65,
+      "key": 51,
+      "prism": 57,
+      "short": 62,
+      "chain": 54
+    },
+    "avgTurns": 25.4,
+    "max": "7.2366e+71",
+    "maxExact": "723666899280795115012120927379989798732816223628632316522462480932551065",
+    "bestSeed": "db-73"
+  },
+  {
+    "policy": "power",
+    "seeds": 96,
+    "clear": 96,
+    "extra": 89,
+    "infinity": 1,
+    "bossAttempts": [
+      96,
+      96,
+      96
+    ],
+    "bossWins": [
+      96,
+      96,
+      96
+    ],
+    "turns": 2164,
+    "used": {
+      "mul": 2428,
+      "add": 1945,
+      "pct": 738,
+      "exp": 293,
+      "clean": 55,
+      "pow": 230
+    },
+    "relics": {
+      "order": 58,
+      "grimoire": 66,
+      "tail": 62,
+      "star": 59,
+      "key": 51,
+      "prism": 59,
+      "chain": 58,
+      "short": 60
+    },
+    "avgTurns": 22.54,
+    "max": "7.0705e+81",
+    "maxExact": "7070520996093750000000000000000000000000000000000000000000000000000000000000000000",
+    "bestSeed": "db-50"
+  },
+  {
+    "policy": "mixed",
+    "seeds": 96,
+    "clear": 96,
+    "extra": 82,
+    "infinity": 0,
+    "bossAttempts": [
+      96,
+      96,
+      96
+    ],
+    "bossWins": [
+      96,
+      96,
+      96
+    ],
+    "turns": 2226,
+    "used": {
+      "mul": 2533,
+      "add": 2001,
+      "pct": 790,
+      "exp": 369,
+      "clean": 65,
+      "pow": 148
+    },
+    "relics": {
+      "order": 58,
+      "grimoire": 61,
+      "tail": 61,
+      "star": 58,
+      "key": 52,
+      "prism": 57,
+      "chain": 58,
+      "short": 61
+    },
+    "avgTurns": 23.19,
+    "max": "8.0905e+57",
+    "maxExact": "8090590952301025390625000000000000000000000000000000000000",
+    "bestSeed": "db-31"
+  }
+]

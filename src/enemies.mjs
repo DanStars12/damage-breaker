@@ -37,7 +37,11 @@ const bossSpecs=[
 ];
 const normalFloors=[330n,320000n,10n**11n];
 const eliteFloors=[1800n,6000000n,10n**13n];
-const bossFloors=[32000n,1500000000n,10n**19n];
+const bossFloors=[32000n,1500000000n];
+const finalBossBalance=[
+  {floor:8n*10n**18n, scaleDivisor:2n, armor:3},
+  {floor:5n*10n**18n, scaleDivisor:3n, armor:2}
+];
 export const operationNames={add:'加算',mul:'乗算',pct:'割合',pow:'累乗',exp:'指数'};
 export function makeEnemy(act,kind,variant,row,bench=0n) {
   if(act===4) return {name:'無限の残響',title:'EXTRA',detail:'耐久段階を越えて無限を破る。',art:{form:'eclipse',palette:17},kind:'extra',
@@ -50,18 +54,19 @@ export function makeEnemy(act,kind,variant,row,bench=0n) {
   const art={form,palette:a*6+variant};
   const trait=moves.at(-1);
   if(trait.startsWith('barrier')||trait.startsWith('gate')) moves.pop();
-  const floor=elite?eliteFloors[a]*BigInt(Math.max(1,row-1)):boss?bossFloors[a]:normalFloors[a]*BigInt(1+row*2);
-  const target=bench/(boss?2n:elite?4n:7n);
+  const balance=boss&&act===3?finalBossBalance[variant]:null;
+  const floor=elite?eliteFloors[a]*BigInt(Math.max(1,row-1)):boss?(balance?.floor??bossFloors[a]):normalFloors[a]*BigInt(1+row*2);
+  const target=bench/(balance?.scaleDivisor??(boss?2n:elite?4n:7n));
   const max=target>floor?(target>floor*400n?floor*400n:target):floor;
   const gates=trait==='gate2'?[max/2n]:trait==='gate3'?[max*2n/3n,max/3n]:[];
   return {name,art,detail,kind,elite,title:boss?'ACT BOSS':elite?'DEFLATION ENEMY':'ENCOUNTER',
-    hp:max,max,armor:1+a,attack:5+a*3+(boss?4:elite?3:0),barrier:trait==='barrier2'?2:trait==='barrier'?1:0,gates,cycle:moves};
+    hp:max,max,armor:balance?.armor??(1+a),attack:5+a*3+(boss?4:elite?3:0),barrier:trait==='barrier2'?2:trait==='barrier'?1:0,gates,cycle:moves};
 }
 export function intent(enemy,turn,act) {
   const [kind,target]=enemy.cycle[turn%enemy.cycle.length].split(':');
   const values={attack:enemy.attack,double:Math.ceil(enemy.attack*.65),wither:8+act*2,drain:50,
     div:[2,4,8,10][act-1],pct:-20-act*5,sub:20*act};
-  return {kind,target,value:values[kind]??0,at:1+turn%2,enemy:true};
+  return {kind,...(target?{target}:{}),value:values[kind]??0,at:1+turn%2,enemy:true};
 }
 export function impact(enemy,damage) {
   if(damage<=0n) return {dealt:0n,kind:'miss'};

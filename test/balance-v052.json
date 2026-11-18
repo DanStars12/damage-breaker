@@ -1,0 +1,202 @@
+[
+  {
+    "policy": "grimoire",
+    "seeds": 96,
+    "clear": 78,
+    "extra": 61,
+    "infinity": 20,
+    "bossAttempts": [
+      96,
+      89,
+      86
+    ],
+    "bossWins": [
+      96,
+      87,
+      78
+    ],
+    "turns": 4770,
+    "used": {
+      "mul": 4675,
+      "add": 4564,
+      "pct": 2152,
+      "exp": 729,
+      "pow": 340,
+      "clean": 144
+    },
+    "relics": {
+      "mosaic": 63,
+      "spring": 77,
+      "codex": 74,
+      "order": 73,
+      "star": 74,
+      "short": 46,
+      "prism": 70,
+      "grimoire": 69,
+      "rack": 67,
+      "tail": 74,
+      "chain": 74,
+      "tithe": 74,
+      "lattice": 68,
+      "abacus": 73,
+      "sum": 62,
+      "ratio": 72,
+      "furnace": 74,
+      "key": 45
+    },
+    "avgTurns": 49.69,
+    "max": "1.1656e+136",
+    "maxExact": "11656598730480866187486326719194939173085001402578245562741403975520463568788653085252672827953794750926773377812544432000000000000000000",
+    "bestSeed": "db-34"
+  },
+  {
+    "policy": "power",
+    "seeds": 96,
+    "clear": 84,
+    "extra": 65,
+    "infinity": 39,
+    "bossAttempts": [
+      96,
+      92,
+      89
+    ],
+    "bossWins": [
+      96,
+      91,
+      84
+    ],
+    "turns": 4762,
+    "used": {
+      "mul": 4791,
+      "add": 4203,
+      "pct": 1623,
+      "clean": 153,
+      "exp": 817,
+      "pow": 611
+    },
+    "relics": {
+      "mosaic": 64,
+      "spring": 78,
+      "codex": 68,
+      "order": 75,
+      "star": 79,
+      "rack": 74,
+      "prism": 77,
+      "sum": 62,
+      "ratio": 72,
+      "grimoire": 72,
+      "chain": 71,
+      "abacus": 70,
+      "lattice": 70,
+      "short": 49,
+      "tail": 74,
+      "furnace": 73,
+      "tithe": 76,
+      "key": 50
+    },
+    "avgTurns": 49.6,
+    "max": "1.5101e+183",
+    "maxExact": "1510185235190247961816521810988969200409514515355964571252439015264052560820521324225728330619998244599077273600000000000000000000000000000000000000000000000000000000000000000000000000",
+    "bestSeed": "db-66"
+  },
+  {
+    "policy": "mixed",
+    "seeds": 96,
+    "clear": 85,
+    "extra": 65,
+    "infinity": 29,
+    "bossAttempts": [
+      96,
+      93,
+      90
+    ],
+    "bossWins": [
+      96,
+      92,
+      85
+    ],
+    "turns": 4798,
+    "used": {
+      "mul": 4790,
+      "add": 4262,
+      "pct": 1756,
+      "exp": 950,
+      "pow": 416,
+      "clean": 153
+    },
+    "relics": {
+      "mosaic": 76,
+      "spring": 71,
+      "codex": 71,
+      "ratio": 85,
+      "star": 81,
+      "furnace": 72,
+      "short": 48,
+      "chain": 71,
+      "tithe": 73,
+      "rack": 74,
+      "prism": 79,
+      "abacus": 68,
+      "grimoire": 73,
+      "sum": 71,
+      "order": 76,
+      "tail": 76,
+      "key": 41,
+      "lattice": 70
+    },
+    "avgTurns": 49.98,
+    "max": "5.0692e+139",
+    "maxExact": "50692018248430904028932645794377599133357526219369234520944997818091754750358208762886394005289034857738881001985109771525251648704217088000",
+    "bestSeed": "db-7"
+  },
+  {
+    "policy": "additive",
+    "seeds": 96,
+    "clear": 60,
+    "extra": 48,
+    "infinity": 8,
+    "bossAttempts": [
+      96,
+      82,
+      70
+    ],
+    "bossWins": [
+      95,
+      80,
+      60
+    ],
+    "turns": 4655,
+    "used": {
+      "mul": 3539,
+      "add": 6753,
+      "pct": 1318,
+      "clean": 178,
+      "exp": 472,
+      "pow": 184
+    },
+    "relics": {
+      "rack": 62,
+      "prism": 65,
+      "sum": 73,
+      "furnace": 65,
+      "star": 62,
+      "chain": 64,
+      "abacus": 68,
+      "tail": 67,
+      "lattice": 68,
+      "grimoire": 60,
+      "tithe": 72,
+      "codex": 67,
+      "mosaic": 57,
+      "order": 64,
+      "ratio": 58,
+      "short": 37,
+      "spring": 66,
+      "key": 33
+    },
+    "avgTurns": 48.49,
+    "max": "4.4168e+124",
+    "maxExact": "44168051786207128204272691026643390926832458360024000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "bestSeed": "db-44"
+  }
+]

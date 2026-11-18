@@ -8,6 +8,8 @@ const strategies={
   mixed:['mosaic','ratio','tail','order','short','chain','prism','star','key','grimoire'],
   additive:['sum','abacus','grimoire','tail','order','short','chain','key','prism']
 };
+const additionRelics=['sum','abacus'];
+const hasAdditionRelic=r=>additionRelics.some(key=>r.owned.includes(key));
 const compare=(a,b)=>a.score>b.score?-1:a.score<b.score?1:0;
 function plan(run) {
   const {board,hand,deb,owned,base,enemy,energy,slots}=run;
@@ -44,13 +46,25 @@ function preference(c,id) {
 }
 function play(seed,id) {
   const r=new Run(seed);
-  const reached=new Set();
-  let cleared=false;
+  const reached=new Map();
+  let cleared=false, clearedWithAdditionRelic=false;
   for(let guard=0;guard<500;guard++) {
-    if(r.phase==='loss'||r.phase==='win') return {r,cleared,reached};
-    if(r.phase==='clear') {cleared=true;r.extra();}
+    if(r.phase==='loss'||r.phase==='win') return {r,cleared,clearedWithAdditionRelic,reached};
+    if(r.phase==='clear') {
+      cleared=true;
+      clearedWithAdditionRelic=hasAdditionRelic(r);
+      r.extra();
+    }
     if(r.phase==='reward') {
-      if(r.relicDecision==='pending') r.chooseRelic(!['mantle','reserve'].includes(r.relicDrop));
+      if(r.relicDecision==='pending') {
+        const rank=key=>{
+          if(!key||['mantle','reserve'].includes(key)) return Infinity;
+          const i=strategies[id].indexOf(key);
+          return i===-1?strategies[id].length:i;
+        };
+        const index=rank(r.relicAlternative)<rank(r.relicDrop)?1:0;
+        r.chooseRelic(rank([r.relicDrop,r.relicAlternative][index])<Infinity,index);
+      }
       r.chooseGold(true);
       if(r.offers.length) r.takeCard(r.offers.indexOf([...r.offers].sort((a,b)=>preference(b,id)-preference(a,id))[0]));
       r.advance();continue;
@@ -79,7 +93,7 @@ function play(seed,id) {
       } else if(!r.service({action:'event'})) r.service({action:'decline'});
       continue;
     }
-    if(r.enemy.kind==='boss') reached.add(r.act);
+    if(r.enemy.kind==='boss') reached.set(r.act,r.enemy);
     if(r.enemy.barrier&&r.preview().final>0n) {r.burst();continue;}
     plan(r);
     const p=r.preview();
@@ -90,14 +104,33 @@ function play(seed,id) {
   throw Error('Simulation exceeded turn budget for '+seed);
 }
 const total=Number(process.argv[2]||32);
+const offset=Number(process.argv[3]||0);
 const rows=[];
 for(const id of Object.keys(strategies)) {
-  const metric={policy:id,seeds:total,clear:0,extra:0,infinity:0,bossAttempts:[0,0,0],bossWins:[0,0,0],turns:0,used:{},relics:{}};
+  const metric={policy:id,seeds:total,clear:0,extra:0,infinity:0,bossAttempts:[0,0,0],bossWins:[0,0,0],bossesByName:{},turns:0,used:{},relics:{},lossesByEnemy:{},actReached:[0,0,0,0],additionRelic:{ownedAtEnd:0,clearWith:0,lossWithoutByAct:[0,0,0,0]}};
   let max=0n,bestSeed='';
   for(let i=0;i<total;i++) {
-    const {r,cleared,reached}=play('db-'+i,id);
-    for(const stage of reached) metric.bossAttempts[stage-1]++;
+    const {r,cleared,clearedWithAdditionRelic,reached}=play('db-'+(i+offset),id);
+    for(const [stage,enemy] of reached) {
+      metric.bossAttempts[stage-1]++;
+      const boss=metric.bossesByName[enemy.name]??={attempts:0,wins:0,lossAtFullHp:0,remainingHpPctSum:0};
+      boss.attempts++;
+      if(enemy.hp===0n) boss.wins++;
+      else {
+        boss.lossAtFullHp+=Number(enemy.hp===enemy.max);
+        boss.remainingHpPctSum+=Number(enemy.hp*100n/enemy.max);
+      }
+    }
     for(let j=0;j<r.stats.bosses;j++) metric.bossWins[j]++;
+    const ownsAdditionRelic=hasAdditionRelic(r);
+    metric.additionRelic.ownedAtEnd+=Number(ownsAdditionRelic);
+    metric.additionRelic.clearWith+=Number(clearedWithAdditionRelic);
+    for(let act=0;act<r.act;act++) metric.actReached[act]++;
+    if(r.phase==='loss') {
+      const group=r.act+':'+r.enemy.kind;
+      metric.lossesByEnemy[group]=(metric.lossesByEnemy[group]||0)+1;
+      if(!ownsAdditionRelic) metric.additionRelic.lossWithoutByAct[r.act-1]++;
+    }
     metric.clear+=Number(cleared);
     metric.extra+=Number(r.phase==='win');
     metric.infinity+=Number(r.stats.max>CAP);

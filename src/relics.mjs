@@ -31,10 +31,10 @@ export const relics = {
   rack:{name:'拡張の呪箱',desc:'演算枠+1。戦闘開始時にHPを5失う（最低HP1）。',slots:1,entry:5},
   spring:{name:'初動の砂漏れ',desc:'初ターンだけエナジー+2。初ターンのドロー−2。',firstEnergy:2,firstDraw:-2},
   mantle:{name:'護符の裏地',desc:'戦闘開始時に結界を張る。毎ターンのエナジー−1（最低1）。',ward:true,energy:-1},
-  sum:{name:'千和の石版',desc:'有効な自分のパネルがすべて加算なら、1枚につき×45（最大×405）。',effect:({own})=>
-    own.length&&own.every(c=>c.kind==='add')?{kind:'mul',value:own.length*45}:null},
-  abacus:{name:'万算の算盤',desc:'有効な自分のパネルが4枚以上で、すべて加算なら演算結果を二乗。',effect:({own})=>
-    own.length>=4&&own.every(c=>c.kind==='add')?{kind:'pow',value:2}:null},
+  sum:{name:'千和の石版',desc:'有効な自分のパネルがすべて加算なら、1枚につき×60（最大×540）。',effect:({own})=>
+    own.length&&own.every(c=>c.kind==='add')?{kind:'mul',value:own.length*60}:null},
+  abacus:{name:'万算の算盤',desc:'有効な自分のパネルが3枚以上で、すべて加算なら演算結果を二乗。5枚以上なら三乗。',effect:({own})=>
+    own.length>=3&&own.every(c=>c.kind==='add')?{kind:'pow',value:own.length>=5?3:2}:null},
   lattice:{name:'積算の六面晶',desc:'有効な自分のパネルが2枚以上で、すべて乗算なら×144。',effect:({own})=>
     own.length>=2&&own.every(c=>c.kind==='mul')?{kind:'mul',value:144}:null},
   mosaic:{name:'五紋の標本箱',desc:'違う演算を4種類以上使うと×360。',effect:({own})=>

@@ -1,0 +1,202 @@
+[
+  {
+    "policy": "grimoire",
+    "seeds": 96,
+    "clear": 79,
+    "extra": 60,
+    "infinity": 24,
+    "bossAttempts": [
+      96,
+      86,
+      84
+    ],
+    "bossWins": [
+      96,
+      85,
+      79
+    ],
+    "turns": 4782,
+    "used": {
+      "mul": 4766,
+      "add": 4465,
+      "pct": 2192,
+      "exp": 751,
+      "pow": 361,
+      "clean": 145
+    },
+    "relics": {
+      "mosaic": 63,
+      "spring": 75,
+      "codex": 72,
+      "order": 72,
+      "star": 76,
+      "short": 44,
+      "prism": 69,
+      "grimoire": 68,
+      "rack": 71,
+      "tail": 72,
+      "chain": 73,
+      "tithe": 73,
+      "lattice": 64,
+      "abacus": 73,
+      "sum": 62,
+      "key": 44,
+      "furnace": 71,
+      "ratio": 71
+    },
+    "avgTurns": 49.81,
+    "max": "1.1656e+136",
+    "maxExact": "11656598730480866187486326719194939173085001402578245562741403975520463568788653085252672827953794750926773377812544432000000000000000000",
+    "bestSeed": "db-34"
+  },
+  {
+    "policy": "power",
+    "seeds": 96,
+    "clear": 84,
+    "extra": 65,
+    "infinity": 42,
+    "bossAttempts": [
+      96,
+      92,
+      89
+    ],
+    "bossWins": [
+      96,
+      91,
+      84
+    ],
+    "turns": 4846,
+    "used": {
+      "mul": 4919,
+      "add": 4177,
+      "pct": 1750,
+      "clean": 156,
+      "exp": 814,
+      "pow": 643
+    },
+    "relics": {
+      "mosaic": 65,
+      "spring": 79,
+      "codex": 66,
+      "order": 76,
+      "star": 80,
+      "rack": 74,
+      "prism": 77,
+      "sum": 62,
+      "ratio": 72,
+      "grimoire": 75,
+      "chain": 70,
+      "abacus": 70,
+      "lattice": 69,
+      "short": 50,
+      "tail": 75,
+      "furnace": 74,
+      "tithe": 73,
+      "key": 48
+    },
+    "avgTurns": 50.48,
+    "max": "1.5101e+183",
+    "maxExact": "1510185235190247961816521810988969200409514515355964571252439015264052560820521324225728330619998244599077273600000000000000000000000000000000000000000000000000000000000000000000000000",
+    "bestSeed": "db-66"
+  },
+  {
+    "policy": "mixed",
+    "seeds": 96,
+    "clear": 87,
+    "extra": 67,
+    "infinity": 28,
+    "bossAttempts": [
+      96,
+      94,
+      91
+    ],
+    "bossWins": [
+      96,
+      93,
+      87
+    ],
+    "turns": 4891,
+    "used": {
+      "mul": 4935,
+      "add": 4224,
+      "pct": 1876,
+      "exp": 943,
+      "pow": 454,
+      "clean": 155
+    },
+    "relics": {
+      "mosaic": 77,
+      "spring": 72,
+      "codex": 70,
+      "ratio": 85,
+      "star": 83,
+      "furnace": 75,
+      "short": 50,
+      "chain": 72,
+      "tithe": 70,
+      "rack": 75,
+      "prism": 79,
+      "abacus": 69,
+      "grimoire": 75,
+      "sum": 73,
+      "order": 75,
+      "tail": 78,
+      "key": 39,
+      "lattice": 69
+    },
+    "avgTurns": 50.95,
+    "max": "5.0692e+139",
+    "maxExact": "50692018248430904028932645794377599133357526219369234520944997818091754750358208762886394005289034857738881001985109771525251648704217088000",
+    "bestSeed": "db-7"
+  },
+  {
+    "policy": "additive",
+    "seeds": 96,
+    "clear": 60,
+    "extra": 44,
+    "infinity": 11,
+    "bossAttempts": [
+      96,
+      81,
+      70
+    ],
+    "bossWins": [
+      94,
+      79,
+      60
+    ],
+    "turns": 4831,
+    "used": {
+      "mul": 3839,
+      "add": 6725,
+      "pct": 1477,
+      "exp": 505,
+      "clean": 188,
+      "pow": 230
+    },
+    "relics": {
+      "rack": 60,
+      "prism": 64,
+      "sum": 71,
+      "furnace": 67,
+      "star": 60,
+      "chain": 66,
+      "abacus": 69,
+      "tail": 67,
+      "lattice": 68,
+      "grimoire": 59,
+      "tithe": 71,
+      "codex": 66,
+      "mosaic": 57,
+      "order": 62,
+      "ratio": 54,
+      "short": 39,
+      "spring": 63,
+      "key": 35
+    },
+    "avgTurns": 50.32,
+    "max": "4.4168e+124",
+    "maxExact": "44168051786207128204272691026643390926832458360024000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "bestSeed": "db-44"
+  }
+]

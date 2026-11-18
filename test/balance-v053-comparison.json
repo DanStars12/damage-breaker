@@ -1,0 +1,1201 @@
+{
+  "sets": [
+    {
+      "firstSeed": 0,
+      "baseline": [
+        {
+          "policy": "grimoire",
+          "seeds": 96,
+          "clear": 78,
+          "extra": 61,
+          "infinity": 20,
+          "bossAttempts": [
+            96,
+            89,
+            86
+          ],
+          "bossWins": [
+            96,
+            87,
+            78
+          ],
+          "turns": 4770,
+          "used": {
+            "mul": 4675,
+            "add": 4564,
+            "pct": 2152,
+            "exp": 729,
+            "pow": 340,
+            "clean": 144
+          },
+          "relics": {
+            "mosaic": 63,
+            "spring": 77,
+            "codex": 74,
+            "order": 73,
+            "star": 74,
+            "short": 46,
+            "prism": 70,
+            "grimoire": 69,
+            "rack": 67,
+            "tail": 74,
+            "chain": 74,
+            "tithe": 74,
+            "lattice": 68,
+            "abacus": 73,
+            "sum": 62,
+            "ratio": 72,
+            "furnace": 74,
+            "key": 45
+          },
+          "lossesByEnemy": {
+            "4:extra": 17,
+            "3:boss": 8,
+            "2:elite": 6,
+            "2:boss": 2,
+            "2:fight": 1,
+            "3:fight": 1
+          },
+          "actReached": [
+            96,
+            96,
+            87,
+            78
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 87,
+            "clearWith": 71,
+            "lossWithoutByAct": [
+              0,
+              3,
+              1,
+              2
+            ]
+          },
+          "avgTurns": 49.69,
+          "max": "1.1656e+136",
+          "maxExact": "11656598730480866187486326719194939173085001402578245562741403975520463568788653085252672827953794750926773377812544432000000000000000000",
+          "bestSeed": "db-34"
+        },
+        {
+          "policy": "power",
+          "seeds": 96,
+          "clear": 84,
+          "extra": 65,
+          "infinity": 39,
+          "bossAttempts": [
+            96,
+            92,
+            89
+          ],
+          "bossWins": [
+            96,
+            91,
+            84
+          ],
+          "turns": 4762,
+          "used": {
+            "mul": 4791,
+            "add": 4203,
+            "pct": 1623,
+            "clean": 153,
+            "exp": 817,
+            "pow": 611
+          },
+          "relics": {
+            "mosaic": 64,
+            "spring": 78,
+            "codex": 68,
+            "order": 75,
+            "star": 79,
+            "rack": 74,
+            "prism": 77,
+            "sum": 62,
+            "ratio": 72,
+            "grimoire": 72,
+            "chain": 71,
+            "abacus": 70,
+            "lattice": 70,
+            "short": 49,
+            "tail": 74,
+            "furnace": 73,
+            "tithe": 76,
+            "key": 50
+          },
+          "lossesByEnemy": {
+            "3:boss": 5,
+            "4:extra": 19,
+            "3:elite": 1,
+            "2:elite": 3,
+            "2:boss": 1,
+            "2:fight": 1,
+            "3:fight": 1
+          },
+          "actReached": [
+            96,
+            96,
+            91,
+            84
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 86,
+            "clearWith": 75,
+            "lossWithoutByAct": [
+              0,
+              1,
+              0,
+              3
+            ]
+          },
+          "avgTurns": 49.6,
+          "max": "1.5101e+183",
+          "maxExact": "1510185235190247961816521810988969200409514515355964571252439015264052560820521324225728330619998244599077273600000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-66"
+        },
+        {
+          "policy": "mixed",
+          "seeds": 96,
+          "clear": 85,
+          "extra": 65,
+          "infinity": 29,
+          "bossAttempts": [
+            96,
+            93,
+            90
+          ],
+          "bossWins": [
+            96,
+            92,
+            85
+          ],
+          "turns": 4798,
+          "used": {
+            "mul": 4790,
+            "add": 4262,
+            "pct": 1756,
+            "exp": 950,
+            "pow": 416,
+            "clean": 153
+          },
+          "relics": {
+            "mosaic": 76,
+            "spring": 71,
+            "codex": 71,
+            "ratio": 85,
+            "star": 81,
+            "furnace": 72,
+            "short": 48,
+            "chain": 71,
+            "tithe": 73,
+            "rack": 74,
+            "prism": 79,
+            "abacus": 68,
+            "grimoire": 73,
+            "sum": 71,
+            "order": 76,
+            "tail": 76,
+            "key": 41,
+            "lattice": 70
+          },
+          "lossesByEnemy": {
+            "4:extra": 20,
+            "2:elite": 2,
+            "2:boss": 1,
+            "3:boss": 5,
+            "2:fight": 1,
+            "3:fight": 1,
+            "3:elite": 1
+          },
+          "actReached": [
+            96,
+            96,
+            92,
+            85
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 89,
+            "clearWith": 76,
+            "lossWithoutByAct": [
+              0,
+              0,
+              0,
+              4
+            ]
+          },
+          "avgTurns": 49.98,
+          "max": "5.0692e+139",
+          "maxExact": "50692018248430904028932645794377599133357526219369234520944997818091754750358208762886394005289034857738881001985109771525251648704217088000",
+          "bestSeed": "db-7"
+        },
+        {
+          "policy": "additive",
+          "seeds": 96,
+          "clear": 60,
+          "extra": 48,
+          "infinity": 8,
+          "bossAttempts": [
+            96,
+            82,
+            70
+          ],
+          "bossWins": [
+            95,
+            80,
+            60
+          ],
+          "turns": 4655,
+          "used": {
+            "mul": 3539,
+            "add": 6753,
+            "pct": 1318,
+            "clean": 178,
+            "exp": 472,
+            "pow": 184
+          },
+          "relics": {
+            "rack": 62,
+            "prism": 65,
+            "sum": 73,
+            "furnace": 65,
+            "star": 62,
+            "chain": 64,
+            "abacus": 68,
+            "tail": 67,
+            "lattice": 68,
+            "grimoire": 60,
+            "tithe": 72,
+            "codex": 67,
+            "mosaic": 57,
+            "order": 64,
+            "ratio": 58,
+            "short": 37,
+            "spring": 66,
+            "key": 33
+          },
+          "lossesByEnemy": {
+            "3:elite": 6,
+            "3:boss": 10,
+            "4:extra": 12,
+            "2:elite": 7,
+            "2:fight": 6,
+            "3:fight": 4,
+            "2:boss": 2,
+            "1:boss": 1
+          },
+          "actReached": [
+            96,
+            95,
+            80,
+            60
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 84,
+            "clearWith": 59,
+            "lossWithoutByAct": [
+              1,
+              9,
+              1,
+              0
+            ]
+          },
+          "avgTurns": 48.49,
+          "max": "4.4168e+124",
+          "maxExact": "44168051786207128204272691026643390926832458360024000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-44"
+        }
+      ],
+      "updated": [
+        {
+          "policy": "grimoire",
+          "seeds": 96,
+          "clear": 79,
+          "extra": 63,
+          "infinity": 21,
+          "bossAttempts": [
+            96,
+            93,
+            90
+          ],
+          "bossWins": [
+            96,
+            91,
+            79
+          ],
+          "turns": 4664,
+          "used": {
+            "mul": 4550,
+            "add": 4394,
+            "pct": 2019,
+            "exp": 745,
+            "pow": 339,
+            "clean": 133
+          },
+          "relics": {
+            "mosaic": 66,
+            "tail": 87,
+            "order": 91,
+            "prism": 78,
+            "star": 69,
+            "key": 54,
+            "chain": 75,
+            "grimoire": 69,
+            "spring": 74,
+            "furnace": 79,
+            "codex": 64,
+            "ratio": 69,
+            "tithe": 70,
+            "rack": 71,
+            "abacus": 71,
+            "lattice": 71,
+            "short": 55,
+            "sum": 69
+          },
+          "lossesByEnemy": {
+            "3:boss": 11,
+            "4:extra": 16,
+            "2:elite": 2,
+            "3:fight": 1,
+            "2:boss": 2,
+            "2:fight": 1
+          },
+          "actReached": [
+            96,
+            96,
+            91,
+            79
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 91,
+            "clearWith": 75,
+            "lossWithoutByAct": [
+              0,
+              2,
+              1,
+              1
+            ]
+          },
+          "avgTurns": 48.58,
+          "max": "1.1656e+136",
+          "maxExact": "11656598730480866187486326719194939173085001402578245562741403975520463568788653085252672827953794750926773377812544432000000000000000000",
+          "bestSeed": "db-34"
+        },
+        {
+          "policy": "power",
+          "seeds": 96,
+          "clear": 89,
+          "extra": 66,
+          "infinity": 33,
+          "bossAttempts": [
+            96,
+            95,
+            93
+          ],
+          "bossWins": [
+            96,
+            95,
+            89
+          ],
+          "turns": 4662,
+          "used": {
+            "mul": 4586,
+            "add": 4034,
+            "pct": 1564,
+            "pow": 649,
+            "clean": 141,
+            "exp": 855
+          },
+          "relics": {
+            "mosaic": 71,
+            "tail": 89,
+            "order": 89,
+            "prism": 77,
+            "star": 80,
+            "spring": 73,
+            "chain": 79,
+            "sum": 73,
+            "tithe": 70,
+            "abacus": 69,
+            "lattice": 76,
+            "rack": 76,
+            "furnace": 77,
+            "key": 53,
+            "codex": 66,
+            "ratio": 74,
+            "short": 59,
+            "grimoire": 69
+          },
+          "lossesByEnemy": {
+            "3:boss": 4,
+            "4:extra": 23,
+            "3:elite": 1,
+            "3:fight": 1,
+            "2:fight": 1
+          },
+          "actReached": [
+            96,
+            96,
+            95,
+            89
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 90,
+            "clearWith": 83,
+            "lossWithoutByAct": [
+              0,
+              0,
+              1,
+              3
+            ]
+          },
+          "avgTurns": 48.56,
+          "max": "1.3812e+137",
+          "maxExact": "138121977290735188215083041547883000177561923944969083224368870952005367550815813868462611297012433078468881374330795269860584071053545633",
+          "bestSeed": "db-66"
+        },
+        {
+          "policy": "mixed",
+          "seeds": 96,
+          "clear": 90,
+          "extra": 68,
+          "infinity": 28,
+          "bossAttempts": [
+            96,
+            95,
+            94
+          ],
+          "bossWins": [
+            96,
+            95,
+            90
+          ],
+          "turns": 4681,
+          "used": {
+            "mul": 4542,
+            "add": 4207,
+            "pct": 1776,
+            "pow": 419,
+            "exp": 948,
+            "clean": 127
+          },
+          "relics": {
+            "mosaic": 83,
+            "tail": 90,
+            "order": 91,
+            "ratio": 90,
+            "star": 72,
+            "rack": 69,
+            "key": 56,
+            "codex": 71,
+            "tithe": 77,
+            "spring": 68,
+            "furnace": 78,
+            "abacus": 74,
+            "grimoire": 71,
+            "sum": 71,
+            "prism": 75,
+            "chain": 76,
+            "short": 57,
+            "lattice": 73
+          },
+          "lossesByEnemy": {
+            "4:extra": 22,
+            "2:elite": 1,
+            "3:elite": 1,
+            "3:boss": 4
+          },
+          "actReached": [
+            96,
+            96,
+            95,
+            90
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 90,
+            "clearWith": 85,
+            "lossWithoutByAct": [
+              0,
+              1,
+              1,
+              1
+            ]
+          },
+          "avgTurns": 48.76,
+          "max": "5.0692e+139",
+          "maxExact": "50692018248430904028932645794377599133357526219369234520944997818091754750358208762886394005289034857738881001985109771525251648704217088000",
+          "bestSeed": "db-7"
+        },
+        {
+          "policy": "additive",
+          "seeds": 96,
+          "clear": 73,
+          "extra": 51,
+          "infinity": 13,
+          "bossAttempts": [
+            96,
+            90,
+            83
+          ],
+          "bossWins": [
+            96,
+            89,
+            73
+          ],
+          "turns": 4450,
+          "used": {
+            "mul": 2927,
+            "add": 6790,
+            "pct": 1081,
+            "exp": 518,
+            "clean": 139,
+            "pow": 214
+          },
+          "relics": {
+            "sum": 85,
+            "tail": 86,
+            "order": 86,
+            "codex": 62,
+            "star": 61,
+            "furnace": 66,
+            "abacus": 90,
+            "prism": 71,
+            "lattice": 69,
+            "grimoire": 64,
+            "tithe": 77,
+            "rack": 64,
+            "mosaic": 69,
+            "short": 51,
+            "spring": 66,
+            "ratio": 66,
+            "chain": 65,
+            "key": 54
+          },
+          "lossesByEnemy": {
+            "4:extra": 22,
+            "3:fight": 5,
+            "3:boss": 10,
+            "2:elite": 4,
+            "2:boss": 1,
+            "2:fight": 2,
+            "3:elite": 1
+          },
+          "actReached": [
+            96,
+            96,
+            89,
+            73
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 93,
+            "clearWith": 73,
+            "lossWithoutByAct": [
+              0,
+              1,
+              2,
+              0
+            ]
+          },
+          "avgTurns": 46.35,
+          "max": "3.4377e+133",
+          "maxExact": "34377725049120350497051761742063801495603791110140811171430798216479325866942144614587669545687550766153212485070197056427172613324800",
+          "bestSeed": "db-7"
+        }
+      ]
+    },
+    {
+      "firstSeed": 96,
+      "baseline": [
+        {
+          "policy": "grimoire",
+          "seeds": 96,
+          "clear": 78,
+          "extra": 61,
+          "infinity": 25,
+          "bossAttempts": [
+            96,
+            92,
+            84
+          ],
+          "bossWins": [
+            96,
+            91,
+            78
+          ],
+          "turns": 4799,
+          "used": {
+            "add": 4584,
+            "mul": 4587,
+            "pct": 2008,
+            "clean": 157,
+            "exp": 700,
+            "pow": 381
+          },
+          "relics": {
+            "tithe": 67,
+            "furnace": 73,
+            "abacus": 68,
+            "chain": 72,
+            "codex": 70,
+            "mosaic": 69,
+            "grimoire": 75,
+            "sum": 71,
+            "tail": 75,
+            "rack": 80,
+            "lattice": 70,
+            "star": 77,
+            "spring": 77,
+            "ratio": 63,
+            "prism": 78,
+            "order": 70,
+            "short": 49,
+            "key": 42
+          },
+          "lossesByEnemy": {
+            "4:extra": 17,
+            "3:boss": 6,
+            "2:elite": 4,
+            "3:elite": 5,
+            "3:fight": 2,
+            "2:boss": 1
+          },
+          "actReached": [
+            96,
+            96,
+            91,
+            78
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 86,
+            "clearWith": 75,
+            "lossWithoutByAct": [
+              0,
+              2,
+              6,
+              0
+            ]
+          },
+          "avgTurns": 49.99,
+          "max": "5.4335e+145",
+          "maxExact": "54335817451192432029381584495080320233421211297583768525995941463347784427079710494076781219345732108942443742278713344000000000000000000000000000",
+          "bestSeed": "db-134"
+        },
+        {
+          "policy": "power",
+          "seeds": 96,
+          "clear": 82,
+          "extra": 69,
+          "infinity": 34,
+          "bossAttempts": [
+            96,
+            93,
+            87
+          ],
+          "bossWins": [
+            96,
+            91,
+            82
+          ],
+          "turns": 4775,
+          "used": {
+            "add": 4300,
+            "mul": 4753,
+            "pct": 1667,
+            "clean": 152,
+            "pow": 634,
+            "exp": 701
+          },
+          "relics": {
+            "tithe": 76,
+            "furnace": 77,
+            "abacus": 72,
+            "chain": 73,
+            "codex": 73,
+            "mosaic": 67,
+            "grimoire": 75,
+            "order": 68,
+            "lattice": 68,
+            "short": 51,
+            "prism": 81,
+            "ratio": 66,
+            "key": 47,
+            "rack": 78,
+            "spring": 72,
+            "star": 83,
+            "sum": 69,
+            "tail": 73
+          },
+          "lossesByEnemy": {
+            "4:extra": 13,
+            "3:boss": 5,
+            "3:elite": 3,
+            "3:fight": 1,
+            "2:boss": 2,
+            "2:elite": 2,
+            "2:fight": 1
+          },
+          "actReached": [
+            96,
+            96,
+            91,
+            82
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 90,
+            "clearWith": 76,
+            "lossWithoutByAct": [
+              0,
+              1,
+              1,
+              1
+            ]
+          },
+          "avgTurns": 49.74,
+          "max": "7.0217e+157",
+          "maxExact": "70217676647175768682524981650121425430689324184720361352229235330690154009902574092332483545780791418516598953021864161148681766378775019246460302394201284281",
+          "bestSeed": "db-111"
+        },
+        {
+          "policy": "mixed",
+          "seeds": 96,
+          "clear": 82,
+          "extra": 61,
+          "infinity": 21,
+          "bossAttempts": [
+            96,
+            93,
+            89
+          ],
+          "bossWins": [
+            96,
+            93,
+            82
+          ],
+          "turns": 4848,
+          "used": {
+            "add": 4350,
+            "mul": 4896,
+            "pct": 1819,
+            "clean": 152,
+            "pow": 492,
+            "exp": 807
+          },
+          "relics": {
+            "tithe": 76,
+            "furnace": 78,
+            "abacus": 72,
+            "chain": 76,
+            "codex": 72,
+            "mosaic": 79,
+            "grimoire": 65,
+            "order": 74,
+            "lattice": 68,
+            "short": 52,
+            "prism": 74,
+            "ratio": 79,
+            "key": 45,
+            "rack": 80,
+            "spring": 70,
+            "tail": 79,
+            "star": 78,
+            "sum": 65
+          },
+          "lossesByEnemy": {
+            "4:extra": 21,
+            "3:boss": 7,
+            "3:elite": 2,
+            "3:fight": 2,
+            "2:fight": 1,
+            "2:elite": 2
+          },
+          "actReached": [
+            96,
+            96,
+            93,
+            82
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 86,
+            "clearWith": 74,
+            "lossWithoutByAct": [
+              0,
+              2,
+              1,
+              3
+            ]
+          },
+          "avgTurns": 50.5,
+          "max": "9.4731e+134",
+          "maxExact": "947316268390271378463209269799104307743034626277376000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-133"
+        },
+        {
+          "policy": "additive",
+          "seeds": 96,
+          "clear": 65,
+          "extra": 53,
+          "infinity": 9,
+          "bossAttempts": [
+            96,
+            84,
+            71
+          ],
+          "bossWins": [
+            95,
+            81,
+            65
+          ],
+          "turns": 4718,
+          "used": {
+            "add": 6833,
+            "mul": 3542,
+            "pct": 1339,
+            "exp": 489,
+            "pow": 237,
+            "clean": 173
+          },
+          "relics": {
+            "tithe": 78,
+            "furnace": 65,
+            "abacus": 68,
+            "chain": 67,
+            "codex": 66,
+            "lattice": 58,
+            "tail": 69,
+            "ratio": 60,
+            "rack": 65,
+            "mosaic": 57,
+            "grimoire": 64,
+            "sum": 71,
+            "prism": 69,
+            "order": 67,
+            "spring": 70,
+            "star": 65,
+            "key": 42,
+            "short": 46
+          },
+          "lossesByEnemy": {
+            "4:extra": 12,
+            "3:fight": 5,
+            "3:elite": 5,
+            "2:fight": 4,
+            "2:boss": 3,
+            "2:elite": 7,
+            "3:boss": 6,
+            "1:boss": 1
+          },
+          "actReached": [
+            96,
+            95,
+            81,
+            65
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 84,
+            "clearWith": 63,
+            "lossWithoutByAct": [
+              1,
+              8,
+              1,
+              0
+            ]
+          },
+          "avgTurns": 49.15,
+          "max": "9.4044e+105",
+          "maxExact": "9404440746314844774230382840632273347301433600000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-141"
+        }
+      ],
+      "updated": [
+        {
+          "policy": "grimoire",
+          "seeds": 96,
+          "clear": 86,
+          "extra": 75,
+          "infinity": 29,
+          "bossAttempts": [
+            96,
+            94,
+            88
+          ],
+          "bossWins": [
+            96,
+            94,
+            86
+          ],
+          "turns": 4594,
+          "used": {
+            "add": 4393,
+            "mul": 4487,
+            "pct": 2127,
+            "exp": 687,
+            "pow": 333,
+            "clean": 125
+          },
+          "relics": {
+            "tail": 89,
+            "tithe": 72,
+            "order": 86,
+            "codex": 74,
+            "mosaic": 71,
+            "ratio": 76,
+            "sum": 66,
+            "chain": 76,
+            "furnace": 83,
+            "short": 52,
+            "lattice": 73,
+            "abacus": 72,
+            "prism": 77,
+            "grimoire": 82,
+            "star": 81,
+            "rack": 84,
+            "spring": 72,
+            "key": 53
+          },
+          "lossesByEnemy": {
+            "3:fight": 2,
+            "4:extra": 11,
+            "3:boss": 2,
+            "3:elite": 4,
+            "2:elite": 2
+          },
+          "actReached": [
+            96,
+            96,
+            94,
+            86
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 87,
+            "clearWith": 79,
+            "lossWithoutByAct": [
+              0,
+              2,
+              3,
+              3
+            ]
+          },
+          "avgTurns": 47.85,
+          "max": "1.3040e+146",
+          "maxExact": "130405961882861836870515802788192768560210907114201044462390259512034682624991305185784274926429757061461864981468912025600000000000000000000000000",
+          "bestSeed": "db-134"
+        },
+        {
+          "policy": "power",
+          "seeds": 96,
+          "clear": 88,
+          "extra": 79,
+          "infinity": 36,
+          "bossAttempts": [
+            96,
+            92,
+            92
+          ],
+          "bossWins": [
+            96,
+            92,
+            88
+          ],
+          "turns": 4629,
+          "used": {
+            "add": 4328,
+            "mul": 4512,
+            "pct": 1722,
+            "exp": 755,
+            "pow": 608,
+            "clean": 127
+          },
+          "relics": {
+            "tail": 91,
+            "tithe": 75,
+            "order": 86,
+            "codex": 74,
+            "mosaic": 77,
+            "ratio": 65,
+            "sum": 73,
+            "chain": 83,
+            "furnace": 85,
+            "short": 52,
+            "lattice": 74,
+            "abacus": 75,
+            "prism": 79,
+            "grimoire": 77,
+            "star": 86,
+            "rack": 79,
+            "spring": 74,
+            "key": 44
+          },
+          "lossesByEnemy": {
+            "3:boss": 4,
+            "4:extra": 9,
+            "2:elite": 4
+          },
+          "actReached": [
+            96,
+            96,
+            92,
+            88
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 91,
+            "clearWith": 83,
+            "lossWithoutByAct": [
+              0,
+              1,
+              1,
+              1
+            ]
+          },
+          "avgTurns": 48.22,
+          "max": "1.3451e+207",
+          "maxExact": "1345119400168121998434218569127747711360040960000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-175"
+        },
+        {
+          "policy": "mixed",
+          "seeds": 96,
+          "clear": 90,
+          "extra": 69,
+          "infinity": 29,
+          "bossAttempts": [
+            96,
+            95,
+            94
+          ],
+          "bossWins": [
+            96,
+            94,
+            90
+          ],
+          "turns": 4785,
+          "used": {
+            "add": 4280,
+            "mul": 4737,
+            "pct": 1973,
+            "clean": 134,
+            "pow": 449,
+            "exp": 862
+          },
+          "relics": {
+            "tail": 92,
+            "tithe": 77,
+            "mosaic": 85,
+            "order": 91,
+            "lattice": 79,
+            "ratio": 92,
+            "spring": 79,
+            "chain": 80,
+            "furnace": 77,
+            "short": 54,
+            "abacus": 76,
+            "sum": 75,
+            "prism": 76,
+            "grimoire": 73,
+            "star": 85,
+            "codex": 78,
+            "rack": 76,
+            "key": 51
+          },
+          "lossesByEnemy": {
+            "4:extra": 21,
+            "3:boss": 4,
+            "2:boss": 1,
+            "2:elite": 1
+          },
+          "actReached": [
+            96,
+            96,
+            94,
+            90
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 91,
+            "clearWith": 81,
+            "lossWithoutByAct": [
+              0,
+              0,
+              0,
+              2
+            ]
+          },
+          "avgTurns": 49.84,
+          "max": "3.1119e+128",
+          "maxExact": "311192287216042125962327173262868555488109888000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-116"
+        },
+        {
+          "policy": "additive",
+          "seeds": 96,
+          "clear": 85,
+          "extra": 64,
+          "infinity": 11,
+          "bossAttempts": [
+            96,
+            90,
+            88
+          ],
+          "bossWins": [
+            96,
+            90,
+            85
+          ],
+          "turns": 4424,
+          "used": {
+            "add": 7029,
+            "mul": 2848,
+            "pct": 980,
+            "exp": 429,
+            "clean": 112,
+            "pow": 221
+          },
+          "relics": {
+            "tail": 88,
+            "sum": 88,
+            "order": 84,
+            "codex": 72,
+            "ratio": 64,
+            "abacus": 90,
+            "lattice": 71,
+            "chain": 74,
+            "furnace": 72,
+            "short": 55,
+            "rack": 67,
+            "tithe": 77,
+            "spring": 63,
+            "prism": 78,
+            "grimoire": 76,
+            "star": 64,
+            "mosaic": 55,
+            "key": 50
+          },
+          "lossesByEnemy": {
+            "4:extra": 21,
+            "3:boss": 3,
+            "2:fight": 5,
+            "3:elite": 1,
+            "2:elite": 1,
+            "3:fight": 1
+          },
+          "actReached": [
+            96,
+            96,
+            90,
+            85
+          ],
+          "additionRelic": {
+            "ownedAtEnd": 93,
+            "clearWith": 84,
+            "lossWithoutByAct": [
+              0,
+              2,
+              0,
+              0
+            ]
+          },
+          "avgTurns": 46.08,
+          "max": "5.7756e+118",
+          "maxExact": "57756093110450813066895247939102310400000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+          "bestSeed": "db-116"
+        }
+      ]
+    }
+  ]
+}

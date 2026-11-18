@@ -6,15 +6,20 @@ const ranges={
   pow:[null,null,[2,2],[2,2],[3,3]],
   exp:[null,null,[2,2],[3,3],[4,5]]
 };
-export function random(seed) {
-  let state=2166136261;
-  for(const c of String(seed)) state=Math.imul(state^c.codePointAt(0),16777619);
-  return ()=>{
+export function random(seed, checkpoint) {
+  let state=checkpoint;
+  if(state===undefined) {
+    state=2166136261;
+    for(const c of String(seed)) state=Math.imul(state^c.codePointAt(0),16777619);
+  }
+  const next=()=>{
     state=(state+0x6D2B79F5)|0;
     let t=Math.imul(state^(state>>>15),1|state);
     t^=t+Math.imul(t^(t>>>7),61|t);
     return ((t^(t>>>14))>>>0)/4294967296;
   };
+  next.state=()=>state|0;
+  return next;
 }
 export function shuffle(items,rng) {
   const a=[...items];

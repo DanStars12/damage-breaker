@@ -1,0 +1,137 @@
+[
+  {
+    "policy": "grimoire",
+    "seeds": 96,
+    "clear": 87,
+    "extra": 75,
+    "infinity": 4,
+    "bossAttempts": [
+      96,
+      91,
+      89
+    ],
+    "bossWins": [
+      96,
+      89,
+      87
+    ],
+    "turns": 3651,
+    "used": {
+      "mul": 3752,
+      "add": 3344,
+      "pct": 1407,
+      "exp": 499,
+      "pow": 187,
+      "clean": 96
+    },
+    "relics": {
+      "rack": 78,
+      "grimoire": 76,
+      "spring": 74,
+      "prism": 80,
+      "codex": 70,
+      "furnace": 76,
+      "chain": 82,
+      "order": 77,
+      "tail": 83,
+      "mantle": 53,
+      "short": 72,
+      "star": 82,
+      "key": 61
+    },
+    "avgTurns": 38.03,
+    "max": "1.6322e+120",
+    "maxExact": "1632255939270067416955316970362815977924786424807520392627533625430731564994742653521479675292968750000000000000000000000",
+    "bestSeed": "db-45"
+  },
+  {
+    "policy": "power",
+    "seeds": 96,
+    "clear": 91,
+    "extra": 78,
+    "infinity": 5,
+    "bossAttempts": [
+      96,
+      92,
+      92
+    ],
+    "bossWins": [
+      96,
+      92,
+      91
+    ],
+    "turns": 3660,
+    "used": {
+      "mul": 3681,
+      "add": 3167,
+      "pct": 1160,
+      "exp": 545,
+      "pow": 377,
+      "clean": 108
+    },
+    "relics": {
+      "rack": 79,
+      "grimoire": 75,
+      "spring": 79,
+      "prism": 83,
+      "codex": 73,
+      "furnace": 76,
+      "chain": 86,
+      "order": 77,
+      "tail": 83,
+      "mantle": 53,
+      "short": 71,
+      "key": 57,
+      "star": 88
+    },
+    "avgTurns": 38.13,
+    "max": "7.8287e+99",
+    "maxExact": "7828707399389955585683780756833348157638048670602962688037452864673541507984000000000000000000000000",
+    "bestSeed": "db-35"
+  },
+  {
+    "policy": "mixed",
+    "seeds": 96,
+    "clear": 91,
+    "extra": 77,
+    "infinity": 4,
+    "bossAttempts": [
+      96,
+      93,
+      93
+    ],
+    "bossWins": [
+      96,
+      93,
+      91
+    ],
+    "turns": 3634,
+    "used": {
+      "mul": 3730,
+      "add": 3172,
+      "pct": 1183,
+      "exp": 630,
+      "pow": 269,
+      "clean": 99
+    },
+    "relics": {
+      "rack": 80,
+      "grimoire": 74,
+      "spring": 80,
+      "prism": 84,
+      "codex": 74,
+      "furnace": 74,
+      "order": 80,
+      "chain": 84,
+      "tail": 84,
+      "mantle": 56,
+      "short": 72,
+      "key": 58,
+      "star": 86
+    },
+    "avgTurns": 37.85,
+    "max": "7.8287e+99",
+    "maxExact": "7828707399389955585683780756833348157638048670602962688037452864673541507984000000000000000000000000",
+    "bestSeed": "db-35"
+  }
+]
