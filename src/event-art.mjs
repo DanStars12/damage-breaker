@@ -43,7 +43,10 @@ const eventScenes={
   fog:['25343c','526b75','82a5a4','e5fac4',false,p=>{p.house(48,67,48,37);p.house(142,65,60,43);p.vase(94,65,8);p.vase(112,70,5);p.lamp(91,54);p.water(96,80,188);}],
   glacier:['202d52','3d6a94','7fb0bc','f1f9e0',true,p=>{p.arch(97,62,92,59);p.gem(49,54,19);p.gem(144,56,23);p.gem(120,69,10);p.chest(91,67);p.star(96,41,6);}],
   library:['362742','634667','9c746d','ffde93',false,p=>{p.moon(151,24,13);p.tower(97,76,69);p.tower(61,76,42);p.bridge(125,68);p.scroll(100,61);p.bird(151,42,2);}],
-  sundown:['482940','8f4754','cb7754','ffde8b',false,p=>{p.moon(94,36,24);p.tent(47,71,58,33);p.tent(151,70,54,27);p.flame(100,70,20);p.rock(101,80,32,6);}]
+  sundown:['482940','8f4754','cb7754','ffde8b',false,p=>{p.moon(94,36,24);p.tent(47,71,58,33);p.tent(151,70,54,27);p.flame(100,70,20);p.rock(101,80,32,6);}],
+  echoShrine:['1d2836','365575','7198aa','b7fbec',true,p=>{p.arch(97,66,98,57);p.altar(96,67);p.gem(96,35,15);p.gem(96,35,8);p.pillar(53,69,30);p.pillar(138,69,30);p.star(62,33,3);p.star(131,33,3);}],
+  aetherWells:['2b263e','4f587b','7c9c94','e0fdad',false,p=>{p.moon(99,19,11);p.water(62,73,82);p.water(132,76,82);p.gem(59,57,11);p.gem(135,57,13);p.rock(96,76,32,8);p.tree(20,74,42);}],
+  scholarPress:['29213b','5a4475','a890a9','ffe1a9',true,p=>{p.shelves(34,72,48);p.shelves(150,72,47);p.table(96,73,68);p.book(96,58,29);p.scroll(79,63);p.star(111,37,9);p.lamp(61,64,2);}]
 };
 
 const actScenes={

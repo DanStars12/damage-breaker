@@ -1,4 +1,4 @@
-import {supportValue,supportKinds} from '../src/cards.mjs';
+import {supportValue,supportKinds,canEnchant,enchantmentFor} from '../src/cards.mjs';
 import {attackHits} from '../src/enemies.mjs';
 import {Run} from '../src/run.mjs';
 import {evaluate,cleanseDebuffs} from '../src/relics.mjs';
@@ -31,10 +31,10 @@ function plan(run) {
         const b=clean?s.board:[...s.board.slice(0,at),c,...s.board.slice(at)];
         const d=clean?cleanseDebuffs(s.deb,s.board.length,supportValue(c)):s.deb;
         const used=s.used|(1<<i);
-        const key=used+':'+b.map(c=>c.kind+c.value).join(',')+':'+d.length;
+        const key=used+':'+b.map(c=>c.kind+c.value+(c.enchant??'')).join(',')+':'+d.length;
         if(seen.has(key)) continue;
         seen.add(key);
-        candidates.push({board:b,deb:d,used,energy:s.energy-c.cost,moves:[...s.moves,[c,at]],score:score(b,d)});
+        candidates.push({board:b,deb:d,used,energy:s.energy-c.cost+(enchantmentFor(c)?.energy??0),moves:[...s.moves,[c,at]],score:score(b,d)});
       }
     }
     beam=candidates.sort(compare).slice(0,6);
@@ -52,6 +52,12 @@ function play(seed,id) {
   const r=new Run(seed);
   const reached=new Map();
   let cleared=false, clearedWithAdditionRelic=false, exchanges=0, exchangeVisits=0;
+  let attenuations=0, enchantments=0;
+  const enchantTarget=enchant=>{
+    const candidates=r.deck.filter(c=>canEnchant(c,enchant));
+    const affinity=c=>enchant==='repeat'?{add:0,mul:14,pct:11,exp:18,pow:30}[c.kind]:7-c.cost*3;
+    return r.deck.indexOf(candidates.sort((a,b)=>affinity(b)-affinity(a)||preference(b,id)-preference(a,id))[0]);
+  };
   const rank=key=>{
     if(!key||['mantle','reserve'].includes(key)) return Infinity;
     const i=strategies[id].indexOf(key);
@@ -60,6 +66,7 @@ function play(seed,id) {
   const reach={numericBursts:0,infinityBursts:0,landedBursts:0,firstAct:null};
   const fire=()=>{
     const burst=r.burst();
+    if(burst?.response.status==='success') attenuations++;
     if(!burst||burst.final<muryotaisu) return;
     reach.firstAct??=r.act;
     if(burst.final>CAP) reach.infinityBursts++;
@@ -68,7 +75,7 @@ function play(seed,id) {
     if(burst.impact.dealt>0n) reach.landedBursts++;
   };
   for(let guard=0;guard<500;guard++) {
-    if(r.phase==='loss'||r.phase==='win') return {r,cleared,clearedWithAdditionRelic,reached,reach,exchanges,exchangeVisits};
+    if(r.phase==='loss'||r.phase==='win') return {r,cleared,clearedWithAdditionRelic,reached,reach,exchanges,exchangeVisits,attenuations,enchantments};
     if(r.phase==='clear') {
       cleared=true;
       clearedWithAdditionRelic=hasAdditionRelic(r);
@@ -77,7 +84,9 @@ function play(seed,id) {
     if(r.phase==='reward') {
       if(r.relicDecision==='pending') {
         const index=rank(r.relicAlternative)<rank(r.relicDrop)?1:0;
-        r.chooseRelic(rank([r.relicDrop,r.relicAlternative][index])<Infinity,index);
+        const relic=[r.relicDrop,r.relicAlternative][index];
+        const target=relic==='echoEngraver'?enchantTarget('repeat'):-1;
+        if(r.chooseRelic(rank(relic)<Infinity,index,target)&&target>=0) enchantments++;
       }
       r.chooseGold(true);
       r.chooseOmen(true);
@@ -109,7 +118,14 @@ function play(seed,id) {
         exchangeVisits++;
         const offers=r.owned.flatMap(mode=>r.eventExchanges(mode).map((key,i)=>({mode,i,rank:rank(key)})))
           .filter(offer=>offer.rank<rank(offer.mode)).sort((a,b)=>a.rank-b.rank);
-        if(offers.length&&r.service({action:'exchange',...offers[0]})) exchanges++;
+        const offer=offers[0];
+        const j=offer&&r.eventExchanges(offer.mode)[offer.i]==='echoEngraver'?enchantTarget('repeat'):-1;
+        if(offer&&r.service({action:'exchange',...offer,j})) {exchanges++;if(j>=0) enchantments++;}
+        else r.service({action:'decline'});
+      } else if(r.eventOffer?.enchant) {
+        const i=r.eventOffers[1]?.available&&r.gold>=45?1:0;
+        const j=enchantTarget(r.eventOffers[i].enchant);
+        if(r.service({action:'event',i,j})) enchantments++;
         else r.service({action:'decline'});
       } else if(!r.service({action:'event'})) r.service({action:'decline'});
       continue;
@@ -127,7 +143,9 @@ function play(seed,id) {
       if(support>=0) r.play(support);
     }
     const survive=r.enemyOutcome().hp>0;
-    if(p.impact.kind!=='gate'&&p.final<r.enemy.hp&&r.holds<r.holdLimit&&survive&&r.board.length<r.slots) r.hold();
+    const response=r.burstResponse(r.preview());
+    const defendNow=response.status==='success'&&r.hp<=36&&r.enemyOutcome().hp<(response.outcome?.hp??0);
+    if(!defendNow&&p.impact.kind!=='gate'&&p.final<r.enemy.hp&&r.holds<r.holdLimit&&survive&&r.board.length<r.slots) r.hold();
     else fire();
   }
   throw Error('Simulation exceeded turn budget for '+seed);
@@ -136,13 +154,15 @@ const total=Number(process.argv[2]||32);
 const offset=Number(process.argv[3]||0);
 const rows=[];
 for(const id of Object.keys(strategies)) {
-  const metric={policy:id,seeds:total,clear:0,extra:0,infinity:0,exchanges:0,exchangeVisits:0,bossAttempts:[0,0,0],bossWins:[0,0,0],bossesByName:{},turns:0,used:{},relics:{},lossesByEnemy:{},actReached:[0,0,0,0],additionRelic:{ownedAtEnd:0,clearWith:0,lossWithoutByAct:[0,0,0,0]}};
+  const metric={policy:id,seeds:total,clear:0,extra:0,infinity:0,exchanges:0,exchangeVisits:0,attenuations:0,enchantments:0,bossAttempts:[0,0,0],bossWins:[0,0,0],bossesByName:{},turns:0,used:{},relics:{},lossesByEnemy:{},actReached:[0,0,0,0],additionRelic:{ownedAtEnd:0,clearWith:0,lossWithoutByAct:[0,0,0,0]}};
   metric.muryotaisu={runs:0,numericRuns:0,landedRuns:0,numericBursts:0,infinityBursts:0,landedBursts:0,firstByAct:[0,0,0,0]};
   let max=0n,bestSeed='',bestFormula='';
   for(let i=0;i<total;i++) {
-    const {r,cleared,clearedWithAdditionRelic,reached,reach,exchanges,exchangeVisits}=play('db-'+(i+offset),id);
+    const {r,cleared,clearedWithAdditionRelic,reached,reach,exchanges,exchangeVisits,attenuations,enchantments}=play('db-'+(i+offset),id);
     metric.exchanges+=exchanges;
     metric.exchangeVisits+=exchangeVisits;
+    metric.attenuations+=attenuations;
+    metric.enchantments+=enchantments;
     for(const [stage,enemy] of reached) {
       metric.bossAttempts[stage-1]++;
       const boss=metric.bossesByName[enemy.name]??={attempts:0,wins:0,lossAtFullHp:0,remainingHpPctSum:0};

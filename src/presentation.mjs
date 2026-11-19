@@ -34,13 +34,14 @@ export function boardRelicStates(owned,preview,lastBurst) {
 }
 export function timeline(result,armor) {
   let combo=0;
-  const steps=result.steps.map((step,index)=>{
+  const steps=result.steps.flatMap((step,index)=>{
     if(!step.card.enemy && step.op) combo++;
     const type=step.card.enemy?'enemy':step.op?'card':'enemy';
     const operation=step.op?label(step.op):label(step.card)+' 無効';
     const relic=divisorRelic(step);
     const name=relic?relics[relic].name+' · '+operation:operation;
-    return {index,type:relic?'relic':type,name,value:step.result,combo,...(relic?{relic}:{})};
+    const main={index,type:relic?'relic':type,name,value:step.firstResult??step.result,combo,...(relic?{relic}:{})};
+    return step.firstResult?[main,{index,type:'repeat',name:'再現 · '+operation,value:step.result,combo}]:[main];
   });
   for(const trigger of result.triggers) {
     steps.push({type:'relic',name:relics[trigger.id].name+' · '+label(trigger.op),value:trigger.result,combo,relic:trigger.id});

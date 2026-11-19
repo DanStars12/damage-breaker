@@ -1,6 +1,6 @@
-import {random,shuffle,starter,generate,generateSupport,supportKinds,supportValue,supportCaps,upgraded,fused} from './cards.mjs';
+import {random,shuffle,starter,generate,generateSupport,supportKinds,supportValue,supportCaps,upgraded,fused,canEnchant,enchanted,enchantmentFor} from './cards.mjs';
 import {evaluate,relics,drawRelic,cleanseDebuffs} from './relics.mjs';
-import {makeEnemy,intent,impact,attackHits,attackPatterns} from './enemies.mjs';
+import {makeEnemy,intent,impact,attackHits,attackPatterns,matchesAttenuation} from './enemies.mjs';
 import {CAP,label} from './math.mjs';
 import {makeMap} from './map.mjs';
 import {events} from './events.mjs';
@@ -27,8 +27,8 @@ export class Run {
   get base(){return this.baseAt(this.drain);}
   baseAt(drain=0){return Math.max(1,Math.floor((20+(this.act-1)*15)*(100+this.bonus('base')-drain)/100)+this.bonus('flatBase'));}
   get slots(){return Math.min(8,5+this.act)+this.bonus('slots');}
-  get capacity(){return Math.max(1,(this.act>=3?4:3)+this.bonus('energy')-(this.energyPenalty??0)+(this.turn===0?this.bonus('firstEnergy'):0));}
-  get drawCount(){return Math.max(2,5+this.bonus('draw')-(this.drawPenalty??0)+(this.turn===0?this.bonus('firstDraw'):0));}
+  get capacity(){return Math.max(1,(this.act>=3?4:3)+this.bonus('energy')-(this.energyPenalty??0)+(this.turn===0?this.bonus('firstEnergy'):0)+(this.turnEnergy??0));}
+  get drawCount(){return Math.max(2,5+this.bonus('draw')-(this.drawPenalty??0)+(this.turn===0?this.bonus('firstDraw'):0)+(this.turnDraw??0));}
   get holdLimit(){return 2+this.bonus('extraHold');}
   get wardCharges(){return Number(this.ward)||0;}
   get guardPoints(){return this.guard??0;}
@@ -46,6 +46,7 @@ export class Run {
     this.phase='battle';
     this.relicDrop=null;
     this.relicAlternative=null;
+    this.relicEnchantedCard=null;
     this.relicDecision=null;
     this.enemy=makeEnemy(this.act,node?.kind,node?.variant,node?.row,bench);
     this.hp=Math.max(1,this.hp-this.bonus('entry'));
@@ -53,6 +54,9 @@ export class Run {
     this.drain=0;
     this.drawPenalty=0;
     this.energyPenalty=0;
+    this.attenuationUsed=false;
+    this.turnEnergy=0;
+    this.turnDraw=0;
     this.battlePeak=0n;
     this.lastBurst=null;
     this.battleRecord=null;
@@ -72,12 +76,15 @@ export class Run {
     this.discard.push(...this.hand);
     this.hand=[];
     this.energy=this.capacity;
-    while(this.hand.length<this.drawCount) {
+    this.drawCards(this.drawCount);
+  }
+  drawCards(count) {
+    for(let i=0;i<count;i++) {
       if(!this.deckDraw.length) {
         this.deckDraw=shuffle(this.discard,this.rng);
         this.discard=[];
       }
-      if(!this.deckDraw.length) break;
+      if(!this.deckDraw.length) return;
       this.hand.push(this.deckDraw.pop());
     }
   }
@@ -102,7 +109,10 @@ export class Run {
       this.discard.push(c);
     } else {
       this.board.splice(at,0,c);
-      this.uncommittedCards.add(c);
+      const enchant=enchantmentFor(c);
+      if(enchant?.energy) this.energy+=enchant.energy;
+      else if(enchant?.draw) this.drawCards(enchant.draw);
+      else this.uncommittedCards.add(c);
     }
     return true;
   }
@@ -134,51 +144,70 @@ export class Run {
     }
     return {...result,impact:effect};
   }
-  enemyOutcome(action=this.next) {
+  burstResponse(p,action=this.next) {
+    if(p.impact.dealt===this.enemy.hp) return {status:null,outcome:null};
+    const success=!this.attenuationUsed&&matchesAttenuation(action,p.steps);
+    const status=this.attenuationUsed?null:success?'success':'failure';
+    return {status,outcome:this.enemyOutcome(action,{attenuated:success,cleared:true})};
+  }
+  enemyOutcome(action=this.next,{attenuated=false,cleared=false}={}) {
     let {hp,maxHp,drain,ward,deb}=this;
+    if(cleared) deb=[];
     let blocked=false,drawPenalty=0,energyPenalty=0;
     const hits=attackHits(action);
     const penalty=attackPatterns[action.kind]?.penalty;
-    const attackDamage=action.value*hits;
+    const value=attenuated?Math.sign(action.value)*Math.ceil(Math.abs(action.value)/2):action.value;
+    const attackDamage=value*hits;
     const absorbed=Math.min(this.guardPoints,attackDamage);
     const guard=attackDamage>0?0:this.guardPoints;
     const hitDetails=[];
     let shield=this.guardPoints;
     for(let i=0;i<hits;i++) {
-      const defended=Math.min(shield,action.value);
+      const defended=Math.min(shield,value);
       shield-=defended;
-      const lost=Math.min(hp,action.value-defended);
+      const lost=Math.min(hp,value-defended);
       hp-=lost;
       hitDetails.push({defended,lost,hp,guardLeft:shield});
     }
-    const broken=penalty==='shatter'?Math.min(Number(ward)||0,2):0;
-    if(!hits||penalty) {
+    const broken=penalty==='shatter'?Math.min(Number(ward)||0,attenuated?1:2):0;
+    const nullified=attenuated&&(['jam','tax','fracture'].includes(penalty)||
+      action.kind==='lock'||(action.kind==='div'&&value===1));
+    if((!hits||penalty)&&!nullified) {
       if(penalty==='shatter') {ward=Number(ward)-broken||false;}
       else if(ward) {ward=Number(ward)-1||false;blocked=true;}
       else if(penalty==='jam') drawPenalty=1;
       else if(penalty==='tax') energyPenalty=1;
       else if(penalty==='fracture') deb=[...deb,{...action,kind:'seal'}];
-      else if(penalty==='scorch') deb=[...deb,{...action,kind:'sub',value:20*this.act}];
+      else if(penalty==='scorch') deb=[...deb,{...action,kind:'sub',value:(attenuated?10:20)*this.act}];
       else if(action.kind==='wither') {
-        maxHp=Math.max(35,maxHp-action.value);
+        maxHp=Math.max(35,maxHp-value);
         hp=Math.min(hp,maxHp);
-      } else if(action.kind==='drain') drain=Math.min(65,drain+action.value);
-      else deb=[...deb,action];
+      } else if(action.kind==='drain') drain=Math.min(65,drain+value);
+      else deb=[...deb,attenuated?{...action,value}:action];
     }
-    return {hp,maxHp,drain,ward,guard,deb,blocked,absorbed,drawPenalty,energyPenalty,hitDetails,broken};
+    return {hp,maxHp,drain,ward,guard,deb,blocked,absorbed,drawPenalty,energyPenalty,hitDetails,broken,...(attenuated?{attenuationEffect:{value,nullified}}:{})};
   }
   holdPreview(outcome=this.enemyOutcome()) {
     if(this.holds>=this.holdLimit||!outcome.hp||!this.board.length) return null;
     const result=evaluate({base:this.baseAt(outcome.drain),board:this.board,deb:outcome.deb,owned:this.owned,armor:this.enemy.armor,holds:this.holds+1});
     return result.final;
   }
-  enemyAction() {
+  enemyAction(outcome=this.enemyOutcome(),attenuated=false) {
     this.uncommittedCards.clear();
-    const {hp,maxHp,drain,ward,guard,deb,drawPenalty,energyPenalty}=this.enemyOutcome();
+    const {hp,maxHp,drain,ward,guard,deb,drawPenalty,energyPenalty}=outcome;
     Object.assign(this,{hp,maxHp,drain,ward,guard,deb,drawPenalty,energyPenalty});
     this.turn++;
+    if(attenuated) this.attenuationUsed=true;
+    this.turnEnergy=attenuated?this.bonus('attenuationEnergy'):0;
+    this.turnDraw=attenuated?this.bonus('attenuationDraw'):0;
     if(!this.hp) this.phase='loss';
-    else this.refill();
+    else {
+      if(attenuated) {
+        this.hp=Math.min(this.maxHp,this.hp+this.bonus('attenuationHeal'));
+        this.guard=Math.min(supportCaps.guard,this.guardPoints+this.bonus('attenuationGuard'));
+      }
+      this.refill();
+    }
   }
   hold() {
     if(this.phase!=='battle'||this.holds>=this.holdLimit) return false;
@@ -190,10 +219,11 @@ export class Run {
   burst() {
     if(this.phase!=='battle') return null;
     const p=this.preview();
+    const response=this.burstResponse(p);
     this.stats.turns++;
-    const formula=[String(this.base),...p.steps.map(s=>s.op?label(s.op):'無効'),...p.triggers.map(t=>relics[t.id].name),
+    const formula=[String(this.base),...p.steps.map(s=>s.op?label(s.op)+(s.firstResult?'【再現】':''):'無効'),...p.triggers.map(t=>relics[t.id].name),
       ...(this.enemy.armor>1?['装甲 ÷'+this.enemy.armor]:[])].join(' → ');
-    this.lastBurst={...p,formula};
+    this.lastBurst={...p,formula,attenuation:response.status};
     this.history.unshift(this.lastBurst);
     this.history.length=Math.min(this.history.length,50);
     const s=this.stats;
@@ -233,8 +263,8 @@ export class Run {
         }
       }
       this.reward();
-    } else this.enemyAction();
-    return p;
+    } else this.enemyAction(response.outcome,response.status==='success');
+    return {...p,response};
   }
   reward() {
     this.phase='reward';
@@ -275,12 +305,24 @@ export class Run {
     this.goldDecision=take?'taken':'skipped';
     return true;
   }
-  chooseRelic(take,index=0) {
+  acceptRelic(id,target) {
+    if(!id||this.owned.includes(id)) return false;
+    const enchant=relics[id].grantEnchant;
+    if(enchant&&this.deck.some(card=>canEnchant(card,enchant))) {
+      const upgradedCard=Number.isInteger(target)&&enchanted(this.deck[target],enchant);
+      if(!upgradedCard) return false;
+      this.deck[target]=upgradedCard;
+    }
+    this.owned.push(id);
+    return true;
+  }
+  chooseRelic(take,index=0,target) {
     if(this.phase!=='reward'||this.relicDecision!=='pending') return false;
     if(take) {
       const choice=[this.relicDrop,this.relicAlternative][index];
-      if(!choice||this.owned.includes(choice)) return false;
-      this.owned.push(choice);
+      const original=this.deck[target];
+      if(!this.acceptRelic(choice,target)) return false;
+      this.relicEnchantedCard=original&&original!==this.deck[target]?this.deck[target]:null;
       this.relicDrop=choice;
       this.relicAlternative=null;
     }
@@ -360,7 +402,8 @@ export class Run {
       const rng=random(index?key+'/'+index:key);
       const result=choice.card?generate(rng,this.act,choice.card):
         choice.support?generateSupport(rng,this.act,choice.support,choice.kind):null;
-      return {...choice,hp,gold,result,available:this.hp+hp>0&&this.gold+gold>=0};
+      return {...choice,hp,gold,result,available:this.hp+hp>0&&this.gold+gold>=0&&
+        (!choice.enchant||this.deck.some(card=>canEnchant(card,choice.enchant)))};
     });
   }
   get eventOffer(){return this.eventOffers[0]??null;}
@@ -371,21 +414,27 @@ export class Run {
       if(!Number.isInteger(i)) return null;
       const relic=this.eventExchanges(mode)[i];
       if(!relic) return null;
-      this.owned[this.owned.indexOf(mode)]=relic;
+      const original=this.deck[j];
+      if(!this.acceptRelic(relic,j)) return null;
+      this.owned[this.owned.indexOf(mode)]=this.owned.pop();
       this.leaveNode();
-      return {kind:'event',event:this.event,exchanged:mode,relic};
+      return {kind:'event',event:this.event,exchanged:mode,relic,
+        ...(original&&original!==this.deck[j]?{result:this.deck[j]}:{})};
     }
     if(facility==='event'&&['event','decline'].includes(action)) {
       if(action==='decline') {this.leaveNode();return {message:'イベントを見送った。'};}
       const offer=this.eventOffers[i??0];
       if(!offer?.available) return null;
-      const {hp,gold,result,omen=0}=offer;
+      const {hp,gold,result,omen=0,enchant}=offer;
+      const target=enchant&&Number.isInteger(j)?enchanted(this.deck[j],enchant):null;
+      if(enchant&&!target) return null;
       this.hp+=hp;
       this.gold+=gold;
       if(omen) this.omens=(this.omens??0)+omen;
       if(result) this.deck.push(result);
+      if(target) this.deck[j]=target;
       this.leaveNode();
-      return {kind:'event',event:this.event,hp,gold,result,omen};
+      return {kind:'event',event:this.event,hp,gold,result:target??result,omen,...(target?{enchant}:{})};
     }
     if(facility==='rest'&&action==='heal') {
       this.hp=Math.min(100,this.hp+35);this.leaveNode();return {message:'休息でHPを最大35回復。'};
@@ -411,8 +460,9 @@ export class Run {
       transaction={kind:'omen',sources:[]};
     } else if(action==='relic'&&this.stockRelics[i]) {
       const relic=this.stockRelics[i];
-      this.owned.push(relic);
-      transaction={kind:'relic',relic,sources:[]};
+      const original=this.deck[j];
+      if(!this.acceptRelic(relic,j)) return null;
+      transaction={kind:'relic',relic,sources:[],...(original&&original!==this.deck[j]?{result:this.deck[j]}:{})};
     } else if(action==='fuse'&&i!==j&&this.deck.length>12) {
       const sources=[this.deck[i],this.deck[j]];
       const result=fused(...sources);

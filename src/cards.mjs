@@ -33,7 +33,18 @@ export function card(kind,value,tier=0) {
   const cost=kind==='pow'?(value===3?4:3):kind==='exp'||tier>=3?2:1;
   return {kind,value,tier,cost};
 }
-export const supportKinds=['clean','ward','guard'];
+export const spellKinds=['clean','ward','guard'];
+export const supportKinds=spellKinds;
+export const enchantments={
+  repeat:{name:'再現',description:'演算時、このカードの演算をもう一度行う。',mark:'repeat'},
+  energy:{name:'蓄力',description:'配置時、エナジー＋1。',energy:1,mark:'energy'},
+  energyPlus:{name:'蓄力・改',description:'配置時、エナジー＋2。',energy:2,mark:'energy'},
+  draw:{name:'招札',description:'配置時、1枚引く。',draw:1,mark:'draw'},
+  drawPlus:{name:'招札・改',description:'配置時、2枚引く。',draw:2,mark:'draw'}
+};
+export const enchantmentFor=card=>enchantments[card?.enchant];
+export const canEnchant=(card,id)=>Boolean(card&&Object.hasOwn(enchantments,id)&&!card.enchant&&!spellKinds.includes(card.kind));
+export const enchanted=(card,id)=>canEnchant(card,id)?{...card,enchant:id}:null;
 export const supportCaps={clean:6,ward:6,guard:48};
 export const supportValue=c=>c.value||1;
 const supportTiers={clean:[1,2,3,4,5],ward:[1,2,3,4,5],guard:[6,9,14,21,30]};
@@ -83,7 +94,7 @@ export function upgraded(c,mode,digit) {
   return {...c,value,upgraded:true};
 }
 export function fused(a,b) {
-  if(!a||!b||a.kind!==b.kind) return null;
+  if(!a||!b||a.kind!==b.kind||(a.enchant&&b.enchant)) return null;
   if(supportKinds.includes(a.kind)) {
     const value=Math.min(supportCaps[a.kind],supportValue(a)+supportValue(b));
     if(value<=Math.max(supportValue(a),supportValue(b))) return null;
@@ -92,5 +103,6 @@ export function fused(a,b) {
   if(!['add','mul','pct'].includes(a.kind)) return null;
   const value=a.kind==='mul'?a.value*b.value:a.value+b.value;
   if(!Number.isSafeInteger(value)||value>99999) return null;
-  return {...card(a.kind,value,Math.max(a.tier,b.tier)),cost:Math.min(3,Math.max(a.cost,b.cost)+1)};
+  const enchant=a.enchant??b.enchant;
+  return {...card(a.kind,value,Math.max(a.tier,b.tier)),cost:Math.min(3,Math.max(a.cost,b.cost)+1),...(enchant?{enchant}:{})};
 }

@@ -396,6 +396,102 @@ async function commandFeedback(options) {
   await page.close();
 }
 
+async function enchantmentFlow(options) {
+  const eventRun=fixture('event');
+  eventRun.event='echoShrine';
+  eventRun.deck[0]={...eventRun.deck[0],enchant:'energy'};
+  const event=await openPage(options,eventRun);
+  const e=event.page;
+  await action(e,'resume').tap();
+  assert(await e.locator('[data-event-art="echoShrine"]').isVisible());
+  await action(e,'eventChoice:0').tap();
+  assert.equal(await e.locator('[data-enchant-target="0"]').count(),0);
+  assert.equal(await e.locator('[data-enchant-target]').count(),12);
+  const confirm=e.locator('[data-enchant-confirm]');
+  assert(await confirm.isDisabled());
+  await e.locator('[data-enchant-target="1"]').tap();
+  await noOverflow(e,'enchant dialog');
+  await confirm.tap();
+  assert.match(await e.locator('.reward-result').innerText(),/再現/);
+  assert.equal((await readState(e)).deck[1].enchant,'repeat');
+  await e.reload();
+  await action(e,'resume').tap();
+  assert(await e.locator('.reward-result [data-enchant="repeat"]').isVisible());
+  assert.deepEqual(event.errors,[]);
+  await e.close();
+
+  const rewardRun=fixture('elite');
+  rewardRun.enemy.barrier=0;
+  rewardRun.enemy.gates=[];
+  rewardRun.enemy.hp=1n;
+  rewardRun.burst();
+  rewardRun.relicDrop='echoEngraver';
+  rewardRun.relicAlternative=null;
+  rewardRun.relicDecision='pending';
+  const reward=await openPage(options,rewardRun);
+  const r=reward.page;
+  await action(r,'resume').tap();
+  await action(r,'relicTake:0').tap();
+  await r.locator('[data-enchant-target="0"]').tap();
+  await r.locator('[data-enchant-confirm]').tap();
+  assert.equal((await readState(r)).relicEnchantedCard.enchant,'repeat');
+  assert(await r.locator('.relic-reward-content [data-enchant="repeat"]').isVisible());
+  assert.deepEqual(reward.errors,[]);
+  await r.close();
+}
+
+async function attenuationFlow(options) {
+  const run=fixture('fight');
+  run.owned=['furnaceRemainder','setComplement'];
+  run.enemy.attack=19;
+  run.enemy.armor=1;
+  run.enemy.cycle=['attack'];
+  run.enemy.hp=run.enemy.max=9000n;
+  run.hand=[
+    {kind:'add',value:10,cost:1,tier:0,enchant:'repeat'},{kind:'mul',value:3,cost:1,tier:0},
+    {kind:'ward',value:1,cost:1,tier:0}
+  ];
+  const failure=await openPage(options,run);
+  await action(failure.page,'resume').tap();
+  await action(failure.page,'burst').tap();
+  await failure.page.locator('.battle-notice').waitFor();
+  assert.match(await failure.page.locator('.battle-notice').innerText(),/減衰失敗/);
+  assert.equal((await readState(failure.page)).hp,81);
+  assert.equal((await readState(failure.page)).attenuationUsed,false);
+  assert.deepEqual(failure.errors,[]);
+  await failure.page.close();
+
+  const {page,errors}=await openPage(options,run);
+  await action(page,'resume').tap();
+  assert.equal(await action(page,'hand:2').getAttribute('draggable'),'false');
+  assert.match(await action(page,'hand:2').innerText(),/スペル/);
+  await action(page,'hand:2').tap();
+  assert.equal((await readState(page)).board.length,0);
+  await action(page,'hand:0').tap();
+  await action(page,'hand:0').tap();
+  assert.match(await page.locator('.attenuation-ready').innerText(),/減衰可能[\s\S]*10ダメージ/);
+  assert(await page.locator('.board-card [data-enchant="repeat"]').isVisible());
+  await page.evaluate(()=>{
+    const step=document.querySelector('#stepName');
+    new MutationObserver(()=>{
+      if(step.textContent.includes('再現')&&document.querySelector('.board-card.enchant-firing')) document.body.dataset.echo='yes';
+    }).observe(step,{childList:true,subtree:true});
+  });
+  await action(page,'burst').tap();
+  await page.locator('.last-strike').waitFor();
+  const result=await readState(page);
+  assert.equal(result.hp,90);
+  assert.equal(result.energy,5);
+  assert.equal(result.hand.length,7);
+  assert.equal(result.lastBurst.final.$bigint,'120');
+  assert.equal(await page.locator('body').getAttribute('data-echo'),'yes');
+  assert.match(await page.locator('.battle-notice').innerText(),/減衰成立[\s\S]*エナジー＋2[\s\S]*ドロー＋2/);
+  assert.match(await page.locator('.attenuation-hint').innerText(),/減衰済み/);
+  await noOverflow(page,'attenuation battle');
+  assert.deepEqual(errors,[]);
+  await page.close();
+}
+
 async function desktopFlow() {
   const {page,errors}=await openPage({viewport:{width:1366,height:768},reducedMotion:'reduce'});
   assert(await action(page,'menu').isHidden());
@@ -447,6 +543,9 @@ try {
       await combatEffects(options);
       await phaseGauges(options);
       await commandFeedback(options);
+      await enchantmentFlow(options);
+      await attenuationFlow(options);
+      console.log('PASS enchantment event and relic grants, spell class, attenuation success and failure');
       console.log('PASS divination → 3 visual hits → shatter → breach relic');
       console.log('PASS static HOLD and BURST labels, lethal intent and winning forecast, provisional refund');
     }

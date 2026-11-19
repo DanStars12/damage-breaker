@@ -376,13 +376,13 @@ test('HOLD forecast agrees with the actual enemy response and does not mutate th
   assert.equal(r.holdPreview(),null);
 });
 
-test('70 ranked relics have distinct pixel icons and seeded, ownership-aware rolls',()=>{
+test('75 ranked relics have distinct pixel icons and seeded, ownership-aware rolls',()=>{
   const ids=Object.keys(relics);
-  assert.equal(ids.length,70);
+  assert.equal(ids.length,75);
   assert.deepEqual(new Set(ids.map(id=>relics[id].rank)),new Set([0,1,2,3]));
   assert.equal(relicRanks.length,4);
   const icons=ids.map(relicIcon);
-  assert.equal(new Set(icons).size,70);
+  assert.equal(new Set(icons).size,75);
   assert(icons.every(svg=>svg.includes('shape-rendering="crispEdges"')));
   const roll=()=>Array.from({length:128},(_,i)=>drawRelic(random('rank-'+i),['grimoire','chalk'],1,{shop:true}));
   const stock=roll();

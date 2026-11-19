@@ -1679,3 +1679,32 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
 @media (max-width:550px), (max-width:850px) and (pointer:coarse), (max-height:550px) and (max-width:1100px) and (pointer:coarse) {
   .battle .board { padding:6px; }
 }
+
+.attenuation-hint { margin-top:5px; padding:3px 6px; border-inline-start:2px solid #b8a27b; color:#ddd5bf; font-size:.78rem; }
+.attenuation-hint b { color:#ffe3b0; }
+.attenuation-hint small { display:block; }
+.attenuation-hint.attenuation-ready { border-color:#7dd9bd; background:#193d3a; color:#cbffec; }
+.attenuation-ready b,.attenuation-ready small { color:#cbffec; }
+.attenuation-failed { border-color:#e69389; color:#ffd2ca; }
+.card-emblems { display:flex; align-items:center; justify-content:end; gap:2px; min-width:0; }
+.enchant-mark {
+  --enchant-ink:#81ead7;
+  display:inline-grid; width:1.15em; height:1.15em; vertical-align:-.18em; place-items:center;
+  color:var(--enchant-ink); border:1px solid currentColor; background:#14292d;
+}
+.enchant-mark[data-enchant^="energy"] { --enchant-ink:#ffd37f; background:#342718; }
+.enchant-mark[data-enchant^="draw"] { --enchant-ink:#bda7ff; background:#302141; }
+.enchant-mark[data-enchant$="Plus"] { box-shadow:0 0 4px currentColor; }
+.enchant-mark svg { width:88%; height:88%; fill:currentColor; }
+.card-emblems .enchant-mark { font-size:clamp(8px,13cqi,15px); }
+.card:has(.enchant-mark) .card-display,
+.board-card:has(.enchant-mark) { box-shadow:inset 0 -2px #7adaca88,inset 2px 2px #a6eddb35; }
+#app[data-motion="full"] .enchant-mark { animation:enchant-rune 2.4s steps(3,end) infinite; }
+#app:not([data-motion="off"]) .enchant-firing { animation:enchant-cast .45s steps(5,end) both; }
+@keyframes enchant-rune { 0%,100% { opacity:.75; } 48% { opacity:1; filter:drop-shadow(0 0 3px currentColor); } }
+@keyframes enchant-cast { 30% { outline:2px solid #a9ffed; filter:brightness(1.5); } }
+.spell-card .card-type { color:#b9e8ea; }
+.spell-card .card-display { border-style:dashed; }
+.enchant-dialog [data-enchant-target][aria-pressed="true"] { outline:2px solid #abf6e5; outline-offset:-2px; }
+.enchant-dialog [data-enchant-confirm] { margin-top:.6rem; }
+.reel[data-kind="repeat"] #stepName { color:#a9ffed; }

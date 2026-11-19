@@ -99,6 +99,14 @@ export const attackPatterns={
   tax:{name:'魔力徴収',penalty:'tax'},fracture:{name:'局所封印',penalty:'fracture'}
 };
 export const attackHits=move=>attackPatterns[move.kind]?.hits??0;
+const offensiveAttenuation=['add','mul'];
+const disruptiveAttenuation=['mul','add'];
+export const attenuationPattern=move=>attackHits(move)?offensiveAttenuation:disruptiveAttenuation;
+export function matchesAttenuation(move,steps) {
+  const [first,second]=attenuationPattern(move);
+  return steps.some((step,i)=>i>0&&!step.card.enemy&&step.op?.kind===second&&
+    !steps[i-1].card.enemy&&steps[i-1].op?.kind===first);
+}
 export function intent(enemy,turn,act) {
   const [kind,target]=enemy.cycle[turn%enemy.cycle.length].split(':');
   const values={attack:enemy.attack,double:Math.ceil(enemy.attack*.65),wither:8+act*2,drain:50,

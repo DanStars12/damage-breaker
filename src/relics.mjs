@@ -137,6 +137,13 @@ Object.assign(relics,{
   graniteOath:{name:'花崗の誓約',desc:'HOLDがちょうど1回で、4種類以上の有効な演算を使うと×84。',effect:({holds,own})=>
     amplify(holds===1&&new Set(own.map(c=>c.kind)).size>=4,84)}
 });
+Object.assign(relics,{
+  furnaceRemainder:{name:'余剰の炉心',desc:'反撃減衰が成立した次のターン、エナジー＋2。',attenuationEnergy:2},
+  setComplement:{name:'補集合の書',desc:'反撃減衰が成立した次のターン、ドロー＋2。',attenuationDraw:2},
+  cosineShield:{name:'余弦の盾',desc:'反撃減衰が成立した次のターン開始時、防御＋6。',attenuationGuard:6},
+  differenceElixir:{name:'差分の霊薬',desc:'反撃減衰が成立した次のターン開始時、HPを4回復。',attenuationHeal:4},
+  echoEngraver:{name:'再現の刻印器',desc:'獲得時、エンチャントのない演算カード1枚に「再現」を付与。',grantEnchant:'repeat'}
+});
 export const relicRanks=[
   {name:'コモン',shop:15,drop:10},
   {name:'レア',shop:13,drop:14},
@@ -145,8 +152,8 @@ export const relicRanks=[
 ];
 const rankedRelics=[
   ['short','key','reserve','chalk','lens','paper','sealwax','quartette','compass','mirror','ember','keystone','twinScribes','echoQuill','pocket','evenChisel','watchRune'],
-  ['tail','order','chain','furnace','rack','spring','mantle','ratio','brazier','anvil','helix','vigil','pulse','bell','lensGuard','lanternHeart','balanceStone','refuge','holdCrest','braid','alternate','descending','percentPair','sparse','seedTablet','starGlass'],
-  ['prism','codex','sum','lattice','tithe','star','mosaic','comet','crown','rootGem','dam','violetSeal','lodestone','spiralKey','breach','runeSundial','stillwater','bookends','bracket','patient','finishing','triadSeal','graniteOath'],
+  ['tail','order','chain','furnace','rack','spring','mantle','ratio','brazier','anvil','helix','vigil','pulse','bell','lensGuard','lanternHeart','balanceStone','refuge','holdCrest','braid','alternate','descending','percentPair','sparse','seedTablet','starGlass','furnaceRemainder','setComplement','cosineShield','differenceElixir'],
+  ['prism','codex','sum','lattice','tithe','star','mosaic','comet','crown','rootGem','dam','violetSeal','lodestone','spiralKey','breach','runeSundial','stillwater','bookends','bracket','patient','finishing','triadSeal','graniteOath','echoEngraver'],
   ['grimoire','abacus','aurora','nightCrown']
 ];
 for(const [rank,ids] of rankedRelics.entries()) for(const id of ids) relics[id].rank=rank;
@@ -197,8 +204,10 @@ export function evaluate({base=20,board=[],deb=[] ,owned=[],armor=1,holds=0}) {
     }
     if(!c.enemy&&locks.has(c.kind)) op=null;
     if(op) result=apply(result,op);
+    const firstResult=op&&!c.enemy&&c.enchant==='repeat'?result:null;
+    if(firstResult) result=apply(result,op);
     if(op && ['mul','pow','exp'].includes(op.kind)) factors.push(op);
-    steps.push({card:c,op,result});
+    steps.push({card:c,op,result,...(firstResult?{firstResult}:{})});
   }
   const normal=result, triggers=[];
   const activeCards=steps.map(({card,op})=>op?card:{kind:'sealed',enemy:true});

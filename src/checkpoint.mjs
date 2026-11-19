@@ -1,4 +1,4 @@
-import {random} from './cards.mjs';
+import {random,enchantments,spellKinds} from './cards.mjs';
 import {Run} from './run.mjs';
 import {relics} from './relics.mjs';
 import {encounterName} from './enemies.mjs';
@@ -9,7 +9,8 @@ const shopKinds=['shop','forge','fuse','relic','remove','event','omen'];
 const savedCardKinds=['add','mul','pct','pow','exp','clean','ward','guard'];
 const integerBetween=(value,min,max)=>Number.isInteger(value)&&value>=min&&value<=max;
 const validCard=c=>c&&savedCardKinds.includes(c.kind)&&Number.isSafeInteger(c.value)&&
-  integerBetween(c.cost,1,4)&&integerBetween(c.tier,0,4);
+  integerBetween(c.cost,1,4)&&integerBetween(c.tier,0,4)&&
+  (c.enchant===undefined||(Object.hasOwn(enchantments,c.enchant)&&!spellKinds.includes(c.kind)));
 const validCards=cards=>Array.isArray(cards)&&cards.every(validCard);
 const validRelic=id=>typeof id==='string'&&Object.hasOwn(relics,id);
 const nonnegativeBigInt=n=>typeof n==='bigint'&&n>=0n;
@@ -43,7 +44,10 @@ export function readCheckpoint(serialized) {
       const e=state.enemy;
       if(!nonnegativeBigInt(e?.hp)||!nonnegativeBigInt(e.max)||e.max===0n||
         !Array.isArray(e.gates)||!e.gates.every(nonnegativeBigInt)||!Array.isArray(e.cycle)||!e.cycle.length||
-        !validCards(state.hand)||!validCards(state.board)||!validCards(state.deckDraw)||!validCards(state.discard)||
+        !validCards(state.hand)||!validCards(state.board)||state.board.some(c=>spellKinds.includes(c.kind))||
+        (state.attenuationUsed!==undefined&&typeof state.attenuationUsed!=='boolean')||
+        (state.turnEnergy!==undefined&&!integerBetween(state.turnEnergy,0,2))||
+        (state.turnDraw!==undefined&&!integerBetween(state.turnDraw,0,2))||!validCards(state.deckDraw)||!validCards(state.discard)||
         !Array.isArray(state.deb)||!integerBetween(state.maxHp,1,100)||
         (state.guard!==undefined&&!integerBetween(state.guard,0,48))||
         (typeof state.ward!=='boolean'&&!integerBetween(state.ward,0,6))) return null;
@@ -53,6 +57,7 @@ export function readCheckpoint(serialized) {
       (state.cardDecision.status==='taken'&&!validCard(state.cardDecision.card))||
       !rewardDecisions.includes(state.goldDecision)||
       (state.omenDecision!=null&&!rewardDecisions.includes(state.omenDecision))||
+      (state.relicEnchantedCard!=null&&!validCard(state.relicEnchantedCard))||
       (state.relicAlternative!=null&&(!validRelic(state.relicAlternative)||state.relicAlternative===state.relicDrop))||
       (state.relicDecision!==null&&(!rewardDecisions.includes(state.relicDecision)||!validRelic(state.relicDrop))))) return null;
     if(craftResult&&(!shopKinds.includes(craftResult.kind)||(craftResult.result&&!validCard(craftResult.result))||
