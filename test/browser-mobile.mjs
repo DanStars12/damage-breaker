@@ -92,6 +92,7 @@ async function battleFlow(options) {
   assert.equal(board.length,2);
   await action(page,'slot:0').tap();
   await action(page,'shift:1').tap();
+  assert.equal(await page.locator('.board-card.card-shift-right').count(),1);
   assert.deepEqual((await readState(page)).board,[board[1],board[0]]);
   await action(page,'unplay').tap();
   const placed=await readState(page);
@@ -133,7 +134,9 @@ async function facilityFlow(options) {
   assert(await action(p,'advance').isDisabled());
   await noOverflow(p,'elite reward');
   await action(p,'take:0').tap();
+  assert.equal(await p.locator('.reward-cards .reward-claimed').count(),1);
   await action(p,'goldTake').tap();
+  assert.equal(await p.locator('.reward-gold.reward-claimed').count(),1);
   await action(p,'relicTake:1').tap();
   if(await action(p,'omenTake').count()) await action(p,'omenTake').tap();
   assert.equal((await readState(p)).relicDecision,'taken');
@@ -168,14 +171,39 @@ async function facilityFlow(options) {
   assert.equal(await s.locator('.craft-materials .result-card').count(),2);
   await action(s,'craftNext').tap();
   await action(s,'remove').tap();
-  assert(await s.locator('#removeForm button').isDisabled());
-  await s.locator('#removeCard').selectOption('1');
+  const confirmRemoval=s.locator('.remove-dialog [data-craft-confirm]');
+  const beforeRemoval=await readState(s);
+  assert(await confirmRemoval.isDisabled());
+  const filter=s.locator('#removeFilter');
+  await filter.selectOption('mul');
+  const filtered=s.locator('.remove-dialog [data-craft-card]');
+  assert.equal(await filtered.count(),beforeRemoval.deck.filter(card=>card.kind==='mul').length);
+  await filtered.first().tap();
+  await s.locator('.remove-target .result-card').waitFor();
+  await filter.selectOption('add');
+  assert(await confirmRemoval.isDisabled());
+  await filtered.first().tap();
+  await s.getByRole('button',{name:'閉じる',exact:true}).tap();
+  assert.deepEqual(await readState(s),beforeRemoval);
+  await action(s,'remove').tap();
+  await filter.selectOption('add');
+  const target=filtered.nth(1);
+  const index=Number(await target.getAttribute('data-craft-card'));
+  await target.tap();
+  await target.tap();
+  assert(await confirmRemoval.isDisabled());
+  await target.tap();
+  assert.equal(await target.getAttribute('aria-pressed'),'true');
   await noOverflow(s,'removal dialog');
-  await s.locator('#removePreview .result-card').waitFor();
-  await s.locator('#removeForm button').tap();
-  assert.equal((await readState(s)).deck.length,14);
+  await confirmRemoval.tap();
+  const afterRemoval=await readState(s);
+  assert.deepEqual(afterRemoval.deck,beforeRemoval.deck.filter((_,at)=>at!==index));
+  assert.equal(afterRemoval.gold,beforeRemoval.gold-30);
+  assert.equal(await s.locator('.removal-sparks i').count(),7);
+  assert.equal(await s.locator('.removal-sparks i').first().evaluate(el=>getComputedStyle(el).animationName),'erase-sparks');
   await noOverflow(s,'removal receipt');
   await action(s,'craftNext').tap();
+  assert(await action(s,'remove').isDisabled());
   await action(s,'menu').tap();
   await action(s,'deck').tap();
   await s.locator('#deckFilter').selectOption('add');
@@ -278,6 +306,21 @@ async function desktopFlow() {
   await noOverflow(page,'desktop battle');
   assert.deepEqual(errors,[]);
   await page.close();
+
+  const shop=await openPage({viewport:{width:1366,height:768},reducedMotion:'reduce'},fixture('shop'));
+  const s=shop.page;
+  await action(s,'resume').click();
+  await action(s,'shopTab:forge').click();
+  await action(s,'remove').click();
+  const confirm=s.locator('.remove-dialog [data-craft-confirm]');
+  assert(await confirm.isDisabled());
+  await s.locator('[data-craft-card="0"]').press('Enter');
+  await confirm.press('Enter');
+  await s.locator('.removal-scene').waitFor();
+  assert.equal((await readState(s)).deck.length,14);
+  assert.equal(await s.locator('.removal-sparks i').first().evaluate(el=>getComputedStyle(el).animationName),'none');
+  assert.deepEqual(shop.errors,[]);
+  await s.close();
 }
 
 try {
@@ -297,7 +340,7 @@ try {
   }
   if(!useWebKit) {
     await desktopFlow();
-    console.log('PASS desktop Chrome 1366×768 drag placement → BURST');
+    console.log('PASS desktop Chrome 1366×768 drag placement → BURST, keyboard removal / reduced motion');
   }
 } finally {
   await browser.close();

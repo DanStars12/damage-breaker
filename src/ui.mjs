@@ -238,7 +238,7 @@ function rewardChanges({hp,gold}) {
 function cardReward() {
   const {status,card}=run.cardDecision;
   if(status==='none') return '';
-  return `<section class="reward-block"><h2>演算パネル</h2>${
+  return `<section class="reward-block reward-cards"><h2>演算パネル</h2>${
     status==='pending'?`<p>獲得するパネルを1枚選ぶか、見送れます。</p><div class="choices">${run.offers.map((c,i)=>cardButton(c,'take:'+i)).join('')}</div>
       ${btn('カードを見送る','cardSkip')}`:
       status==='taken'?`<div class="reward-result">${rewardCard(card)}<p><strong>取得済み</strong><br>デッキに ${label(card)} を追加しました。</p></div>`:
@@ -261,7 +261,7 @@ function takeReport() {
 }
 function omenReward() {
   if(run.omenDecision!=='pending') return '';
-  return `<section class="reward-block"><h2>✧ 星詠みの頁</h2><p>1枚につき1回、手札から最も大きいBURSTになる演算を仮置きできます。</p>
+  return `<section class="reward-block reward-omen"><h2>✧ 星詠みの頁</h2><p>1枚につき1回、手札から最も大きいBURSTになる演算を仮置きできます。</p>
     <div class="actions">${btn('頁を受け取る','omenTake','primary')}${btn('見送る','omenSkip')}</div></section>`;
 }
 function relicReward() {
@@ -301,6 +301,8 @@ function workResult() {
       <div class="removal-scene" aria-hidden="true">
         <div class="card removed-card t${card.tier}">${cardFace(card)}</div>
         <i class="removal-ring"></i><i class="removal-cut"></i>
+        <span class="removal-sparks">${[[8,46],[-34,-43],[50,-28],[-57,17],[24,-55],[-20,50],[62,26]].map(([x,y])=>
+          `<i style="--dx:${x}px;--dy:${y}px"></i>`).join('')}</span>
       </div>
       <p role="status">「${label(card)}」をデッキから削除しました。</p>
       <p class="muted">${coin}${price} 金貨を支払い · デッキ残り ${run.deck.length} 枚</p>
@@ -333,18 +335,6 @@ function useService(action,i,j,mode,digit) {
   saveProgress();
   render();
   app.querySelector('[data-action="craftNext"]')?.focus({preventScroll:true});
-}
-function openRemoval() {
-  const options=run.deck.map((c,i)=>`<option value="${i}">${i+1}. ${label(c)}${c.upgraded?' ✧':''} · ${rarity[c.tier]} · 消費 ${c.cost}</option>`).join('');
-  modal('削除するカードを選ぶ',`<form id="removeForm" class="remove-form">
-    <p>料金 ${coin}${prices.remove} 金貨 · ${coin}所持金 ${run.gold} 金貨</p>
-    <label for="removeCard">削除するカード</label>
-    <select id="removeCard" name="card" required><option value="" selected disabled>カードを選択</option>${options}</select>
-    <div id="removePreview" aria-live="polite"></div>
-    <p id="removeStatus" role="status"></p>
-    <button class="primary" type="submit" disabled>選んだカードを削除</button>
-  </form>`);
-  dialog.querySelector('#removeCard').focus();
 }
 function eventChapter(id,content,resolved=false) {
   const definition=events[id];
@@ -395,15 +385,46 @@ function shopContents() {
 }
 let crafting=null;
 function openCraft(kind) {
-  crafting={kind,i:null,j:null,mode:null,digit:0};
-  modal(kind==='fuse'?'カード合成':'カード強化','<div id="craftPicker"></div>');
+  crafting={kind,i:null,j:null,mode:null,digit:0,filter:'all'};
+  const titles={fuse:'カード合成',forge:'カード強化',remove:'削除するカードを選ぶ'};
+  modal(titles[kind],'<div id="craftPicker"></div>');
   dialog.classList.add('craft-dialog');
+  dialog.classList.toggle('remove-dialog',kind==='remove');
   renderCraft();
+  if(kind==='remove') dialog.querySelector('#removeFilter').focus({preventScroll:true});
 }
 function craftCard(card,index,disabled,pressed) {
-  return `<button type="button" class="card t${card.tier}" data-craft-card="${index}" aria-pressed="${pressed}" ${disabled?'disabled':''}>${cardFace(card)}</button>`;
+  return `<button type="button" class="card t${card.tier}" data-craft-card="${index}" aria-label="${index+1}枚目 ${label(card)} ${cardEffect(card)} 消費${card.cost}${card.upgraded?' 強化済み':''}" aria-pressed="${pressed}" ${disabled?'disabled':''}>${cardFace(card)}</button>`;
 }
-function renderCraft() {
+function renderRemoval(keepScroll) {
+  const {i,filter}=crafting;
+  const picked=run.deck[i];
+  const candidates=run.deck.map((card,index)=>({card,index}))
+    .filter(({card})=>filter==='all'||card.kind===filter)
+    .sort((a,b)=>deckKinds.indexOf(a.card.kind)-deckKinds.indexOf(b.card.kind)||a.index-b.index);
+  const container=dialog.querySelector('#craftPicker');
+  const scroll=keepScroll?container.querySelector('.craft-stock')?.scrollTop??0:0;
+  container.innerHTML=`<p>削除するカードを1枚選びます。</p>
+    <div class="remove-toolbar">
+      <label>種類 <select id="removeFilter">${['all',...deckKinds].map(kind=>
+        `<option value="${kind}" ${kind===filter?'selected':''}>${deckNames[kind]??'すべて'}</option>`).join('')}</select></label>
+      <small>${candidates.length} / ${run.deck.length}枚</small>
+    </div>
+    <div class="craft-stock deck-cards" aria-label="削除候補">${candidates.length?candidates.map(({card,index})=>
+      craftCard(card,index,false,index===i)).join(''):'<p>この種類のカードはありません。</p>'}</div>
+    <div class="craft-confirm removal-confirm">
+      <div class="remove-target">${picked?rewardCard(picked):'<span class="remove-placeholder" aria-hidden="true">◇</span>'}</div>
+      <div class="remove-details"><p aria-live="polite">${picked?'削除対象 · '+label(picked)+(picked.upgraded?'（強化済み）':''):'カード未選択'}</p>
+        <small>${coin}料金 ${prices.remove}金貨 · ${coin}所持金 ${run.gold}金貨</small>
+        <small>デッキ ${run.deck.length}枚${picked?' → '+(run.deck.length-1)+'枚':''} · 下限12枚</small>
+        <p role="status"></p>
+        <button type="button" class="primary" data-craft-confirm ${picked?'':'disabled'}>削除を確定</button>
+      </div>
+    </div>`;
+  container.querySelector('.craft-stock').scrollTop=scroll;
+}
+function renderCraft(keepScroll=true) {
+  if(crafting.kind==='remove') return renderRemoval(keepScroll);
   const {kind,i,j,mode,digit}=crafting;
   const fusion=kind==='fuse', first=run.deck[i];
   const modes=['power','adjust','digit'];
@@ -451,7 +472,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.2</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.2.1</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -659,14 +680,22 @@ function action(command) {
     case 'hold': void showHold();return;
     case 'burst': void showBurst();return;
     case 'intercept': void showBurst(true);return;
-    case 'take':if(run.takeCard(i)) cue('mystic');break;
+    case 'take':
+      if(run.takeCard(i)) {cue('mystic');feedback={selector:'.reward-cards .reward-result',className:'reward-claimed'};}
+      break;
     case 'cardSkip':run.skipCard();break;
-    case 'goldTake':if(run.chooseGold(true)) cue('gold');break;
+    case 'goldTake':
+      if(run.chooseGold(true)) {cue('gold');feedback={selector:'.reward-gold',className:'reward-claimed'};}
+      break;
     case 'goldSkip':run.chooseGold(false);break;
-    case 'omenTake':if(run.chooseOmen(true)) cue('mystic');break;
+    case 'omenTake':
+      if(run.chooseOmen(true)) {cue('mystic');feedback={selector:'.loot-receipt',className:'reward-claimed'};}
+      break;
     case 'omenSkip':run.chooseOmen(false);break;
     case 'divine':void useDivination();return;
-    case 'relicTake':if(run.chooseRelic(true,i)) cue('relic');break;
+    case 'relicTake':
+      if(run.chooseRelic(true,i)) {cue('relic');feedback={selector:'.relic-drop',className:'reward-claimed'};}
+      break;
     case 'relicSkip':run.chooseRelic(false);break;
     case 'advance':run.advance();cue('page');break;
     case 'route':
@@ -680,13 +709,13 @@ function action(command) {
     case 'service':useService(arg);return;
     case 'eventChoice':useService('event',i);return;
     case 'forge':openCraft('forge');return;
-    case 'remove':openRemoval();return;
+    case 'remove':openCraft('remove');return;
     case 'fuse':openCraft('fuse');return;
   }
   markBaseGain(oldBase);
   saveProgress();
   render();
-  animateCard(feedback);
+  animateFeedback(feedback);
 }
 async function useDivination() {
   if(run.phase!=='battle'||!(run.omens>0)) return;
@@ -718,7 +747,7 @@ async function useDivination() {
   } finally {
     sequence=null;
     render();
-    animateCard({selector:'.board-frame',className:'divination-glow'});
+    animateFeedback({selector:'.board-frame',className:'divination-glow'});
   }
 }
 function playCard(index,at=run.board.length) {
@@ -739,9 +768,9 @@ function undoCard(index) {
 function moveCard(from,to) {
   if(from===to||!run.move(from,to)) return null;
   cue('move');
-  return {selector:'.board-card[data-at="'+to+'"]',className:'card-placed'};
+  return {selector:'.board-card[data-at="'+to+'"]',className:to>from?'card-shift-right':'card-shift-left'};
 }
-function animateCard(feedback) {
+function animateFeedback(feedback) {
   if(feedback&&motionMode()!=='off') app.querySelector(feedback.selector)?.classList.add(feedback.className);
 }
 app.addEventListener('click',e=>{
@@ -793,7 +822,7 @@ app.addEventListener('drop',e=>{
     if(dragging.hand!==undefined) feedback=playCard(dragging.hand,at);
     else feedback=moveCard(dragging.board,Math.min(at,run.board.length-1));
   } else return;
-  dragging=null;selected=null;saveProgress();render();animateCard(feedback);
+  dragging=null;selected=null;saveProgress();render();animateFeedback(feedback);
 });
 app.addEventListener('dragend',()=>{dragging=null;});
 dialog.addEventListener('change',e=>{
@@ -805,10 +834,11 @@ dialog.addEventListener('change',e=>{
     return;
   }
   if(id==='deckFilter') {deckFilter=value;deckPage=0;refreshDeck('#deckFilter');return;}
-  if(id==='removeCard') {
-    const selectedCard=value===''?null:run.deck[Number(value)];
-    dialog.querySelector('#removePreview').innerHTML=selectedCard?rewardCard(selectedCard):'';
-    dialog.querySelector('#removeForm button').disabled=!selectedCard;
+  if(id==='removeFilter'&&crafting?.kind==='remove') {
+    crafting.filter=value;
+    crafting.i=null;
+    renderCraft(false);
+    dialog.querySelector('#removeFilter').focus({preventScroll:true});
     return;
   }
   if(!['scientific','motion','mute'].includes(id)) return;
@@ -824,8 +854,8 @@ dialog.addEventListener('click',e=>{
     if(option.dataset.craftMode) crafting.mode=option.dataset.craftMode;
     else {
       const index=Number(option.dataset.craftCard);
-      if(kind==='forge') {
-        crafting.i=index;
+      if(kind!=='fuse') {
+        crafting.i=kind==='remove'&&i===index?null:index;
         crafting.mode=null;
       } else if(i===index) {
         crafting.i=null;crafting.j=null;
@@ -850,12 +880,7 @@ dialog.addEventListener('input',e=>{
   sound.refresh();
   persist();
 });
-dialog.addEventListener('submit',e=>{
-  if(e.target.id!=='removeForm') return;
-  e.preventDefault();
-  const value=e.target.elements.card.value;
-  if(value!=='') useService('remove',Number(value));
-});
+
 render();
 
 function reactionText(move,message,hpLost,outcome) {
