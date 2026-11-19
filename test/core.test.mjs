@@ -1,3 +1,4 @@
+import {events} from '../src/events.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {apply,CAP,format,damage,label,numberUnits} from '../src/math.mjs';
@@ -577,4 +578,44 @@ test('new relics reward different boards and provide opening guard and recovery'
   const r=new Run('new-relics-100');r.owned=['keystone','lanternHeart'];r.hp=50;
   forceNode(r,'fight');assert.equal(r.guardPoints,6);
   kill(r);assert.equal(r.hp,59);
+});
+
+test('exchange requires an owned relic and replaces it with an unowned relic of the same rank once',()=>{
+  const run=new Run('silver-mirror');
+  forceNode(run,'event');
+  run.event='exchange';
+  run.owned=['grimoire','abacus','chalk'];
+  const choices=run.eventExchanges('grimoire');
+  assert.equal(choices.length,2);
+  assert(choices.every(id=>!run.owned.includes(id)&&relics[id].rank===relics.grimoire.rank));
+  assert.deepEqual(run.eventExchanges('grimoire'),choices);
+  const before=[...run.owned];
+  for(const [mode,i] of [['aurora',0],['grimoire',-1],['grimoire',2],['grimoire','0']]) {
+    assert.equal(run.service({action:'exchange',mode,i}),null);
+  }
+  assert.deepEqual(run.owned,before);
+  const state={gold:run.gold,hp:run.hp,deck:[...run.deck],rng:run.rng.state()};
+  const result=run.service({action:'exchange',mode:'grimoire',i:1});
+  assert.deepEqual(result,{kind:'event',event:'exchange',exchanged:'grimoire',relic:choices[1]});
+  assert.deepEqual(run.owned,[choices[1],'abacus','chalk']);
+  assert.equal(run.phase,'map');
+  assert.equal(run.service({action:'exchange',mode:'chalk',i:0}),null);
+  assert.deepEqual({gold:run.gold,hp:run.hp,deck:run.deck,rng:run.rng.state()},state);
+});
+
+test('exchange event enters the pool only if there is an eligible relic',()=>{
+  const withRelic=new Run('exchange-filter');
+  withRelic.owned=['chalk'];
+  const withoutRelic=new Run(withRelic.seed);
+  for(const run of [withRelic,withoutRelic]) {
+    run.seenEvents=Object.keys(events).filter(id=>id!=='exchange');
+    forceNode(run,'event');
+  }
+  assert.equal(withRelic.event,'exchange');
+  assert.notEqual(withoutRelic.event,'exchange');
+  const exhausted=new Run(withRelic.seed);
+  exhausted.owned=Object.keys(relics);
+  exhausted.seenEvents=[...withRelic.seenEvents].filter(id=>id!=='exchange');
+  forceNode(exhausted,'event');
+  assert.notEqual(exhausted.event,'exchange');
 });

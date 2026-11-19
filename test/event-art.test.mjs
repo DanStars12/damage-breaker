@@ -20,11 +20,11 @@ test('every event has a distinct, deterministic pixel background',()=>{
     assert(new Set(pixels).size>=5);
     return createHash('sha256').update(pixels.join('')).digest('hex');
   };
-  assert.equal(Object.keys(events).length,34);
+  assert.equal(Object.keys(events).length,40);
   assert.deepEqual([...eventArtIds].sort(),Object.keys(events).sort());
   const scenes=[...eventArtIds,...facilityArtIds,...actArtIds];
   assert.deepEqual(facilityArtIds,['rest','shop']);
   const hashes=scenes.map(draw);
-  assert.equal(new Set(hashes).size,40);
+  assert.equal(new Set(hashes).size,46);
   assert.deepEqual(scenes.map(draw),hashes);
 });

@@ -8,8 +8,7 @@ export const events={
   duel:{name:'鏡影の決闘場',story:'勝負に敗れた影が、自らの手札を譲ると申し出た。',offer:'HP9を払い高品質のカードを獲得',hp:-9,card:43},
   caravan:{name:'黄昏の隊商',story:'隊商の主が、一本道の案内料を差し出す。',offer:'16金貨とHP最大10回復',gold:16,hp:10},
   cache:{name:'茨の埋蔵庫',story:'宝の匂いとともに、封から細い棘が突き出す。',offer:'HP5を払い42金貨を得る',hp:-5,gold:42},
-  archive:{name:'崩れた書庫',story:'崩れた書庫の棚に、手付かずの演算書が眠る。',offer:'高品質のカードを獲得',card:35}
-,
+  archive:{name:'崩れた書庫',story:'崩れた書庫の棚に、手付かずの演算書が眠る。',offer:'高品質のカードを獲得',card:35},
   lantern:{name:'迷い火の灯台',story:'水先案内人が、光を取り戻した礼を申し出る。',offer:'22金貨を受け取る',gold:22},
   orchard:{name:'星降る果樹園',story:'銀の果実から、温かな光がこぼれる。',offer:'HPを最大26回復',hp:26},
   bell:{name:'鐘楼の番人',story:'夕鐘が鳴るまで、番人は旅人に一席を貸してくれる。',offer:'HPを最大18回復',hp:18,choices:[{offer:'鐘を鳴らして12金貨を得る',gold:12}]},
@@ -33,5 +32,11 @@ export const events={
   oracle:{name:'天球占いの小屋',story:'占い師が星図の余白を一頁だけ切り離し、旅人に差し出す。',offer:'星詠みの頁を1枚受け取る',omen:1},
   cistern:{name:'反響する貯水廟',story:'水底に二つの反射が見える。片方は旅銭、もう片方は護符だ。',offer:'18金貨を受け取る',gold:18,choices:[{offer:'結界カードを受け取る',support:23,kind:'ward'}]},
   rookery:{name:'真鍮梟の塔',story:'梟は嘴に演算札をくわえ、止まり木で取引を待っている。',offer:'11金貨で高品質のカードを獲得',gold:-11,card:38},
-  hearth:{name:'雪路の炭火',story:'消えかけた炭火に手をかざすと、旅の疲れがほどける。',offer:'HPを最大21回復',hp:21}
+  hearth:{name:'雪路の炭火',story:'消えかけた炭火に手をかざすと、旅の疲れがほどける。',offer:'HPを最大21回復',hp:21},
+  exchange:{name:'銀鏡の交換市',story:'鏡商人が、手放す秘宝と同じレアリティの品を示す。効果を見比べて、一つだけ交換できる。',exchange:true},
+  atlas:{name:'天文写本の蔵',story:'星図の余白か、星の軌道を刻んだ演算板か。写本師がどちらか一つを渡してくれる。',offer:'18金貨で星詠みの頁を1枚得る',gold:-18,omen:1,choices:[{offer:'12金貨で高品質のカードを得る',gold:-12,card:45}]},
+  fog:{name:'白霧の薬師街',story:'薬師が霧除けの薬と浄化札を並べ、旅路に必要なものを聞く。',offer:'11金貨でHPを最大29回復',gold:-11,hp:29,choices:[{offer:'HP6を払い浄化カードを得る',hp:-6,support:34,kind:'clean'}]},
+  glacier:{name:'氷柱の宝庫',story:'氷に閉ざされた護符と貨箱。氷を割るために、指先の熱を少し分ける必要がある。',offer:'HP8を払い44金貨を得る',hp:-8,gold:44,choices:[{offer:'HP5を払い結界カードを得る',hp:-5,support:29,kind:'ward'}]},
+  library:{name:'百階の貸本塔',story:'棚を整理した礼に、司書が旅銭と防御陣の写しを用意した。',offer:'20金貨を受け取る',gold:20,choices:[{offer:'防御カードを受け取る',support:22,kind:'guard'}]},
+  sundown:{name:'夕映えの野営隊',story:'商隊の炊事場から湯気が立つ。斥候は道中で見つけた演算板も持っている。',offer:'HPを最大16回復し、9金貨を得る',hp:16,gold:9,choices:[{offer:'21金貨で高品質のカードを得る',gold:-21,card:52}]}
 };

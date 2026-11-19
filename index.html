@@ -1631,6 +1631,21 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
   .hand-frame .controls > small { display:none; }
   .battle .hand-frame .hand { margin:0; }
 }
+
+.exchange-label { display:grid; gap:5px; width:min(100%,28rem); margin-block:12px; color:#f5dcae; }
+.exchange-label select { width:100%; min-height:44px; }
+.exchange-choices { display:grid; gap:9px; margin-bottom:10px; }
+.exchange-candidates { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+.exchange-candidates:has(.exchange-relic:only-child) { grid-template-columns:1fr; }
+.exchange-relic { min-width:0; overflow-wrap:anywhere; }
+.exchange-choices > .exchange-relic,.exchange-receipt > .exchange-relic:first-child { border-inline-start:3px solid #bd9abf; }
+.exchange-candidates .exchange-relic,.exchange-receipt > .exchange-relic:last-child { border-inline-start:3px solid #83cb9c; }
+.exchange-relic button { max-width:100%; min-height:44px; white-space:normal; }
+.exchange-receipt { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:8px; align-items:center; }
+@media (max-width:550px) {
+  .exchange-candidates,.exchange-receipt { grid-template-columns:1fr; }
+  .exchange-receipt .workshop-arrow { justify-self:center; rotate:90deg; }
+}
 </style>
 </head>
 <body>
@@ -2065,8 +2080,7 @@ const events={
   duel:{name:'鏡影の決闘場',story:'勝負に敗れた影が、自らの手札を譲ると申し出た。',offer:'HP9を払い高品質のカードを獲得',hp:-9,card:43},
   caravan:{name:'黄昏の隊商',story:'隊商の主が、一本道の案内料を差し出す。',offer:'16金貨とHP最大10回復',gold:16,hp:10},
   cache:{name:'茨の埋蔵庫',story:'宝の匂いとともに、封から細い棘が突き出す。',offer:'HP5を払い42金貨を得る',hp:-5,gold:42},
-  archive:{name:'崩れた書庫',story:'崩れた書庫の棚に、手付かずの演算書が眠る。',offer:'高品質のカードを獲得',card:35}
-,
+  archive:{name:'崩れた書庫',story:'崩れた書庫の棚に、手付かずの演算書が眠る。',offer:'高品質のカードを獲得',card:35},
   lantern:{name:'迷い火の灯台',story:'水先案内人が、光を取り戻した礼を申し出る。',offer:'22金貨を受け取る',gold:22},
   orchard:{name:'星降る果樹園',story:'銀の果実から、温かな光がこぼれる。',offer:'HPを最大26回復',hp:26},
   bell:{name:'鐘楼の番人',story:'夕鐘が鳴るまで、番人は旅人に一席を貸してくれる。',offer:'HPを最大18回復',hp:18,choices:[{offer:'鐘を鳴らして12金貨を得る',gold:12}]},
@@ -2090,7 +2104,13 @@ const events={
   oracle:{name:'天球占いの小屋',story:'占い師が星図の余白を一頁だけ切り離し、旅人に差し出す。',offer:'星詠みの頁を1枚受け取る',omen:1},
   cistern:{name:'反響する貯水廟',story:'水底に二つの反射が見える。片方は旅銭、もう片方は護符だ。',offer:'18金貨を受け取る',gold:18,choices:[{offer:'結界カードを受け取る',support:23,kind:'ward'}]},
   rookery:{name:'真鍮梟の塔',story:'梟は嘴に演算札をくわえ、止まり木で取引を待っている。',offer:'11金貨で高品質のカードを獲得',gold:-11,card:38},
-  hearth:{name:'雪路の炭火',story:'消えかけた炭火に手をかざすと、旅の疲れがほどける。',offer:'HPを最大21回復',hp:21}
+  hearth:{name:'雪路の炭火',story:'消えかけた炭火に手をかざすと、旅の疲れがほどける。',offer:'HPを最大21回復',hp:21},
+  exchange:{name:'銀鏡の交換市',story:'鏡商人が、手放す秘宝と同じレアリティの品を示す。効果を見比べて、一つだけ交換できる。',exchange:true},
+  atlas:{name:'天文写本の蔵',story:'星図の余白か、星の軌道を刻んだ演算板か。写本師がどちらか一つを渡してくれる。',offer:'18金貨で星詠みの頁を1枚得る',gold:-18,omen:1,choices:[{offer:'12金貨で高品質のカードを得る',gold:-12,card:45}]},
+  fog:{name:'白霧の薬師街',story:'薬師が霧除けの薬と浄化札を並べ、旅路に必要なものを聞く。',offer:'11金貨でHPを最大29回復',gold:-11,hp:29,choices:[{offer:'HP6を払い浄化カードを得る',hp:-6,support:34,kind:'clean'}]},
+  glacier:{name:'氷柱の宝庫',story:'氷に閉ざされた護符と貨箱。氷を割るために、指先の熱を少し分ける必要がある。',offer:'HP8を払い44金貨を得る',hp:-8,gold:44,choices:[{offer:'HP5を払い結界カードを得る',hp:-5,support:29,kind:'ward'}]},
+  library:{name:'百階の貸本塔',story:'棚を整理した礼に、司書が旅銭と防御陣の写しを用意した。',offer:'20金貨を受け取る',gold:20,choices:[{offer:'防御カードを受け取る',support:22,kind:'guard'}]},
+  sundown:{name:'夕映えの野営隊',story:'商隊の炊事場から湯気が立つ。斥候は道中で見つけた演算板も持っている。',offer:'HPを最大16回復し、9金貨を得る',hp:16,gold:9,choices:[{offer:'21金貨で高品質のカードを得る',gold:-21,card:52}]}
 };
 
 
@@ -2131,7 +2151,13 @@ const eventScenes={
   oracle:['211f3c','4b3c6e','8773b3','f9deae',true,p=>{p.arch(98,56,102,57);p.moon(127,28,10);p.table(86,70,55);p.book(86,59,27);p.star(86,33,11);p.lamp(59,64);}],
   cistern:['153342','2b5862','65949b','d3f1bd',true,p=>{p.arch(96,57,90,57);p.pillar(42,69,47);p.pillar(152,69,47);p.water(96,76,190);p.gem(87,58,6);p.gem(112,66,4);}],
   rookery:['372b41','66506c','9c7978','ffd58a',false,p=>{p.tower(98,74,60);p.tower(137,73,38);p.moon(42,22,13);p.bird(80,33,3);p.bird(125,29,2);p.scroll(96,65);}],
-  hearth:['212c44','4d6481','9caabe','ffc67d',false,p=>{p.moon(155,20,10);p.tree(35,70,43);p.tree(159,78,41);p.rock(96,73,52,12);p.flame(96,63,17);}]
+  hearth:['212c44','4d6481','9caabe','ffc67d',false,p=>{p.moon(155,20,10);p.tree(35,70,43);p.tree(159,78,41);p.rock(96,73,52,12);p.flame(96,63,17);}],
+  exchange:['231d38','504672','9c84ad','f8dbad',true,p=>{p.arch(61,61,48,56);p.arch(130,61,48,56);p.table(96,72,123);p.gem(62,50,11);p.gem(130,48,11);p.star(96,48,6);p.lamp(33,67);p.lamp(159,67);}],
+  atlas:['17283f','334765','6885a6','ffe2a7',true,p=>{p.shelves(36,70,52);p.arch(131,57,60,55);p.moon(134,34,12);p.table(111,73,78);p.book(111,62,28);p.star(152,23,4);}],
+  fog:['25343c','526b75','82a5a4','e5fac4',false,p=>{p.house(48,67,48,37);p.house(142,65,60,43);p.vase(94,65,8);p.vase(112,70,5);p.lamp(91,54);p.water(96,80,188);}],
+  glacier:['202d52','3d6a94','7fb0bc','f1f9e0',true,p=>{p.arch(97,62,92,59);p.gem(49,54,19);p.gem(144,56,23);p.gem(120,69,10);p.chest(91,67);p.star(96,41,6);}],
+  library:['362742','634667','9c746d','ffde93',false,p=>{p.moon(151,24,13);p.tower(97,76,69);p.tower(61,76,42);p.bridge(125,68);p.scroll(100,61);p.bird(151,42,2);}],
+  sundown:['482940','8f4754','cb7754','ffde8b',false,p=>{p.moon(94,36,24);p.tent(47,71,58,33);p.tent(151,70,54,27);p.flame(100,70,20);p.rock(101,80,32,6);}]
 };
 
 const actScenes={
@@ -2740,18 +2766,31 @@ class Run {
       const rng=random(this.seed+'/event-route');
       this.seenEvents??=[];
       const order=shuffle(Object.keys(events),rng);
-      this.event=order.find(id=>!this.seenEvents.includes(id));
+      const eligible=order.filter(id=>!events[id].exchange||this.owned.some(source=>this.exchangePool(source).length));
+      const unseen=eligible.filter(id=>!this.seenEvents.includes(id));
+      const merchantRoll=random(this.seed+'/merchant/'+this.act+'/'+node.id)();
+      this.event=merchantRoll<.12&&unseen.includes('exchange')?'exchange':
+        unseen.find(id=>id!=='exchange')??unseen[0];
       if(!this.event) {
         this.seenEvents=[];
-        this.event=order[0];
+        this.event=eligible[0];
       }
       this.seenEvents.push(this.event);
     }
     return true;
   }
+  exchangePool(source) {
+    if(!this.owned.includes(source)) return [];
+    return Object.keys(relics).filter(id=>relics[id].rank===relics[source].rank&&!this.owned.includes(id));
+  }
+  eventExchanges(source) {
+    if(this.phase!=='facility'||this.facility!=='event'||!events[this.event]?.exchange) return [];
+    const rng=random(this.seed+'/exchange/'+this.act+'/'+this.node.id+'/'+source);
+    return shuffle(this.exchangePool(source),rng).slice(0,2);
+  }
   get eventOffers(){
     const definition=events[this.event];
-    if(!definition) return [];
+    if(!definition||definition.exchange) return [];
     return [definition,...(definition.choices??[])].map((choice,index)=>{
       const hp=Math.min(100-this.hp,choice.hp||0);
       const gold=choice.gold||0;
@@ -2766,6 +2805,14 @@ class Run {
   service({action,i,j,mode,digit}={}) {
     if(this.phase!=='facility') return null;
     const facility=this.facility;
+    if(facility==='event'&&action==='exchange') {
+      if(!Number.isInteger(i)) return null;
+      const relic=this.eventExchanges(mode)[i];
+      if(!relic) return null;
+      this.owned[this.owned.indexOf(mode)]=relic;
+      this.leaveNode();
+      return {kind:'event',event:this.event,exchanged:mode,relic};
+    }
     if(facility==='event'&&['event','decline'].includes(action)) {
       if(action==='decline') {this.leaveNode();return {message:'イベントを見送った。'};}
       const offer=this.eventOffers[i??0];
@@ -2929,7 +2976,8 @@ function readCheckpoint(serialized) {
       (state.relicDecision!==null&&(!rewardDecisions.includes(state.relicDecision)||!validRelic(state.relicDrop))))) return null;
     if(craftResult&&(!shopKinds.includes(craftResult.kind)||(craftResult.result&&!validCard(craftResult.result))||
       (craftResult.kind!=='event'&&!validCards(craftResult.sources))||
-      (craftResult.relic&&!validRelic(craftResult.relic)))) return null;
+      (craftResult.relic&&!validRelic(craftResult.relic))||
+      (craftResult.exchanged!==undefined&&(!validRelic(craftResult.exchanged)||!validRelic(craftResult.relic))))) return null;
     if(state.phase==='battle'||state.phase==='reward') {
       const variant=state.enemy.variant??state.enemy.art?.palette%6;
       state.enemy.name=encounterName(state.act,state.enemy.kind,variant)??state.enemy.name;
@@ -4141,6 +4189,15 @@ function workResult() {
   const {kind,sources,result,relic,price,baseGain,omen}=craftResult;
   if(kind==='event') {
     const id=craftResult.event??run.event;
+    if(craftResult.exchanged) return eventChapter(id,workshopStage('relic',`
+      <div class="exchange-receipt">
+        ${exchangeRelic(craftResult.exchanged,'手放したレリック')}
+        <span class="workshop-arrow" aria-hidden="true">→</span>
+        ${exchangeRelic(relic,'獲得したレリック')}
+      </div>
+      ${baseBanner(baseGain??null)}
+      <p role="status">レリックの交換が完了しました。</p>
+      <div class="actions">${btn('地図へ戻る','craftNext','primary')}</div>`,true),true);
     return eventChapter(id,`<section class="reward-block"><h2>イベントの結果</h2>
       ${result?`<div class="reward-result">${rewardCard(result)}<p>デッキに <strong>${label(result)}</strong> を追加しました。</p></div>`:''}
       ${rewardChanges(craftResult)}${omen?'<p>星詠みの頁を '+omen+' 枚獲得しました。</p>':''}${!result&&!omen&&!craftResult.hp&&!craftResult.gold?'<p>HPは満タンでした。</p>':''}
@@ -4181,7 +4238,7 @@ function useService(action,i,j,mode,digit) {
     return;
   }
   if(dialog.open) dialog.close();
-  cue(({buy:'gold',relic:'relic',fuse:'fuse',forge:'forge',remove:'remove',heal:'ward'})[action]||'page');
+  cue(({buy:'gold',relic:'relic',exchange:'relic',fuse:'fuse',forge:'forge',remove:'remove',heal:'ward'})[action]||'page');
   markBaseGain(oldBase);
   if(transaction.kind) craftResult={...transaction,...(baseGlow?{baseGain:baseGlow}:{})};
   else notice=transaction.message;
@@ -4200,7 +4257,28 @@ function eventChapter(id,content,resolved=false) {
     </div><div class="event-content">${!resolved&&definition?`<p class="event-story">${moneyText(definition.story)}</p>`:''}${content}</div>
     </section></main>`;
 }
+function exchangeRelic(id,status,action='') {
+  const {name,desc}=relics[id];
+  return `<article class="relic-option exchange-relic" data-exchange-relic="${id}">
+    <small>${status}</small><h3>${relicIcon(id)} ${esc(name)} ${rankMark(id)}</h3>
+    <p>${esc(desc)}</p>${action}</article>`;
+}
+function exchangeChoices(source) {
+  if(!source) return '<p class="muted">手放すレリックを選ぶと、交換候補と効果が表示されます。</p>';
+  const choices=run.eventExchanges(source);
+  return `${exchangeRelic(source,'手放すレリック')}
+    <div class="exchange-candidates">${choices.map((id,i)=>
+      exchangeRelic(id,'交換で獲得',btn('「'+esc(relics[id].name)+'」に交換','eventExchange:'+i,'primary'))).join('')}</div>`;
+}
 function eventPreview() {
+  if(events[run.event]?.exchange) {
+    const sources=run.owned.filter(id=>run.exchangePool(id).length);
+    const form=sources.length?`<label class="exchange-label" for="exchangeSource">手放すレリック
+      <select id="exchangeSource"><option value="">選んでください</option>${sources.map(id=>
+        `<option value="${id}">${esc(relics[id].name)} · ${relicRanks[relics[id].rank].name}</option>`).join('')}</select></label>
+      <div id="exchangeChoices" class="exchange-choices">${exchangeChoices('')}</div>`:'<p>交換できるレリックがありません。</p>';
+    return eventChapter(run.event,`${form}<div class="actions">${btn('交換せずに立ち去る','service:decline')}</div>`);
+  }
   const choices=run.eventOffers.map((offer,i)=>`<section class="reward-block event-choice">
     <h2>${moneyText(offer.offer)}</h2>
     ${offer.result?rewardCard(offer.result):''}${rewardChanges(offer)}
@@ -4334,7 +4412,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.3.1</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.3.2</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -4584,6 +4662,7 @@ function action(command) {
     case 'relicBuy':useService('relic',i);return;
     case 'service':useService(arg);return;
     case 'eventChoice':useService('event',i);return;
+    case 'eventExchange':useService('exchange',i,undefined,app.querySelector('#exchangeSource')?.value);return;
     case 'forge':openCraft('forge');return;
     case 'remove':openCraft('remove');return;
     case 'fuse':openCraft('fuse');return;
@@ -4659,6 +4738,9 @@ app.addEventListener('click',e=>{
   const b=e.target.closest('[data-action]');
   if(b&&!b.disabled) action(b.dataset.action);
 
+});
+app.addEventListener('change',e=>{
+  if(e.target.id==='exchangeSource') app.querySelector('#exchangeChoices').innerHTML=exchangeChoices(e.target.value);
 });
 app.addEventListener('submit',e=>{
   if(e.target.id!=='start') return;

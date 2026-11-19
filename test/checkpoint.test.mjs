@@ -238,3 +238,20 @@ test('expanded combatants reload using their encounter variant rather than palet
   assert.equal(run.enemy.name,'アストラ・グラーヴェ');
   assert.deepEqual(restore(run).run.enemy,run.enemy);
 });
+
+test('exchange candidates and the completed transaction survive checkpoint reload',()=>{
+  const run=new Run('exchange-checkpoint');
+  routeKind(run,'event');
+  run.event='exchange';
+  run.owned=['chalk','abacus'];
+  const opened=restore(run).run;
+  const choices=opened.eventExchanges('chalk');
+  assert(choices.length);
+  assert.deepEqual(choices,run.eventExchanges('chalk'));
+  const result=opened.service({action:'exchange',mode:'chalk',i:0});
+  const copy=restore(opened,{craftResult:result});
+  assert.deepEqual(copy.craftResult,result);
+  assert.deepEqual(copy.run.owned,[choices[0],'abacus']);
+  assert.equal(copy.run.phase,'map');
+  assert.equal(copy.run.service({action:'exchange',mode:'abacus',i:0}),null);
+});

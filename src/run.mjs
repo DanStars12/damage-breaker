@@ -327,18 +327,31 @@ export class Run {
       const rng=random(this.seed+'/event-route');
       this.seenEvents??=[];
       const order=shuffle(Object.keys(events),rng);
-      this.event=order.find(id=>!this.seenEvents.includes(id));
+      const eligible=order.filter(id=>!events[id].exchange||this.owned.some(source=>this.exchangePool(source).length));
+      const unseen=eligible.filter(id=>!this.seenEvents.includes(id));
+      const merchantRoll=random(this.seed+'/merchant/'+this.act+'/'+node.id)();
+      this.event=merchantRoll<.12&&unseen.includes('exchange')?'exchange':
+        unseen.find(id=>id!=='exchange')??unseen[0];
       if(!this.event) {
         this.seenEvents=[];
-        this.event=order[0];
+        this.event=eligible[0];
       }
       this.seenEvents.push(this.event);
     }
     return true;
   }
+  exchangePool(source) {
+    if(!this.owned.includes(source)) return [];
+    return Object.keys(relics).filter(id=>relics[id].rank===relics[source].rank&&!this.owned.includes(id));
+  }
+  eventExchanges(source) {
+    if(this.phase!=='facility'||this.facility!=='event'||!events[this.event]?.exchange) return [];
+    const rng=random(this.seed+'/exchange/'+this.act+'/'+this.node.id+'/'+source);
+    return shuffle(this.exchangePool(source),rng).slice(0,2);
+  }
   get eventOffers(){
     const definition=events[this.event];
-    if(!definition) return [];
+    if(!definition||definition.exchange) return [];
     return [definition,...(definition.choices??[])].map((choice,index)=>{
       const hp=Math.min(100-this.hp,choice.hp||0);
       const gold=choice.gold||0;
@@ -353,6 +366,14 @@ export class Run {
   service({action,i,j,mode,digit}={}) {
     if(this.phase!=='facility') return null;
     const facility=this.facility;
+    if(facility==='event'&&action==='exchange') {
+      if(!Number.isInteger(i)) return null;
+      const relic=this.eventExchanges(mode)[i];
+      if(!relic) return null;
+      this.owned[this.owned.indexOf(mode)]=relic;
+      this.leaveNode();
+      return {kind:'event',event:this.event,exchanged:mode,relic};
+    }
     if(facility==='event'&&['event','decline'].includes(action)) {
       if(action==='decline') {this.leaveNode();return {message:'イベントを見送った。'};}
       const offer=this.eventOffers[i??0];

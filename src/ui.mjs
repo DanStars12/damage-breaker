@@ -323,6 +323,15 @@ function workResult() {
   const {kind,sources,result,relic,price,baseGain,omen}=craftResult;
   if(kind==='event') {
     const id=craftResult.event??run.event;
+    if(craftResult.exchanged) return eventChapter(id,workshopStage('relic',`
+      <div class="exchange-receipt">
+        ${exchangeRelic(craftResult.exchanged,'手放したレリック')}
+        <span class="workshop-arrow" aria-hidden="true">→</span>
+        ${exchangeRelic(relic,'獲得したレリック')}
+      </div>
+      ${baseBanner(baseGain??null)}
+      <p role="status">レリックの交換が完了しました。</p>
+      <div class="actions">${btn('地図へ戻る','craftNext','primary')}</div>`,true),true);
     return eventChapter(id,`<section class="reward-block"><h2>イベントの結果</h2>
       ${result?`<div class="reward-result">${rewardCard(result)}<p>デッキに <strong>${label(result)}</strong> を追加しました。</p></div>`:''}
       ${rewardChanges(craftResult)}${omen?'<p>星詠みの頁を '+omen+' 枚獲得しました。</p>':''}${!result&&!omen&&!craftResult.hp&&!craftResult.gold?'<p>HPは満タンでした。</p>':''}
@@ -363,7 +372,7 @@ function useService(action,i,j,mode,digit) {
     return;
   }
   if(dialog.open) dialog.close();
-  cue(({buy:'gold',relic:'relic',fuse:'fuse',forge:'forge',remove:'remove',heal:'ward'})[action]||'page');
+  cue(({buy:'gold',relic:'relic',exchange:'relic',fuse:'fuse',forge:'forge',remove:'remove',heal:'ward'})[action]||'page');
   markBaseGain(oldBase);
   if(transaction.kind) craftResult={...transaction,...(baseGlow?{baseGain:baseGlow}:{})};
   else notice=transaction.message;
@@ -382,7 +391,28 @@ function eventChapter(id,content,resolved=false) {
     </div><div class="event-content">${!resolved&&definition?`<p class="event-story">${moneyText(definition.story)}</p>`:''}${content}</div>
     </section></main>`;
 }
+function exchangeRelic(id,status,action='') {
+  const {name,desc}=relics[id];
+  return `<article class="relic-option exchange-relic" data-exchange-relic="${id}">
+    <small>${status}</small><h3>${relicIcon(id)} ${esc(name)} ${rankMark(id)}</h3>
+    <p>${esc(desc)}</p>${action}</article>`;
+}
+function exchangeChoices(source) {
+  if(!source) return '<p class="muted">手放すレリックを選ぶと、交換候補と効果が表示されます。</p>';
+  const choices=run.eventExchanges(source);
+  return `${exchangeRelic(source,'手放すレリック')}
+    <div class="exchange-candidates">${choices.map((id,i)=>
+      exchangeRelic(id,'交換で獲得',btn('「'+esc(relics[id].name)+'」に交換','eventExchange:'+i,'primary'))).join('')}</div>`;
+}
 function eventPreview() {
+  if(events[run.event]?.exchange) {
+    const sources=run.owned.filter(id=>run.exchangePool(id).length);
+    const form=sources.length?`<label class="exchange-label" for="exchangeSource">手放すレリック
+      <select id="exchangeSource"><option value="">選んでください</option>${sources.map(id=>
+        `<option value="${id}">${esc(relics[id].name)} · ${relicRanks[relics[id].rank].name}</option>`).join('')}</select></label>
+      <div id="exchangeChoices" class="exchange-choices">${exchangeChoices('')}</div>`:'<p>交換できるレリックがありません。</p>';
+    return eventChapter(run.event,`${form}<div class="actions">${btn('交換せずに立ち去る','service:decline')}</div>`);
+  }
   const choices=run.eventOffers.map((offer,i)=>`<section class="reward-block event-choice">
     <h2>${moneyText(offer.offer)}</h2>
     ${offer.result?rewardCard(offer.result):''}${rewardChanges(offer)}
@@ -516,7 +546,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.3.1</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.3.2</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -766,6 +796,7 @@ function action(command) {
     case 'relicBuy':useService('relic',i);return;
     case 'service':useService(arg);return;
     case 'eventChoice':useService('event',i);return;
+    case 'eventExchange':useService('exchange',i,undefined,app.querySelector('#exchangeSource')?.value);return;
     case 'forge':openCraft('forge');return;
     case 'remove':openCraft('remove');return;
     case 'fuse':openCraft('fuse');return;
@@ -841,6 +872,9 @@ app.addEventListener('click',e=>{
   const b=e.target.closest('[data-action]');
   if(b&&!b.disabled) action(b.dataset.action);
 
+});
+app.addEventListener('change',e=>{
+  if(e.target.id==='exchangeSource') app.querySelector('#exchangeChoices').innerHTML=exchangeChoices(e.target.value);
 });
 app.addEventListener('submit',e=>{
   if(e.target.id!=='start') return;

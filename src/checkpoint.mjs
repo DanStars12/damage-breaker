@@ -56,7 +56,8 @@ export function readCheckpoint(serialized) {
       (state.relicDecision!==null&&(!rewardDecisions.includes(state.relicDecision)||!validRelic(state.relicDrop))))) return null;
     if(craftResult&&(!shopKinds.includes(craftResult.kind)||(craftResult.result&&!validCard(craftResult.result))||
       (craftResult.kind!=='event'&&!validCards(craftResult.sources))||
-      (craftResult.relic&&!validRelic(craftResult.relic)))) return null;
+      (craftResult.relic&&!validRelic(craftResult.relic))||
+      (craftResult.exchanged!==undefined&&(!validRelic(craftResult.exchanged)||!validRelic(craftResult.relic))))) return null;
     if(state.phase==='battle'||state.phase==='reward') {
       const variant=state.enemy.variant??state.enemy.art?.palette%6;
       state.enemy.name=encounterName(state.act,state.enemy.kind,variant)??state.enemy.name;

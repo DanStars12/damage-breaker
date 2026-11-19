@@ -51,7 +51,12 @@ function preference(c,id) {
 function play(seed,id) {
   const r=new Run(seed);
   const reached=new Map();
-  let cleared=false, clearedWithAdditionRelic=false;
+  let cleared=false, clearedWithAdditionRelic=false, exchanges=0, exchangeVisits=0;
+  const rank=key=>{
+    if(!key||['mantle','reserve'].includes(key)) return Infinity;
+    const i=strategies[id].indexOf(key);
+    return i===-1?strategies[id].length:i;
+  };
   const reach={numericBursts:0,infinityBursts:0,landedBursts:0,firstAct:null};
   const fire=()=>{
     const burst=r.burst();
@@ -63,7 +68,7 @@ function play(seed,id) {
     if(burst.impact.dealt>0n) reach.landedBursts++;
   };
   for(let guard=0;guard<500;guard++) {
-    if(r.phase==='loss'||r.phase==='win') return {r,cleared,clearedWithAdditionRelic,reached,reach};
+    if(r.phase==='loss'||r.phase==='win') return {r,cleared,clearedWithAdditionRelic,reached,reach,exchanges,exchangeVisits};
     if(r.phase==='clear') {
       cleared=true;
       clearedWithAdditionRelic=hasAdditionRelic(r);
@@ -71,11 +76,6 @@ function play(seed,id) {
     }
     if(r.phase==='reward') {
       if(r.relicDecision==='pending') {
-        const rank=key=>{
-          if(!key||['mantle','reserve'].includes(key)) return Infinity;
-          const i=strategies[id].indexOf(key);
-          return i===-1?strategies[id].length:i;
-        };
         const index=rank(r.relicAlternative)<rank(r.relicDrop)?1:0;
         r.chooseRelic(rank([r.relicDrop,r.relicAlternative][index])<Infinity,index);
       }
@@ -105,6 +105,12 @@ function play(seed,id) {
           const options=r.deck.filter(c=>!c.upgraded&&['add','mul','pct'].includes(c.kind)).sort((a,b)=>preference(b,id)-preference(a,id));
           if(!r.service({action:'forge',i:r.deck.indexOf(options[0]),mode:'power'})) r.leaveNode();
         }
+      } else if(r.event==='exchange') {
+        exchangeVisits++;
+        const offers=r.owned.flatMap(mode=>r.eventExchanges(mode).map((key,i)=>({mode,i,rank:rank(key)})))
+          .filter(offer=>offer.rank<rank(offer.mode)).sort((a,b)=>a.rank-b.rank);
+        if(offers.length&&r.service({action:'exchange',...offers[0]})) exchanges++;
+        else r.service({action:'decline'});
       } else if(!r.service({action:'event'})) r.service({action:'decline'});
       continue;
     }
@@ -130,11 +136,13 @@ const total=Number(process.argv[2]||32);
 const offset=Number(process.argv[3]||0);
 const rows=[];
 for(const id of Object.keys(strategies)) {
-  const metric={policy:id,seeds:total,clear:0,extra:0,infinity:0,bossAttempts:[0,0,0],bossWins:[0,0,0],bossesByName:{},turns:0,used:{},relics:{},lossesByEnemy:{},actReached:[0,0,0,0],additionRelic:{ownedAtEnd:0,clearWith:0,lossWithoutByAct:[0,0,0,0]}};
+  const metric={policy:id,seeds:total,clear:0,extra:0,infinity:0,exchanges:0,exchangeVisits:0,bossAttempts:[0,0,0],bossWins:[0,0,0],bossesByName:{},turns:0,used:{},relics:{},lossesByEnemy:{},actReached:[0,0,0,0],additionRelic:{ownedAtEnd:0,clearWith:0,lossWithoutByAct:[0,0,0,0]}};
   metric.muryotaisu={runs:0,numericRuns:0,landedRuns:0,numericBursts:0,infinityBursts:0,landedBursts:0,firstByAct:[0,0,0,0]};
   let max=0n,bestSeed='',bestFormula='';
   for(let i=0;i<total;i++) {
-    const {r,cleared,clearedWithAdditionRelic,reached,reach}=play('db-'+(i+offset),id);
+    const {r,cleared,clearedWithAdditionRelic,reached,reach,exchanges,exchangeVisits}=play('db-'+(i+offset),id);
+    metric.exchanges+=exchanges;
+    metric.exchangeVisits+=exchangeVisits;
     for(const [stage,enemy] of reached) {
       metric.bossAttempts[stage-1]++;
       const boss=metric.bossesByName[enemy.name]??={attempts:0,wins:0,lossAtFullHp:0,remainingHpPctSum:0};

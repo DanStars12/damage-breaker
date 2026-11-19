@@ -1624,3 +1624,18 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
   .hand-frame .controls > small { display:none; }
   .battle .hand-frame .hand { margin:0; }
 }
+
+.exchange-label { display:grid; gap:5px; width:min(100%,28rem); margin-block:12px; color:#f5dcae; }
+.exchange-label select { width:100%; min-height:44px; }
+.exchange-choices { display:grid; gap:9px; margin-bottom:10px; }
+.exchange-candidates { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+.exchange-candidates:has(.exchange-relic:only-child) { grid-template-columns:1fr; }
+.exchange-relic { min-width:0; overflow-wrap:anywhere; }
+.exchange-choices > .exchange-relic,.exchange-receipt > .exchange-relic:first-child { border-inline-start:3px solid #bd9abf; }
+.exchange-candidates .exchange-relic,.exchange-receipt > .exchange-relic:last-child { border-inline-start:3px solid #83cb9c; }
+.exchange-relic button { max-width:100%; min-height:44px; white-space:normal; }
+.exchange-receipt { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:8px; align-items:center; }
+@media (max-width:550px) {
+  .exchange-candidates,.exchange-receipt { grid-template-columns:1fr; }
+  .exchange-receipt .workshop-arrow { justify-self:center; rotate:90deg; }
+}

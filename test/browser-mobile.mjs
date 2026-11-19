@@ -244,6 +244,43 @@ async function facilityFlow(options) {
   await event.page.close();
 }
 
+async function relicExchange(options) {
+  const run=fixture('event');
+  run.event='exchange';
+  run.owned=['chalk','grimoire'];
+  const expected=run.eventExchanges('grimoire')[1];
+  const {page,errors}=await openPage(options,run);
+  await action(page,'resume').tap();
+  await settle(page);
+  assert(await page.locator('[data-event-art="exchange"]').isVisible());
+  assert.equal(await action(page,'eventExchange:0').count(),0);
+  await page.locator('#exchangeSource').selectOption('chalk');
+  assert(await page.locator('[data-exchange-relic="chalk"]').isVisible());
+  await page.locator('#exchangeSource').selectOption('grimoire');
+  assert(await page.locator('[data-exchange-relic="grimoire"]').isVisible());
+  assert.equal(await action(page,'eventExchange:1').locator('..').getAttribute('data-exchange-relic'),expected);
+  await noOverflow(page,'exchange candidates');
+  await action(page,'eventExchange:1').tap();
+  assert.deepEqual((await readState(page)).owned,['chalk',expected]);
+  assert.equal(await page.locator('.exchange-receipt [data-exchange-relic]').count(),2);
+  await noOverflow(page,'exchange receipt');
+  await page.reload();
+  await action(page,'resume').tap();
+  assert(await page.locator('.exchange-receipt').isVisible());
+  await action(page,'craftNext').tap();
+  assert.equal((await readState(page)).phase,'map');
+  assert.deepEqual(errors,[]);
+  await page.close();
+
+  const declined=await openPage(options,run);
+  await action(declined.page,'resume').tap();
+  await declined.page.locator('#exchangeSource').selectOption('grimoire');
+  await action(declined.page,'service:decline').tap();
+  assert.deepEqual((await readState(declined.page)).owned,run.owned);
+  assert.deepEqual(declined.errors,[]);
+  await declined.page.close();
+}
+
 async function combatEffects(options) {
   const run=fixture('fight');
   run.owned=['grimoire'];
@@ -410,6 +447,10 @@ try {
       await commandFeedback(options);
       console.log('PASS divination → 3 visual hits → shatter → breach relic');
       console.log('PASS lethal intent → return provisional cards and energy → winning BURST forecast');
+    }
+    if(width===320||width===390) {
+      await relicExchange(options);
+      console.log(`PASS relic exchange ${width}×${height} comparison → reload receipt → decline`);
     }
     if(width===320||width===390||width===932) {
       await facilityFlow(options);
