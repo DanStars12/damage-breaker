@@ -1,4 +1,4 @@
-import {burstVisual,reelTiming} from './presentation.mjs';
+import {burstVisual,reelTiming,attackAnimation} from './presentation.mjs';
 import {paintEvent,eventCanvasSize} from './event-art.mjs';
 import {events} from './events.mjs';
 import {supportValue,supportKinds} from './cards.mjs';
@@ -53,7 +53,7 @@ const cardFace=c=>{
   return `<span class="card-head"><span class="card-rank" aria-label="${rarity[c.tier]}"><span class="rank-full">${rarity[c.tier]}</span><span class="rank-short" aria-hidden="true">${rarity[c.tier][0]}</span></span>
     ${c.upgraded?'<span class="card-upgrade" title="強化済み" aria-label="強化済み">✧</span>':''}
     <span class="mana" title="消費エネルギー">${c.cost}</span></span>
-    <span class="card-display"><span class="sigil" aria-hidden="true">${glyph[c.kind]||'◇'}</span>
+    <span class="card-display" data-kind="${c.kind}"><span class="sigil" aria-hidden="true">${glyph[c.kind]||'◇'}</span>
       <strong class="card-number" style="--value-width:${Math.max(2,valueWidth).toFixed(2)}">${value}</strong></span>
     <span class="card-type">${cardEffect(c)||'妨害'}</span>`;
 };
@@ -149,27 +149,39 @@ function tacticalReadout(p) {
   const held=run.holdPreview(outcome);
   const lethal=!outcome.hp;
   const victory=p.impact.dealt===run.enemy.hp;
-  const holdText=run.holds>=2?'HOLD上限':lethal?'反撃で敗北':
+  const holdText=run.holds>=run.holdLimit?'HOLD上限':lethal?'反撃で敗北':
     outcome.hp<run.hp?'HP −'+(run.hp-outcome.hp):outcome.maxHp<run.maxHp?'最大HP −'+(run.maxHp-outcome.maxHp):
     outcome.drain!==run.drain?'基礎 '+run.base+' → '+run.baseAt(outcome.drain):
     outcome.drawPenalty?'次のドロー −1':outcome.energyPenalty?'次のエナジー −1':outcome.deb!==run.deb?'妨害が盤に入る':outcome.blocked||outcome.absorbed?'HP変化なし':'追加の変化なし';
   const burstText=victory?'このBURSTで撃破':p.impact.kind==='gate'?'耐久段階を突破':
     p.impact.kind==='barrier'?'バリアを'+p.impact.breaks+'層破る':p.impact.kind==='miss'?'攻撃が通らない':'敵HP −'+compact(p.impact.dealt,false);
   return `<div class="tactics" aria-label="HOLDとBURSTの比較">
-    <div class="${lethal&&run.holds<2?'tactics-danger':''}"><b>HOLD</b><span>${holdText}${outcome.broken&&run.holds<2?' · 結界 −'+outcome.broken:outcome.blocked&&run.holds<2&&!lethal?' · 結界で妨害を防ぐ':''}${outcome.absorbed&&run.holds<2?' · 防御 '+outcome.absorbed:''}${held!==null&&held!==p.final?` <small title="${held}"> · 引く前の予測 ${compact(held)}</small>`:''}</span></div>
+    <div class="${lethal&&run.holds<run.holdLimit?'tactics-danger':''}"><b>HOLD</b><span>${holdText}${outcome.broken&&run.holds<run.holdLimit?' · 結界 −'+outcome.broken:outcome.blocked&&run.holds<run.holdLimit&&!lethal?' · 結界で妨害を防ぐ':''}${outcome.absorbed&&run.holds<run.holdLimit?' · 防御 '+outcome.absorbed:''}${held!==null&&held!==p.final?` <small title="${held}"> · 引く前の予測 ${compact(held)}</small>`:''}</span></div>
     <div class="${victory?'tactics-win':lethal?'tactics-danger':''}"><b>BURST</b><span>${burstText}${lethal&&!victory?' · 反撃で敗北':''}</span></div></div>`;
 }
 const enemyNameHTML=name=>name.split(/(?<=・)/u).map(part=>`<span class="enemy-name-part">${esc(part)}</span>`).join('<wbr>');
+const actBackdrop=()=>`<canvas class="act-backdrop" data-act-art="act-${run.act}" width="${eventCanvasSize[0]}" height="${eventCanvasSize[1]}" aria-hidden="true"></canvas>`;
+function gateLabel(g,max) {
+  if(g===max*2n/3n) return '⅔';
+  if(g===max/3n) return '⅓';
+  if(g===max/2n) return '½';
+  return Math.round(Number(g*1000n/max)/10)+'%';
+}
+function defenseStatus(enemy) {
+  const {barrier,gates,hp,max,armor}=enemy;
+  const marks=(enemy.originalGates??gates).map(g=>
+    `<span class="phase-mark ${gates.includes(g)?'':'passed'}">${gateLabel(g,max)}</span>`).join('');
+  return [
+    armor>1?`<div class="defense-status"><b>装甲 ÷${armor}</b><small>最終ダメージを軽減</small></div>`:'',
+    barrier?`<div class="defense-status"><b>バリア ${barrier}層</b><span class="shield-marks" aria-hidden="true">${'◆'.repeat(barrier)}</span><small>BURSTを無効化</small></div>`:'',
+    gates.length?`<div class="defense-status"><b>耐久ライン 残り${gates.length}本</b><span class="phase-marks" aria-label="耐久ライン一覧">${marks}</span><small>次はHP ${gateLabel(gates[0],max)}で止まる · 必要ダメージ ${compact(hp-gates[0],false)}</small></div>`:''
+  ].join('');
+}
+function gateTicks(enemy) {
+  return (enemy.originalGates??enemy.gates).map(g=>`<i class="gate-tick${enemy.gates.includes(g)?'':' passed'}" style="--gate:${Number(g*1000n/enemy.max)/10}%" title="HP ${gateLabel(g,enemy.max)}"></i>`).join('');
+}
 function battle() {
   const p=run.preview(), e=run.enemy;
-  const gate=e.gates[0];
-  const interceptBlock=run.interceptReason(p);
-  let interceptBenefit='';
-  if(!interceptBlock) {
-    const before=run.enemyOutcome(),after=run.enemyOutcome(run.next,true);
-    const savedHP=after.hp-before.hp, savedWard=Number(after.ward)-Number(before.ward);
-    interceptBenefit=[savedHP?'HP損失を'+savedHP+'軽減':'',savedWard?'結界'+savedWard+'層を保護':''].filter(Boolean).join(' · ');
-  }
   const slots=Array.from({length:run.slots},(_,i)=>{
     const c=run.board[i];
     const status=c?p.steps.find(s=>s.card===c):null;
@@ -186,20 +198,21 @@ function battle() {
       <div class="enemy-identity"><div class="eyebrow">${routeName()} · 第${run.stage}地点</div>
         <h1>${enemyNameHTML(e.name)}</h1><div class="enemy-title">${e.title}${e.elite?' · ELITE':''}</div></div>
       <div class="duel">
+        ${actBackdrop()}
         <figure class="combatant hero" data-defense="${run.wardCharges?'ward':run.guardPoints?'guard':'none'}"><div class="idle-sprite"><i class="barrier-shell" aria-hidden="true"></i><canvas data-sprite="10" width="48" height="44" aria-hidden="true"></canvas></div>
         <figcaption>術師</figcaption><div class="hpBar hero-hp" aria-hidden="true"><span style="width:${100*run.hp/run.maxHp}%"></span></div><small id="heroHp">HP ${run.hp} / ${run.maxHp}</small></figure>
         <span class="arena-seal" aria-hidden="true">✧</span>
         <figure class="combatant foe" data-defense="${e.barrier?'ward':'none'}"><div class="idle-sprite"><i class="barrier-shell" aria-hidden="true"></i><canvas data-enemy-art width="88" height="64" aria-hidden="true"></canvas></div>
-        <figcaption>敵</figcaption><div class="hpBar foe-hp" aria-hidden="true"><span style="width:${Number(e.hp*1000n/e.max)/10}%"></span></div><small id="foeHp" title="${e.hp} / ${e.max}">HP ${compact(e.hp)} / ${compact(e.max)}</small></figure>
+        <figcaption>敵</figcaption><div class="hpBar foe-hp" aria-hidden="true"><span style="width:${Number(e.hp*1000n/e.max)/10}%"></span>${gateTicks(e)}</div><small id="foeHp" title="${e.hp} / ${e.max}">HP ${compact(e.hp)} / ${compact(e.max)}</small></figure>
         <span class="burst-scene" aria-hidden="true"><i class="burst-seal"></i><i class="burst-bolt"></i>
-          <i class="burst-ring"></i><i class="burst-ring echo"></i><i class="burst-wake"></i><i class="burst-nova"></i><i class="burst-crown"></i></span>
+          <i class="burst-ring"></i><i class="burst-ring echo"></i><i class="burst-wake"></i><i class="burst-nova"></i><i class="burst-crown"></i><i class="burst-glyph"></i><span class="burst-sparks"></span></span>
         ${e.kind==='boss'?`<div class="boss-entry" aria-hidden="true"><i></i><span>ACT BOSS</span><strong>${enemyNameHTML(e.name)}</strong></div>`:''}
         <span class="boss-attack" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span class="intercept-arc" aria-hidden="true"></span><span class="slash" aria-hidden="true"></span><span class="enemy-cast" aria-hidden="true"></span><span class="enemy-hit-fx" aria-hidden="true"></span><span id="incoming" aria-hidden="true"></span><span id="outgoing" aria-hidden="true"></span>
+        <span class="slash" aria-hidden="true"></span><span class="enemy-cast" aria-hidden="true"></span><span class="enemy-hit-fx" aria-hidden="true"></span><span id="incoming" aria-hidden="true"></span><span id="outgoing" aria-hidden="true"></span>
       </div>
       <div class="enemy-info">
       ${e.detail?`<p class="enemy-rule">${e.detail}</p>`:''}
-      ${e.barrier||gate!==undefined?`<p class="enemy-rule defense-status">${e.barrier?'バリア残り '+e.barrier+'回':`耐久段階あと ${e.gates.length} · 次の突破に <b title="${e.hp-gate}">${compact(e.hp-gate,false)}</b> ダメージ`}</p>`:''}
+      <div class="enemy-defenses">${defenseStatus(e)}</div>
       <div class="intent" data-move="${run.next.kind}"><small>敵の次の行動</small><strong>${intentText()}</strong></div></div></section>
     <section class="frame board-frame"><div class="heading"><h2>演算盤</h2><small>${run.board.length} / ${run.slots} 枠 · コンボ ${run.board.length}${run.wardCharges?' · 結界 '+run.wardCharges:''}${run.guardPoints?' · 防御 '+run.guardPoints:''}</small></div>
       <div class="board-relics" aria-label="演算盤のレリック">${relicStrip(p)}</div>
@@ -215,10 +228,10 @@ function battle() {
       ${run.omens>0?`<div class="hint-line">${btn('✧ 星詠みの頁 · 残り'+run.omens,'divine')}</div>`:''}
       <div class="hand" data-hand-return>${run.hand.map((c,i)=>cardButton(c,'hand:'+i,i,!run.canPlay(c))).join('')}</div>
       ${tacticalReadout(p)}
-      <div class="controls"><small>仮置きは選択して手札に戻せます。HOLDまたはBURSTで確定。${run.holds===2?' 次はBURST。':''}</small>
-      <div class="actions battle-commands">${btn('HOLD '+run.holds+'/2','hold','',run.holds>=2)}${btn('BURST','burst','primary')}
-      <button type="button" class="intercept-button" data-action="intercept" aria-describedby="intercept-condition" ${interceptBlock?'disabled':''}>迎撃BURST</button><button type="button" data-action="skip" class="skip-sequence" hidden>演出をスキップ</button></div>
-      <small id="intercept-condition">${interceptBlock?`迎撃 · ${interceptBlock}`:`迎撃 · 消費1／この戦闘で1回 · ${interceptBenefit}`}</small></div></section>
+      <div class="controls"><small>仮置きは選択して手札に戻せます。HOLDまたはBURSTで確定。${run.holds===run.holdLimit?' 次はBURST。':''}</small>
+      <div class="actions battle-commands">${btn('HOLD '+run.holds+'/'+run.holdLimit,'hold','',run.holds>=run.holdLimit)}${btn('BURST','burst','primary')}
+      <button type="button" data-action="skip" class="skip-sequence" hidden>演出をスキップ</button></div>
+      </div></section>
     </div>${sidebar(p)}</main>`;
 }
 const chapter=(tag,title,body)=>`<main><section class="frame chapter"><div class="eyebrow">${tag}</div><h1>${title}</h1>${body}</section></main>`;
@@ -448,6 +461,15 @@ function renderCraft(keepScroll=true) {
     <p role="status"></p><button type="button" class="primary" data-craft-confirm ${result?'':'disabled'}>${fusion?'合成を確定 · '+coin+prices.fuse+' 金貨':'強化を確定'}</button></div>`;
   container.querySelector('.craft-stock').scrollTop=oldScroll;
 }
+const tilePixels={
+  fight:'M11 0h3v3h-2v3h-2v2H8v2h2v2H8v-2H6v2H4v2H1v-3h2V9h2V7h2V5h2V2h2z',
+  event:'M2 1h10v2h1v8h-2v2H1V9h2V3H2zm3 3v1h5V4zm0 3v1h5V7z',
+  rest:'M6 1h2v2h1v2h1v2h1v2h1v2h1v2H1v-2h1V9h1V7h1V5h1V3h1zm1 5L4 12h6z',
+  elite:'M7 0h1v2h2v2h2v2h2v2h-2v2h-2v2H8v2H7v-2H5v-2H3V8H1V6h2V4h2V2h2zm0 5v4h1V5z',
+  shop:'M2 1h10v2h1v2h1v2h-2v6H2V7H0V5h1V3h1zm2 7v4h3V8zm5 0v2h2V8z',
+  boss:'M1 2h2v2h2v2h1V3h1V1h1v2h1v3h1V4h2V2h2v6h-1v4H2V8H1zm3 7v1h7V9z'
+};
+const tileIcon=kind=>`<svg class="tile-icon" viewBox="0 0 15 15" aria-hidden="true" shape-rendering="crispEdges"><path fill-rule="evenodd" d="${tilePixels[kind]}"/></svg>`;
 function mapView() {
   const xy=n=>[17+n.col*33,100-(n.row+.5)*100/run.map.length];
   const all=run.map.flat();
@@ -463,16 +485,16 @@ function mapView() {
     const status=live?'選択可能':run.visited.includes(n.id)?'訪問済み':'未到達';
     return `<button type="button" data-action="route:${n.id}" class="map-node ${n.kind} ${live?'live':''} ${status==='訪問済み'?'traveled':''}" style="--x:${x}%;--y:${y}%"
       title="第${n.row+1}層 · ${place.desc} · ${status}" aria-label="第${n.row+1}層 ${place.name} ${status}" ${live?'':'disabled'}>
-      <span aria-hidden="true">${place.icon}</span><small>${place.name}</small></button>`;
+      ${tileIcon(n.kind)}<small>${place.name}</small></button>`;
   }).join('');
   return chapter(routeName(),'巡歴の地図',`<div class="map-heading"><p>下から上へ、光るマスを選ぶ。</p><p>HP ${run.hp}/100 · ${coin}${run.gold} 金貨${run.omens?' · 星詠みの頁 '+run.omens+'枚':''}</p></div>
     ${notice?`<p role="status">${moneyText(notice)}</p>`:''}
-    <div class="route-map"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${links}</svg>${nodes}</div>
-    <div class="map-legend">${Object.values(places).map(p=>`<span><b>${p.icon}</b> ${moneyText(p.desc)}</span>`).join('')}</div>`);
+    <div class="route-map">${actBackdrop()}<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${links}</svg>${nodes}</div>
+    <div class="map-legend">${Object.entries(places).map(([kind,p])=>`<span>${tileIcon(kind)} ${moneyText(p.desc)}</span>`).join('')}</div>`);
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.2.1</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.3</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -527,6 +549,8 @@ function render() {
   }
   const eventArt=app.querySelector('[data-event-art]');
   if(eventArt) paintEvent(eventArt,eventArt.dataset.eventArt);
+  const actArt=app.querySelector('[data-act-art]');
+  if(actArt) paintEvent(actArt,actArt.dataset.actArt);
   const titleArt=app.querySelector('.title canvas');
   if(titleArt) paint(titleArt,2,1);
   const page=craftResult?'craft':run?.phase??'title';
@@ -620,7 +644,6 @@ function action(command) {
   if(name==='help') return modal('遊び方',`<p>手札の演算を盤に置き、基礎攻撃力から左順に計算します。地図は下から上へ、光っているマスを選びます。たとえば 20 → +10 → ×3 は90です。</p>
     <p>HOLDは盤を維持して新しい手札を引きます。敵はHOLD後、またはBURSTで生き残った後に予告どおり行動します。</p>
     <p>差し引きで負になった値や分数も計算中は保持します。装甲適用後、負のダメージは0、小数は切り捨てです。</p>
-    <p>迎撃BURSTは各戦闘で1回。有効な演算が2枚以上あり、敵HPを削れるとき、エネルギー1で直後の攻撃を1ヒット分防ぎます。</p>
     <p>星詠みの頁は、手札の演算カードを現在のエネルギーと空き枠の範囲で並べ、レリック込みの最大ダメージになる候補を仮置きします。結界・防御・浄化は手動で使えます。ダメージを伸ばせた場合に1枚消費します。</p>
     <p>次の盤に入る妨害は、指定枠が空なら一時的に末尾で処理します。種別封印は、次のBURSTまで指定の演算をすべて無効化します。HOLDの予測には新しく引くカードを含めません。</p>`);
   if(name==='settings') return modal('設定',prefsHTML());
@@ -679,7 +702,6 @@ function action(command) {
     }
     case 'hold': void showHold();return;
     case 'burst': void showBurst();return;
-    case 'intercept': void showBurst(true);return;
     case 'take':
       if(run.takeCard(i)) {cue('mystic');feedback={selector:'.reward-cards .reward-result',className:'reward-claimed'};}
       break;
@@ -884,11 +906,10 @@ dialog.addEventListener('input',e=>{
 render();
 
 function reactionText(move,message,hpLost,outcome) {
-  const {blocked,absorbed,intercepted,broken}=outcome;
+  const {blocked,absorbed,broken}=outcome;
   const hits=attackHits(move);
   const details=[];
   if(hits||hpLost) details.push(hpLost?'術師 HP −'+hpLost:'術師 HP変化なし');
-  if(intercepted) details.push('迎撃で1ヒット阻止');
   if(absorbed) details.push('防御 '+absorbed);
   if(broken) details.push('結界 '+broken+'層破壊');
   if(blocked) details.push('結界が妨害を防ぎました');
@@ -900,7 +921,7 @@ function reactionText(move,message,hpLost,outcome) {
 const enemyCues={cleave:'melee',wave:'wave',meteor:'meteor',dust:'hex',flare:'flare',eclipse:'eclipse',
   lock:'seal',fracture:'seal',drain:'drain',wither:'drain',attack:'melee',shatter:'seal'};
 function enemyReaction(move,outcome,hit) {
-  cue(hit?.stopped?'intercept':enemyCues[move.kind]??(hit?'melee':'hex'));
+  cue(enemyCues[move.kind]??(hit?'melee':'hex'));
   if(outcome.blocked||hit?.defended||outcome.broken) cue(outcome.broken?'barrier':'ward');
 }
 async function showEnemyReaction(field,move,message,hpLost,outcome,signal) {
@@ -914,7 +935,7 @@ async function showEnemyReaction(field,move,message,hpLost,outcome,signal) {
     const last=i===details.length-1;
     const guarded=Boolean(hit?.defended||(last&&outcome.blocked));
     const shattered=last&&outcome.broken>0;
-    field.classList.remove('enemy-strike','enemy-magic','ward-answer','intercept-reaction','hero-barrier-struck','barrier-shatter');
+    field.classList.remove('enemy-strike','enemy-magic','ward-answer','hero-barrier-struck','barrier-shatter');
     void field.offsetWidth;
     field.classList.add(hit?'enemy-strike':'enemy-magic');
     field.dataset.move=outcome.blocked&&!hit?'ward':move.kind;
@@ -922,9 +943,8 @@ async function showEnemyReaction(field,move,message,hpLost,outcome,signal) {
     field.classList.toggle('ward-answer',guarded);
     field.classList.toggle('hero-barrier-struck',guarded||shattered);
     field.classList.toggle('barrier-shatter',shattered);
-    field.classList.toggle('intercept-reaction',Boolean(hit?.stopped));
     const prefix=details.length>1?`${i+1} / ${details.length} 撃 · `:'';
-    incoming.textContent=hit?prefix+(hit.stopped?'迎撃':hit.lost?'HP −'+hit.lost:'防御')+(shattered?' · 結界 −'+outcome.broken:''):
+    incoming.textContent=hit?prefix+(hit.lost?'HP −'+hit.lost:'防御')+(shattered?' · 結界 −'+outcome.broken:''):
       reactionText(move,message,hpLost,outcome);
     if(hit) {
       hero.dataset.defense=run.wardCharges||shattered||outcome.blocked?'ward':hit.guardLeft||guarded?'guard':'none';
@@ -989,18 +1009,18 @@ async function showHold() {
     app.querySelector('[data-action="hold"]:not(:disabled),[data-action="burst"]')?.focus({preventScroll:true});
   }
 }
-async function showBurst(intercept=false) {
+async function showBurst() {
   const base=run.base, armor=run.enemy.armor, move=run.next;
   const hpBefore=run.hp;
-  const outcome=run.enemyOutcome(move,intercept);
+  const outcome=run.enemyOutcome(move);
   const prediction=intentText(move);
-  const p=run.burst(intercept);
+  const p=run.burst();
   if(!p) return;
   const best=p.final>BigInt(book.best.max);
   if(best) book.best={max:String(p.final),formula:run.stats.formula,seed:run.seed};
   selected=null;
   const strike=p.impact.kind==='barrier'?'敵バリア '+p.impact.breaks+'層破壊':p.impact.kind==='gate'?'耐久段階を突破 · '+compact(p.impact.dealt,false):'BURST '+compact(p.final);
-  notice=(intercept?'迎撃成立 · ':'')+strike+(best?' · 新記録':'')+(run.enemy.hp>0n?' ／ '+reactionText(move,prediction,hpBefore-run.hp,outcome):'');
+  notice=strike+(best?' · 新記録':'')+(run.enemy.hp>0n?' ／ '+reactionText(move,prediction,hpBefore-run.hp,outcome):'');
   saveProgress();
   const mode=motionMode();
   const control=new AbortController();
@@ -1077,6 +1097,7 @@ async function showBurst(intercept=false) {
         });
         prior=step.value;
       }
+      const attack=attackAnimation(p.final);
       if(!signal.aborted) {
         field.classList.remove('charging');
         if(compactScreen.matches) field.scrollIntoView({block:'start'});
@@ -1084,12 +1105,23 @@ async function showBurst(intercept=false) {
         const visual=burstVisual([p.final,1n],p.final>CAP);
         field.dataset.burstLevel=visual.level;
         field.style.setProperty('--burst-hue',visual.hue);
-        if(mode==='full'&&p.impact.kind==='hit'&&visual.level>=3) field.style.setProperty('--flight','240ms');
+        field.dataset.attackMotif=attack.motif;
+        field.dataset.attackDigits=attack.digits;
+        field.style.setProperty('--attack-color',`hsl(${attack.hue} 94% 69%)`);
+        field.style.setProperty('--attack-power',attack.power);
+        field.style.setProperty('--cast-angle',attack.angle+'deg');
+        field.style.setProperty('--cast-lift',-attack.lift+'px');
+        field.style.setProperty('--attack-time',attack.impact+'ms');
+        field.style.setProperty('--flight',(mode==='fast'?65:attack.flight)+'ms');
+        field.querySelector('.burst-sparks').innerHTML=Array.from({length:mode==='fast'?Math.min(10,attack.sparks):attack.sparks},(_,i)=>{
+          const angle=i*2.39996+attack.digits*.17,r=attack.reach*(.48+(i%5)*.13);
+          return `<i style="--dx:${Math.round(Math.cos(angle)*r)}px;--dy:${Math.round(Math.sin(angle)*r)}px;--delay:${i%6*13}ms"></i>`;
+        }).join('');
         if(p.impact.kind!=='miss') {
           field.classList.add('burst-firing');
           const heavy=p.impact.kind==='hit'&&Number(field.dataset.burstLevel)>=3;
           cue(heavy?'launchNova':'launch');
-          await clock(mode==='fast'?65:heavy?240:155,signal);
+          await clock(mode==='fast'?65:attack.flight,signal);
           field.classList.remove('burst-firing');
         }
       }
@@ -1111,10 +1143,14 @@ async function showBurst(intercept=false) {
         const foeHp=field.querySelector('#foeHp');
         foeHp.textContent='HP '+compact(e.hp)+' / '+compact(e.max);
         foeHp.title=e.hp+' / '+e.max;
+        field.querySelector('.enemy-defenses').innerHTML=defenseStatus(e);
+        const hpBar=field.querySelector('.foe-hp');
+        hpBar.querySelectorAll('.gate-tick').forEach(mark=>mark.remove());
+        hpBar.insertAdjacentHTML('beforeend',gateTicks(e));
         if(impact==='hit') burstFX(p.final,best);
         else cue(impact);
         if(e.hp===0n) cue('victory');
-        await clock(mode==='fast'?160:impact==='hit'&&Number(field.dataset.burstLevel)>=3?950:695,signal);
+        await clock(mode==='fast'?160:impact==='hit'?attack.impact:695,signal);
         field.querySelector('.foe').dataset.defense=e.barrier?'ward':'none';
         if(e.hp>0n&&!signal.aborted) {
           await showEnemyReaction(field,move,prediction,hpBefore-run.hp,outcome,signal);

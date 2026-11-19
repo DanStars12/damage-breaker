@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {CAP} from '../src/math.mjs';
 import {evaluate} from '../src/relics.mjs';
 import {card,upgraded} from '../src/cards.mjs';
-import {timeline,magnitude,reelValue,impactForce,relicActivations,boardRelicStates,burstVisual,reelTiming} from '../src/presentation.mjs';
+import {timeline,magnitude,reelValue,impactForce,relicActivations,boardRelicStates,burstVisual,reelTiming,attackAnimation} from '../src/presentation.mjs';
 
 test('timeline preserves resolution order, exact relic value and armored damage',()=>{
   const result=evaluate({board:[card('add',10),card('mul',12),card('add',100),card('mul',101)],
@@ -86,4 +86,13 @@ test('BURST passes through every digit on a large rise, using a different hue fo
   assert.equal(burstVisual([CAP,1n]).level,6);
   assert.equal(burstVisual([CAP+1n,1n]).level,6); // Intermediate values still display as numbers.
   assert.equal(burstVisual([CAP+1n,1n],true).level,7);
+});
+
+test('each finite digit has its own attack timing and spread, with a dedicated infinity effect',()=>{
+  const profiles=Array.from({length:72},(_,i)=>attackAnimation(10n**BigInt(i)));
+  assert.equal(new Set(profiles.map(profile=>profile.flight)).size,72);
+  assert.equal(new Set(profiles.map(profile=>profile.reach)).size,72);
+  assert.equal(new Set(profiles.map(profile=>profile.motif)).size,9);
+  assert.equal(attackAnimation(CAP).motif,'horizon');
+  assert.equal(attackAnimation(CAP+1n).motif,'infinity');
 });

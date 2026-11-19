@@ -37,29 +37,24 @@ test('divination distinguishes upgraded copies for relic effects and keeps a pag
   run.deb=[{kind:'lock',target:'mul',at:0,value:0,enemy:true}];
   assert.equal(solve(run).cost,0);
 });
-test('hit ledger resolves interception, defense, overkill and curse separately',()=>{
+test('hit ledger resolves defense and overkill for each hit',()=>{
   const run=encounter();
   run.hp=20;
   run.guard=12;
   const action={kind:'pursuit',value:10};
-  assert.deepEqual(run.enemyOutcome(action,true).hitDetails,[
-    {stopped:true,defended:0,lost:0,hp:20,guardLeft:12}, {stopped:false,defended:10,lost:0,hp:20,guardLeft:2},
-    {stopped:false,defended:2,lost:8,hp:12,guardLeft:0}
+  assert.deepEqual(run.enemyOutcome(action).hitDetails,[
+    {defended:10,lost:0,hp:20,guardLeft:2}, {defended:2,lost:8,hp:12,guardLeft:0},
+    {defended:0,lost:10,hp:2,guardLeft:0}
   ]);
   run.hp=2;
   run.guard=0;
   assert.deepEqual(run.enemyOutcome(action).hitDetails.map(hit=>hit.lost),[2,0,0]);
 });
-test('ward breaker removes two ward layers, interception stops it, and the hammer removes two foe layers',()=>{
+test('ward breaker and the hammer remove up to two layers',()=>{
   const run=encounter();
   const action={kind:'shatter',value:8};
   run.ward=3;
   assert.equal(run.enemyOutcome(action).ward,1);
-  assert.equal(run.enemyOutcome(action,true).ward,3);
-  run.enemy.cycle=['shatter'];
-  run.guard=48;
-  run.board=[operation('add',4),operation('add',5)];
-  assert.equal(run.interceptReason(),'');
   run.owned=['breach'];
   run.enemy.barrier=2;
   run.board=[4,5,6,7].map(v=>operation('add',v));

@@ -1,12 +1,12 @@
 import {random,shuffle} from './cards.mjs';
 import {encounterCount} from './enemies.mjs';
 export const places={
-  fight:{name:'通常戦闘',icon:'⚔',desc:'金貨とカード'},
-  event:{name:'封書の間',icon:'?',desc:'ランダムイベント'},
-  rest:{name:'休憩所',icon:'♨',desc:'回復か鍛冶'},
-  elite:{name:'デフレーション',icon:'◆',desc:'特殊攻撃・レリック'},
-  shop:{name:'旅商人',icon:'⚖',desc:'購入・合成・削除'},
-  boss:{name:'ボス',icon:'♛',desc:'ACTの最終戦'}
+  fight:{name:'通常戦闘',desc:'金貨とカード'},
+  event:{name:'封書の間',desc:'ランダムイベント'},
+  rest:{name:'休憩所',desc:'回復か鍛冶'},
+  elite:{name:'デフレーション',desc:'特殊攻撃・レリック'},
+  shop:{name:'旅商人',desc:'購入・合成・削除'},
+  boss:{name:'ボス',desc:'ACTの最終戦'}
 };
 export function makeMap(seed,act) {
   const rng=random(seed+'/map/'+act);

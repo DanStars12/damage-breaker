@@ -53,8 +53,8 @@ function play(seed,id) {
   const reached=new Map();
   let cleared=false, clearedWithAdditionRelic=false;
   const reach={numericBursts:0,infinityBursts:0,landedBursts:0,firstAct:null};
-  const fire=intercept=>{
-    const burst=r.burst(intercept);
+  const fire=()=>{
+    const burst=r.burst();
     if(!burst||burst.final<muryotaisu) return;
     reach.firstAct??=r.act;
     if(burst.final>CAP) reach.infinityBursts++;
@@ -121,8 +121,8 @@ function play(seed,id) {
       if(support>=0) r.play(support);
     }
     const survive=r.enemyOutcome().hp>0;
-    if(p.impact.kind!=='gate'&&p.final<r.enemy.hp&&r.holds<2&&survive&&r.board.length<r.slots) r.hold();
-    else fire(!r.interceptReason(r.preview()));
+    if(p.impact.kind!=='gate'&&p.final<r.enemy.hp&&r.holds<r.holdLimit&&survive&&r.board.length<r.slots) r.hold();
+    else fire();
   }
   throw Error('Simulation exceeded turn budget for '+seed);
 }
@@ -130,7 +130,7 @@ const total=Number(process.argv[2]||32);
 const offset=Number(process.argv[3]||0);
 const rows=[];
 for(const id of Object.keys(strategies)) {
-  const metric={policy:id,seeds:total,clear:0,extra:0,infinity:0,intercepts:0,prevented:0,bossAttempts:[0,0,0],bossWins:[0,0,0],bossesByName:{},turns:0,used:{},relics:{},lossesByEnemy:{},actReached:[0,0,0,0],additionRelic:{ownedAtEnd:0,clearWith:0,lossWithoutByAct:[0,0,0,0]}};
+  const metric={policy:id,seeds:total,clear:0,extra:0,infinity:0,bossAttempts:[0,0,0],bossWins:[0,0,0],bossesByName:{},turns:0,used:{},relics:{},lossesByEnemy:{},actReached:[0,0,0,0],additionRelic:{ownedAtEnd:0,clearWith:0,lossWithoutByAct:[0,0,0,0]}};
   metric.muryotaisu={runs:0,numericRuns:0,landedRuns:0,numericBursts:0,infinityBursts:0,landedBursts:0,firstByAct:[0,0,0,0]};
   let max=0n,bestSeed='',bestFormula='';
   for(let i=0;i<total;i++) {
@@ -169,8 +169,6 @@ for(const id of Object.keys(strategies)) {
       result.firstByAct[reach.firstAct-1]++;
     }
     metric.turns+=r.stats.turns;
-    metric.intercepts+=r.stats.intercepts;
-    metric.prevented+=r.stats.prevented;
     for(const [k,n] of Object.entries(r.stats.usage)) metric.used[k]=(metric.used[k]||0)+n;
     for(const k of r.owned) metric.relics[k]=(metric.relics[k]||0)+1;
     if(r.stats.max>max) {max=r.stats.max;bestSeed=r.seed;bestFormula=r.stats.formula;}

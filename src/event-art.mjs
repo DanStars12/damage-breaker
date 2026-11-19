@@ -40,6 +40,13 @@ const eventScenes={
   hearth:['212c44','4d6481','9caabe','ffc67d',false,p=>{p.moon(155,20,10);p.tree(35,70,43);p.tree(159,78,41);p.rock(96,73,52,12);p.flame(96,63,17);}]
 };
 
+const actScenes={
+  'act-1':['202b24','385244','779062','e8c787',false,p=>{p.moon(151,21,13);p.tree(14,76,51);p.tree(177,76,55);p.tree(43,72,37);p.arch(101,72,61,37);p.pillar(69,72,25);p.lamp(126,72);}],
+  'act-2':['241c38','51436f','8c78b4','e6ccff',true,p=>{p.arch(95,71,117,58);p.pillar(28,72,53);p.pillar(166,72,53);p.gem(56,67,14);p.gem(139,66,19);p.water(97,81,130);p.star(99,30,6);}],
+  'act-3':['3a1c33','78384a','b96a6b','ffe0a0',false,p=>{p.moon(150,22,16);p.tower(62,72,44);p.tower(92,72,56);p.tower(121,72,37);p.bridge(99,78);p.flame(37,71,11);p.flame(156,71,15);}],
+  'act-4':['151d39','303e64','5f83a3','adf6ea',false,p=>{p.moon(98,34,20);p.arch(98,71,83,62);for(const [x,y] of [[31,18],[156,23],[52,43],[143,50]])p.star(x,y,6);p.gem(98,58,10);}]
+};
+export const actArtIds=Object.keys(actScenes);
 const facilityScenes={
   rest:['192f38','3b5958','779680','f5c87e',false,p=>{p.moon(139,20,13);p.tree(25,74,56);p.tree(169,76,51);p.tent(73,71,62,34);p.rock(124,74,40,11);p.flame(124,63,15);p.lamp(93,69);}],
   shop:['362437','6b4650','b87a60','ffe098',true,p=>{p.arch(97,59,125,54);p.shelves(28,65,38);p.shelves(134,65,35);p.table(100,71,77);p.chest(106,60);p.vase(136,60,6);p.lamp(58,60,2);p.lamp(157,56);}]
@@ -48,7 +55,7 @@ export const facilityArtIds=Object.keys(facilityScenes);
 export const eventArtIds=Object.keys(eventScenes);
 
 export function paintEvent(canvas,id) {
-  const scene=eventScenes[id]??facilityScenes[id];
+  const scene=eventScenes[id]??facilityScenes[id]??actScenes[id];
   if(!scene) return false;
   const [night,mid,light,glow,interior,compose]=scene;
   const ctx=canvas.getContext('2d');

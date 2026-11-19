@@ -88,3 +88,17 @@ export function impactForce({final,impact}) {
   if(level===7) return 'infinity';
   return level>=3?'great':'standard';
 }
+
+const attackMotifs=['spark','cut','cross','bolt','wave','nova','comet','constellation','horizon'];
+export function attackAnimation(final) {
+  const infinity=final>CAP;
+  const digits=infinity?73:final.toString().length;
+  const band=[2,3,4,6,9,13,21,41].filter(min=>digits>=min).length;
+  return {
+    digits,motif:infinity?'infinity':attackMotifs[band],
+    hue:infinity?174:(35+(digits-1)*37)%360,
+    reach:24+digits*1.7,power:1+digits*.04,
+    lift:[0,1,3,5,7,10,13,16,19][band], angle:[0,8,-9,2,-4,9,-5,11,-12][band],
+    sparks:Math.min(28,2+digits),flight:130+digits*2,impact:430+digits*9
+  };
+}

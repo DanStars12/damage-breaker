@@ -49,9 +49,9 @@ const eliteFloors=[1800n,6000000n,10n**13n];
 const bossFloors=[32000n,1500000000n];
 const bossAttack=[12,18,25];
 const finalBossBalance=[
-  {floor:4n*10n**18n, scaleDivisor:3n, armor:2, attack:16},
-  {floor:3n*10n**18n, scaleDivisor:4n, armor:2, attack:19},
-  {floor:4n*10n**18n, scaleDivisor:3n, armor:2, attack:17}
+  {floor:4n*10n**18n, scaleDivisor:3n, armor:2, attack:15},
+  {floor:3n*10n**18n, scaleDivisor:4n, armor:2, attack:18},
+  {floor:4n*10n**18n, scaleDivisor:3n, armor:2, attack:15}
 ];
 export const operationNames={add:'加算',mul:'乗算',pct:'割合',pow:'累乗',exp:'指数'};
 const extraEnemyName='エコー・オブ・インフィニティ';
@@ -68,7 +68,7 @@ export function encounterName(act,kind,variant) {
 }
 export function makeEnemy(act,kind,variant,row,bench=0n) {
   if(act===4) return {name:extraEnemyName,title:'EXTRA',detail:'耐久段階を越えて無限を破る。',art:{form:'eclipse',palette:17},kind:'extra',
-    hp:10n**31n,max:10n**31n,attack:21,armor:5,barrier:0,gates:[5n*10n**30n],cycle:['div','attack','drain','double']};
+    hp:10n**31n,max:10n**31n,attack:21,armor:5,barrier:0,originalGates:[5n*10n**30n],gates:[5n*10n**30n],cycle:['div','attack','drain','double']};
   const a=act-1, elite=kind==='elite', boss=kind==='boss';
   const spec=elite?eliteSpecs[a][variant]:boss?bossSpecs[a][variant]:null;
   const [normalName,normalForm,...normalMoves]=normalSpecs[a][variant];
@@ -84,7 +84,7 @@ export function makeEnemy(act,kind,variant,row,bench=0n) {
   const max=target>floor?(target>floor*400n?floor*400n:target):floor;
   const gates=trait==='gate2'?[max/2n]:trait==='gate3'?[max*2n/3n,max/3n]:[];
   return {name,art,detail,kind,variant,elite,title:boss?'ACT BOSS':elite?'DEFLATION ENEMY':'ENCOUNTER',
-    hp:max,max,armor:balance?.armor??(1+a),attack:boss?(balance?.attack??bossAttack[a]):5+a*3+(elite?3:0),barrier:trait==='barrier2'?2:trait==='barrier'?1:0,gates,cycle:moves};
+    hp:max,max,armor:balance?.armor??(1+a),attack:boss?(balance?.attack??bossAttack[a]):5+a*3+(elite?3:0),barrier:trait==='barrier2'?2:trait==='barrier'?1:0,gates,originalGates:[...gates],cycle:moves};
 }
 export const attackPatterns={
   shatter:{name:'破界の一撃',hits:1,penalty:'shatter'},

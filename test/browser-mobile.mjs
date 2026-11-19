@@ -79,10 +79,14 @@ async function battleFlow(options) {
     });
   })),false,'map nodes overlap');
   await noOverflow(page,'map');
+  assert.equal(await page.locator('.map-node.rest .tile-icon').count(),4);
+  assert.equal(await page.locator('.route-map [data-act-art]').getAttribute('data-act-art'),'act-1');
   await eligible.tap();
   await dockVisible(page,'burst');
   await settle(page);
   await noOverflow(page,'battle');
+  assert.equal(await action(page,'intercept').count(),0);
+  assert(await page.locator('.duel [data-act-art]').isVisible());
   const firstCard=page.locator('.hand button:not(:disabled)').first();
   const handWidth=(await firstCard.boundingBox()).width;
   await firstCard.tap();
@@ -291,6 +295,37 @@ async function combatEffects(options) {
   await b.close();
 }
 
+async function phaseGauges(options) {
+  const run=fixture('boss');
+  run.act=3;
+  run.enemy.barrier=0;
+  run.enemy.max=run.enemy.hp=300n;
+  run.enemy.originalGates=[200n,100n];
+  run.enemy.gates=[...run.enemy.originalGates];
+  run.enemy.cycle=['attack'];
+  run.board=[{kind:'add',value:150,tier:0,cost:1}];
+  run.owned=['stillwater'];
+  const {page,errors}=await openPage(options,run);
+  await action(page,'resume').tap();
+  assert.match(await action(page,'hold').innerText(),/0\/3/);
+  assert.equal(await page.locator('.gate-tick:not(.passed)').count(),2);
+  assert.match(await page.locator('.enemy-defenses').innerText(),/⅔/);
+  await page.evaluate(()=>{
+    const arena=document.querySelector('.enemy');
+    new MutationObserver(()=>{
+      if(arena.classList.contains('gate-shatter')) document.body.dataset.castMotif=arena.dataset.attackMotif;
+    }).observe(arena,{attributes:true,attributeFilter:['class']});
+  });
+  await action(page,'burst').tap();
+  await page.locator('.last-strike').waitFor();
+  assert.equal(await page.locator('body').getAttribute('data-cast-motif'),'cross');
+  assert.equal(await page.locator('.gate-tick.passed').count(),1);
+  assert.match(await page.locator('.enemy-defenses').innerText(),/次はHP ⅓/);
+  assert.equal((await readState(page)).enemy.hp.$bigint,'200');
+  assert.deepEqual(errors,[]);
+  await page.close();
+}
+
 async function desktopFlow() {
   const {page,errors}=await openPage({viewport:{width:1366,height:768},reducedMotion:'reduce'});
   assert(await action(page,'menu').isHidden());
@@ -331,6 +366,7 @@ try {
     console.log(`PASS ${name} ${width}×${height} menu → map → placement → move → return → HOLD → BURST → reload`);
     if(width===390) {
       await combatEffects(options);
+      await phaseGauges(options);
       console.log('PASS divination → 3 visual hits → shatter → breach relic');
     }
     if(width===320||width===390||width===932) {

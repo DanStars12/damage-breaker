@@ -295,7 +295,7 @@ test('ACT III boss HP curves preserve dragon gates and the emperor barrier',()=>
 test('boss attack follows the ACT curve and victory healing depends on encounter rank',()=>{
   for(const [i,attack] of [12,18,25].entries()) {
     for(const variant of [0,1]) {
-      assert.equal(makeEnemy(i+1,'boss',variant,9).attack,i===2?[16,19][variant]:attack);
+      assert.equal(makeEnemy(i+1,'boss',variant,9).attack,i===2?[15,18][variant]:attack);
     }
   }
   const r=new Run('recovery-by-rank');
@@ -375,13 +375,13 @@ test('HOLD forecast agrees with the actual enemy response and does not mutate th
   assert.equal(r.holdPreview(),null);
 });
 
-test('54 ranked relics have distinct pixel icons and seeded, ownership-aware rolls',()=>{
+test('64 ranked relics have distinct pixel icons and seeded, ownership-aware rolls',()=>{
   const ids=Object.keys(relics);
-  assert.equal(ids.length,54);
+  assert.equal(ids.length,64);
   assert.deepEqual(new Set(ids.map(id=>relics[id].rank)),new Set([0,1,2,3]));
   assert.equal(relicRanks.length,4);
   const icons=ids.map(relicIcon);
-  assert.equal(new Set(icons).size,54);
+  assert.equal(new Set(icons).size,64);
   assert(icons.every(svg=>svg.includes('shape-rendering="crispEdges"')));
   const roll=()=>Array.from({length:128},(_,i)=>drawRelic(random('rank-'+i),['grimoire','chalk'],1,{shop:true}));
   const stock=roll();
@@ -510,45 +510,35 @@ test('number unit guide uses the same ten-thousand group boundaries as the forma
   }
 });
 
-test('intercept spends one energy once per battle, stops one hit and preserves BURST damage',()=>{
-  const r=new Run('intercept');forceNode(r,'fight');
-  r.enemy.cycle=['double','double'];
+test('extra HOLD is granted by the relic and resets after BURST',()=>{
+  const r=new Run('extra-hold');forceNode(r,'fight');
+  r.enemy.cycle=['sub'];
   r.enemy.hp=99999n;
-  r.board=[a('add',20),a('mul',3)];
-  r.hp=100;r.energy=1;
-  const p=r.preview(), hit=r.next.value;
-  assert.equal(r.interceptReason(p),'');
-  assert.equal(r.enemyOutcome().hp,100-2*hit);
-  assert.equal(r.enemyOutcome(r.next,true).hp,100-hit);
-  assert.equal(r.burst(true).final,p.final);
-  assert.equal(r.enemy.hp,99999n-p.impact.dealt);
-  assert.equal(r.hp,100-hit);
-  assert.equal(r.stats.intercepts,1);
-  assert.equal(r.stats.prevented,hit);
-  assert(r.interceptReason());
-  assert.equal(r.burst(true),null);
-  assert.equal(r.stats.turns,1);
-  forceNode(r,'fight');
-  assert.equal(r.interceptUsed,false);
+  assert.equal(r.holdLimit,2);
+  assert(r.hold());assert(r.hold());assert(!r.hold());
+  r.owned=['stillwater'];
+  assert.equal(r.holdLimit,3);
+  assert(r.hold());assert(!r.hold());
+  r.burst();
+  assert.equal(r.holds,0);
+  assert.equal(r.holdLimit,3);
 });
 
-test('intercept cannot bypass a barrier or use sealed cards, and guard applies after it',()=>{
-  const r=new Run('intercept-rules');forceNode(r,'fight');
-  r.enemy.cycle=['flare'];r.enemy.hp=99999n;
-  r.board=[a('add',20),a('mul',3)];r.energy=1;
-  r.enemy.barrier=1;
-  assert(r.interceptReason());
-  r.enemy.barrier=0;
-  r.deb=[{kind:'lock',target:'mul',value:0,at:1,enemy:true}];
-  assert(r.interceptReason());
-  r.deb=[];
-  const hit=r.next.value;
-  r.guard=hit;
-  assert(r.interceptReason());
-  r.guard=0;r.ward=true;
-  assert(r.burst(true));
-  assert.equal(r.wardCharges,0);
-  assert.equal(r.deb.length,0);
+test('new formula relics respect adjacency, order and HOLD count',()=>{
+  const triggers=(owned,board,holds=0,deb=[])=>evaluate({board,owned,holds,deb}).triggers.map(t=>t.id);
+  const alt=[a('add',10),a('mul',2),a('add',8),a('mul',3)];
+  assert.deepEqual(triggers(['alternate'],alt),['alternate']);
+  assert.deepEqual(triggers(['alternate'],alt,0,[d('sub',1,2)]),[]);
+  assert.deepEqual(triggers(['descending'],[a('add',20),a('pct',15),a('mul',3)]),['descending']);
+  assert.deepEqual(triggers(['bookends'],[a('add',10),a('mul',2),a('pct',22),a('mul',10)]),['bookends']);
+  assert.deepEqual(triggers(['pocket'],alt.slice(0,2)),['pocket']);
+  assert.deepEqual(triggers(['pocket'],alt.slice(0,2),1),[]);
+  assert.deepEqual(triggers(['bracket'],[a('add',10),a('pow',2),a('add',5)]),['bracket']);
+  assert.deepEqual(triggers(['percentPair'],[a('pct',40),a('pct',60)]),['percentPair']);
+  assert.deepEqual(triggers(['patient'],alt,3),['patient']);
+  assert.deepEqual(triggers(['patient'],alt,2),[]);
+  assert.deepEqual(triggers(['sparse'],[a('add',10),a('mul',2),a('pct',22)]),['sparse']);
+  assert.deepEqual(triggers(['finishing'],[a('add',10),a('mul',2),a('pct',22),a('exp',2)]),['finishing']);
 });
 
 test('cleanse removes the leftmost displayed curse rather than the oldest applied',()=>{

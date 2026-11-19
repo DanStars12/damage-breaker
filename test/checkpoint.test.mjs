@@ -199,18 +199,16 @@ test('new support cards and defenses survive reload while legacy ward remains us
   assert.equal(old.wardCharges,1);
 });
 
-test('the expended intercept stays expended when a battle resumes',()=>{
+test('older battle saves resume using normal retaliation even with a legacy intercept flag',()=>{
   const run=new Run('intercept-save');
   routeKind(run,'fight');
   run.enemy.cycle=['double'];
   run.enemy.hp=50000n;
-  const [addition,multiply]=[run.deck.find(c=>c.kind==='add'),run.deck.find(c=>c.kind==='mul')];
-  run.board=[addition,multiply];
-  assert(run.burst(true));
+  run.interceptUsed=true;
   const copy=restore(run).run;
-  assert.equal(copy.interceptUsed,true);
-  assert.equal(copy.stats.intercepts,1);
-  assert.equal(copy.burst(true),null);
+  const hp=copy.hp, hit=copy.next.value;
+  assert(copy.burst());
+  assert.equal(copy.hp,hp-hit*2);
 });
 
 test('new event options and art id are stable after reload, and only one option applies',()=>{

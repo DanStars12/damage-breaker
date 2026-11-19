@@ -44,7 +44,6 @@ export function readCheckpoint(serialized) {
         !Array.isArray(e.gates)||!e.gates.every(nonnegativeBigInt)||!Array.isArray(e.cycle)||!e.cycle.length||
         !validCards(state.hand)||!validCards(state.board)||!validCards(state.deckDraw)||!validCards(state.discard)||
         !Array.isArray(state.deb)||!integerBetween(state.maxHp,1,100)||
-        (state.interceptUsed!==undefined&&typeof state.interceptUsed!=='boolean')||
         (state.guard!==undefined&&!integerBetween(state.guard,0,48))||
         (typeof state.ward!=='boolean'&&!integerBetween(state.ward,0,6))) return null;
     }

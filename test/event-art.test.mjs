@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {events} from '../src/events.mjs';
-import {eventArtIds,facilityArtIds,eventCanvasSize,paintEvent} from '../src/event-art.mjs';
+import {eventArtIds,facilityArtIds,actArtIds,eventCanvasSize,paintEvent} from '../src/event-art.mjs';
 
 test('every event has a distinct, deterministic pixel background',()=>{
   const [width,height]=eventCanvasSize;
@@ -22,9 +22,9 @@ test('every event has a distinct, deterministic pixel background',()=>{
   };
   assert.equal(Object.keys(events).length,34);
   assert.deepEqual([...eventArtIds].sort(),Object.keys(events).sort());
-  const scenes=[...eventArtIds,...facilityArtIds];
+  const scenes=[...eventArtIds,...facilityArtIds,...actArtIds];
   assert.deepEqual(facilityArtIds,['rest','shop']);
   const hashes=scenes.map(draw);
-  assert.equal(new Set(hashes).size,36);
+  assert.equal(new Set(hashes).size,40);
   assert.deepEqual(scenes.map(draw),hashes);
 });
