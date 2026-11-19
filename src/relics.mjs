@@ -93,6 +93,18 @@ Object.assign(relics,{
   nightCrown:{name:'夜天の三連環',desc:'有効な加算・乗算・割合が各2枚以上なら×160。',effect:({own})=>
     amplify(['add','mul','pct'].every(kind=>effectCount(own,kind)>=2),160)}
 });
+Object.assign(relics,{
+  breach:{name:'鏡砕きの槌',desc:'有効な演算4枚以上で、敵バリアを1撃で最大2層削る。',barrierBreak:4},
+  refuge:{name:'双護の留め金',desc:'戦闘開始時に結界1層と防御3。',ward:true,openingGuard:3},
+  echoQuill:{name:'余白の双筆',desc:'同じ値の異なる演算が隣接すると×25。',effect:({cards})=>
+    amplify(cards.some((card,i)=>i>0&&numeric(card)&&numeric(cards[i-1])&&card.kind!==cards[i-1].kind&&card.value===cards[i-1].value),25)},
+  holdCrest:{name:'待刻の角笛',desc:'2回HOLDし、有効な演算が5枚以上なら×46。',effect:({holds,own})=>
+    amplify(holds===2&&own.length>=5,46)},
+  runeSundial:{name:'星位の日時針',desc:'最初が指数、最後が割合の有効な演算4枚以上で×54。',effect:({own})=>
+    amplify(own.length>=4&&own[0].kind==='exp'&&own.at(-1).kind==='pct',54)},
+  braid:{name:'三色の織鍵',desc:'加算→割合→乗算がこの順で隣接すると×35。',effect:({cards})=>
+    amplify(cards.some((card,i)=>i>=2&&cards.slice(i-2,i+1).every(numeric)&&cards[i-2].kind==='add'&&cards[i-1].kind==='pct'&&card.kind==='mul'),35)}
+});
 export const relicRanks=[
   {name:'コモン',shop:15,drop:10},
   {name:'レア',shop:13,drop:14},
@@ -100,9 +112,9 @@ export const relicRanks=[
   {name:'レジェンド',shop:3,drop:10}
 ];
 const rankedRelics=[
-  ['short','key','reserve','chalk','lens','paper','sealwax','quartette','compass','mirror','ember','keystone','twinScribes'],
-  ['tail','order','chain','furnace','rack','spring','mantle','ratio','brazier','anvil','helix','vigil','pulse','bell','lensGuard','lanternHeart','balanceStone'],
-  ['prism','codex','sum','lattice','tithe','star','mosaic','comet','crown','rootGem','dam','violetSeal','lodestone','spiralKey'],
+  ['short','key','reserve','chalk','lens','paper','sealwax','quartette','compass','mirror','ember','keystone','twinScribes','echoQuill'],
+  ['tail','order','chain','furnace','rack','spring','mantle','ratio','brazier','anvil','helix','vigil','pulse','bell','lensGuard','lanternHeart','balanceStone','refuge','holdCrest','braid'],
+  ['prism','codex','sum','lattice','tithe','star','mosaic','comet','crown','rootGem','dam','violetSeal','lodestone','spiralKey','breach','runeSundial'],
   ['grimoire','abacus','aurora','nightCrown']
 ];
 for(const [rank,ids] of rankedRelics.entries()) for(const id of ids) relics[id].rank=rank;

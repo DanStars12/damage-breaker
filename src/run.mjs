@@ -5,7 +5,7 @@ import {CAP,label} from './math.mjs';
 import {makeMap} from './map.mjs';
 import {events} from './events.mjs';
 const earlyRelicChoices=['sum','abacus','lattice','ratio','order','tail'];
-export const prices={buy:30,relic:96,fuse:24,remove:30};
+export const prices={buy:30,relic:96,fuse:24,remove:30,omen:54};
 export class Run {
   uncommittedCards=new Set();
   constructor(seed) {
@@ -14,6 +14,7 @@ export class Run {
     this.stage=0;
     this.hp=100;
     this.gold=20;
+    this.omens=0;
     this.deck=starter();
     this.owned=[];
     this.history=[];
@@ -123,7 +124,14 @@ export class Run {
   }
   preview(){
     const result=evaluate({base:this.base,board:this.board,deb:this.deb,owned:this.owned,armor:this.enemy.armor,holds:this.holds});
-    return {...result,impact:impact(this.enemy,result.final)};
+    const effect=impact(this.enemy,result.final);
+    if(effect.kind==='barrier') {
+      const count=result.steps.filter(step=>step.op&&!step.card.enemy).length;
+      const threshold=this.bonus('barrierBreak');
+      effect.breaks=threshold&&count>=threshold?Math.min(2,this.enemy.barrier):1;
+      if(effect.breaks>1) effect.relic='breach';
+    }
+    return {...result,impact:effect};
   }
   interceptReason(p=this.preview()) {
     if(this.interceptUsed) return 'この戦闘では使用済み';
@@ -132,7 +140,8 @@ export class Run {
     if(p.impact.dealt===this.enemy.hp) return '通常BURSTで撃破できる';
     if(!p.impact.dealt) return '敵HPにダメージが通る盤が必要';
     if(p.steps.filter(step=>!step.card.enemy&&step.op).length<2) return '有効な演算が2枚以上必要';
-    if(this.enemyOutcome().hp===this.enemyOutcome(this.next,true).hp) return '防御だけで攻撃をしのげる';
+    const before=this.enemyOutcome(),after=this.enemyOutcome(this.next,true);
+    if(before.hp===after.hp&&before.ward===after.ward) return '防御だけで攻撃をしのげる';
     return '';
   }
   enemyOutcome(action=this.next,intercept=false) {
@@ -144,9 +153,20 @@ export class Run {
     const attackDamage=action.value*hits-intercepted;
     const absorbed=Math.min(this.guardPoints,attackDamage);
     const guard=attackDamage>0?0:this.guardPoints;
-    hp=Math.max(0,hp-attackDamage+absorbed);
+    const hitDetails=[];
+    let shield=this.guardPoints;
+    for(let i=0;i<hits;i++) {
+      const stopped=i===0&&intercepted>0;
+      const defended=stopped?0:Math.min(shield,action.value);
+      shield-=defended;
+      const lost=stopped?0:Math.min(hp,action.value-defended);
+      hp-=lost;
+      hitDetails.push({stopped,defended,lost,hp,guardLeft:shield});
+    }
+    const broken=penalty==='shatter'&&!intercepted?Math.min(Number(ward)||0,2):0;
     if(!hits||penalty) {
-      if(ward) {ward=Number(ward)-1||false;blocked=true;}
+      if(penalty==='shatter') {ward=Number(ward)-broken||false;}
+      else if(ward) {ward=Number(ward)-1||false;blocked=true;}
       else if(penalty==='jam') drawPenalty=1;
       else if(penalty==='tax') energyPenalty=1;
       else if(penalty==='fracture') deb=[...deb,{...action,kind:'seal'}];
@@ -157,7 +177,7 @@ export class Run {
       } else if(action.kind==='drain') drain=Math.min(65,drain+action.value);
       else deb=[...deb,action];
     }
-    return {hp,maxHp,drain,ward,guard,deb,blocked,absorbed,intercepted,drawPenalty,energyPenalty};
+    return {hp,maxHp,drain,ward,guard,deb,blocked,absorbed,intercepted,drawPenalty,energyPenalty,hitDetails,broken};
   }
   holdPreview(outcome=this.enemyOutcome()) {
     if(this.holds>=2||!outcome.hp||!this.board.length) return null;
@@ -201,7 +221,7 @@ export class Run {
     for(const c of p.factors) s[c.kind]=Math.max(s[c.kind],c.value);
     s.combo=Math.max(s.combo,this.board.length);
     s.infinity+=Number(p.final>CAP);
-    if(p.impact.kind==='barrier') this.enemy.barrier--;
+    if(p.impact.kind==='barrier') this.enemy.barrier-=p.impact.breaks;
     if(p.impact.kind==='gate') this.enemy.gates.shift();
     if(p.impact.dealt>0n&&p.final>this.battlePeak) this.battlePeak=p.final;
     this.enemy.hp-=p.impact.dealt;
@@ -235,6 +255,7 @@ export class Run {
   }
   reward() {
     this.phase='reward';
+    this.omenDecision=this.act!==4&&random(this.seed+'/omen/reward/'+this.act+'/'+this.stage)()<(this.enemy.elite?.09:.025)?'pending':null;
     this.offers=this.act===4?[]:Array.from({length:3},()=>generate(this.rng,this.act,this.enemy.elite?17:5));
     if(this.offers.length) {
       const supportRng=random(this.seed+'/support/reward/'+this.stage);
@@ -245,7 +266,13 @@ export class Run {
     this.goldDecision='pending';
   }
   get rewardPending(){
-    return this.phase==='reward'&&(this.cardDecision.status==='pending'||this.goldDecision==='pending'||this.relicDecision==='pending');
+    return this.phase==='reward'&&(this.cardDecision.status==='pending'||this.goldDecision==='pending'||this.relicDecision==='pending'||this.omenDecision==='pending');
+  }
+  chooseOmen(take) {
+    if(this.phase!=='reward'||this.omenDecision!=='pending') return false;
+    this.omenDecision=take?'taken':'skipped';
+    if(take) this.omens=(this.omens??0)+1;
+    return true;
   }
   takeCard(i) {
     if(this.phase!=='reward'||this.cardDecision.status!=='pending'||!this.offers[i]) return false;
@@ -312,6 +339,7 @@ export class Run {
       const second=drawRelic(this.rng,[...this.owned,first],this.act,{shop:true});
       this.stockRelics=[first,second].filter(Boolean);
       this.shopUsed={relic:false,fuse:false,remove:false};
+      this.shopOmen=random(this.seed+'/omen/shop/'+this.act+'/'+node.id)()<.14;
     }
     if(node.kind==='event') {
       const rng=random(this.seed+'/event-route');
@@ -347,12 +375,13 @@ export class Run {
       if(action==='decline') {this.leaveNode();return {message:'イベントを見送った。'};}
       const offer=this.eventOffers[i??0];
       if(!offer?.available) return null;
-      const {hp,gold,result}=offer;
+      const {hp,gold,result,omen=0}=offer;
       this.hp+=hp;
       this.gold+=gold;
+      if(omen) this.omens=(this.omens??0)+omen;
       if(result) this.deck.push(result);
       this.leaveNode();
-      return {kind:'event',event:this.event,hp,gold,result};
+      return {kind:'event',event:this.event,hp,gold,result,omen};
     }
     if(facility==='rest'&&action==='heal') {
       this.hp=Math.min(100,this.hp+35);this.leaveNode();return {message:'休息でHPを最大35回復。'};
@@ -372,6 +401,10 @@ export class Run {
       this.shop[i]=null;
       this.deck.push(result);
       transaction={kind:'shop',sources:[],result};
+    } else if(action==='omen'&&this.shopOmen) {
+      this.shopOmen=false;
+      this.omens=(this.omens??0)+1;
+      transaction={kind:'omen',sources:[]};
     } else if(action==='relic'&&this.stockRelics[i]) {
       const relic=this.stockRelics[i];
       this.owned.push(relic);

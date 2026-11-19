@@ -18,6 +18,7 @@ export function relicActivations(result) {
     if(id) ids.add(id);
   }
   for(const trigger of result.triggers) ids.add(trigger.id);
+  if(result.impact?.relic) ids.add(result.impact.relic);
   return ids;
 }
 export function boardRelicStates(owned,preview,lastBurst) {
@@ -26,7 +27,7 @@ export function boardRelicStates(owned,preview,lastBurst) {
   return owned.flatMap(id=>{
     const relic=relics[id];
     if(!relic) return [];
-    const fixed=!relic.effect&&id!=='key'&&id!=='prism';
+    const fixed=!relic.effect&&id!=='key'&&id!=='prism'&&!relic.barrierBreak;
     return fixed||ready.has(id)||fired.has(id)?
       [{id,fixed,ready:ready.has(id),fired:fired.has(id)}]:[];
   });

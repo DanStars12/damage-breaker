@@ -135,6 +135,7 @@ async function facilityFlow(options) {
   await action(p,'take:0').tap();
   await action(p,'goldTake').tap();
   await action(p,'relicTake:1').tap();
+  if(await action(p,'omenTake').count()) await action(p,'omenTake').tap();
   assert.equal((await readState(p)).relicDecision,'taken');
   assert(await action(p,'advance').isEnabled());
   await action(p,'advance').tap();
@@ -155,13 +156,24 @@ async function facilityFlow(options) {
   await action(s,'shopTab:relics').tap();
   assert(await action(s,'relicBuy:0').isVisible());
   await action(s,'shopTab:forge').tap();
+  assert(await s.locator('[data-event-art="shop"]').isVisible());
+  assert(await s.locator('.coin-icon').count()>=3);
+  await action(s,'fuse').tap();
+  assert(await s.locator('[data-craft-confirm]').isDisabled());
+  await s.locator('[data-craft-card="0"]').tap();
+  assert(await s.locator('[data-craft-confirm]').isDisabled());
+  await s.locator('[data-craft-card="1"]').tap();
+  await s.locator('.craft-confirm .result-card').waitFor();
+  await s.locator('[data-craft-confirm]').tap();
+  assert.equal(await s.locator('.craft-materials .result-card').count(),2);
+  await action(s,'craftNext').tap();
   await action(s,'remove').tap();
   assert(await s.locator('#removeForm button').isDisabled());
   await s.locator('#removeCard').selectOption('1');
   await noOverflow(s,'removal dialog');
   await s.locator('#removePreview .result-card').waitFor();
   await s.locator('#removeForm button').tap();
-  assert.equal((await readState(s)).deck.length,15);
+  assert.equal((await readState(s)).deck.length,14);
   await noOverflow(s,'removal receipt');
   await action(s,'craftNext').tap();
   await action(s,'menu').tap();
@@ -176,8 +188,13 @@ async function facilityFlow(options) {
 
   const rest=await openPage(options,fixture('rest'));
   await action(rest.page,'resume').tap();
-  await rest.page.locator('#i').selectOption('0');
-  await action(rest.page,'forge:power').tap();
+  assert(await rest.page.locator('[data-event-art="rest"]').isVisible());
+  await action(rest.page,'forge').tap();
+  await rest.page.locator('[data-craft-card="0"]').tap();
+  assert(await rest.page.locator('[data-craft-confirm]').isDisabled());
+  await rest.page.locator('[data-craft-mode="power"]').tap();
+  await rest.page.locator('.craft-confirm .result-card').waitFor();
+  await rest.page.locator('[data-craft-confirm]').tap();
   await rest.page.locator('.workshop-reveal .workshop-output .result-card').waitFor();
   await noOverflow(rest.page,'forge receipt');
   assert((await readState(rest.page)).deck.some(card=>card.upgraded));
@@ -191,6 +208,59 @@ async function facilityFlow(options) {
   assert.equal((await readState(event.page)).phase,'map');
   assert.deepEqual(event.errors,[]);
   await event.page.close();
+}
+
+async function combatEffects(options) {
+  const run=fixture('fight');
+  run.owned=['grimoire'];
+  run.enemy.cycle=['pursuit','shatter'];
+  run.ward=3;
+  run.omens=1;
+  run.energy=2;
+  const make=(kind,value)=>({kind,value,cost:1,tier:0});
+  run.hand=[make('add',120),make('mul',12),make('mul',90)];
+  const {page,errors}=await openPage(options,run);
+  await action(page,'resume').tap();
+  await action(page,'divine').tap();
+  assert.deepEqual((await readState(page)).board.map(c=>[c.kind,c.value]),[['add',120],['mul',12]]);
+  assert.equal((await readState(page)).omens,0);
+  assert.equal(await page.locator('.board .returnable-label').count(),2);
+  assert(await page.locator('.hero[data-defense="ward"] .barrier-shell').isVisible());
+  await action(page,'hold').tap();
+  for(const hit of [1,2,3]) {
+    const marker=page.locator('.enemy[data-hit="'+hit+'"] .enemy-hit-fx');
+    await marker.waitFor({state:'attached'});
+    assert.equal(await marker.evaluate(el=>getComputedStyle(el).animationName),'individual-hit');
+  }
+  await page.locator('.skip-sequence[hidden]').waitFor({state:'attached'});
+  await action(page,'hold').tap();
+  await page.locator('.enemy.hero-barrier-struck.barrier-shatter').waitFor({state:'attached'});
+  await page.locator('.skip-sequence[hidden]').waitFor({state:'attached'});
+  assert.equal((await readState(page)).ward,1);
+  assert.deepEqual(errors,[]);
+  await page.close();
+
+  const boss=fixture('boss');
+  boss.owned=['breach'];
+  boss.enemy.barrier=2;
+  boss.board=[10,12,15,20].map(value=>make('add',value));
+  const barrier=await openPage(options,boss);
+  const b=barrier.page;
+  await action(b,'resume').tap();
+  assert(await b.locator('.foe[data-defense="ward"] .barrier-shell').isVisible());
+  await b.evaluate(()=>{
+    const arena=document.querySelector('.enemy');
+    const observer=new MutationObserver(()=>{
+      if(arena.classList.contains('foe-barrier-struck')) document.body.dataset.foeBarrierFlash=arena.querySelector('#outgoing').textContent;
+    });
+    observer.observe(arena,{attributes:true,attributeFilter:['class']});
+  });
+  await action(b,'burst').tap();
+  await b.locator('.last-strike').waitFor();
+  assert.match(await b.locator('body').getAttribute('data-foe-barrier-flash')??'',/2層破壊/);
+  assert.equal((await readState(b)).enemy.barrier,0);
+  assert.deepEqual(barrier.errors,[]);
+  await b.close();
 }
 
 async function desktopFlow() {
@@ -216,6 +286,10 @@ try {
     const options={...devices[device],viewport:{width,height}};
     await battleFlow(options);
     console.log(`PASS ${name} ${width}×${height} menu → map → placement → move → return → HOLD → BURST → reload`);
+    if(width===390) {
+      await combatEffects(options);
+      console.log('PASS divination → 3 visual hits → shatter → breach relic');
+    }
     if(width===320||width===390||width===932) {
       await facilityFlow(options);
       console.log(`PASS ${name} ${width}×${height} rewards → shop → deck/removal → forge → event`);

@@ -80,6 +80,7 @@ function play(seed,id) {
         r.chooseRelic(rank([r.relicDrop,r.relicAlternative][index])<Infinity,index);
       }
       r.chooseGold(true);
+      r.chooseOmen(true);
       if(r.offers.length) r.takeCard(r.offers.indexOf([...r.offers].sort((a,b)=>preference(b,id)-preference(a,id))[0]));
       r.advance();continue;
     }

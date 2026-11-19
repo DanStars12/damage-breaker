@@ -5,7 +5,7 @@ import {encounterName} from './enemies.mjs';
 
 const checkpointVersion=1;
 const resumablePhases=['map','battle','reward','facility','clear'];
-const shopKinds=['shop','forge','fuse','relic','remove','event'];
+const shopKinds=['shop','forge','fuse','relic','remove','event','omen'];
 const savedCardKinds=['add','mul','pct','pow','exp','clean','ward','guard'];
 const integerBetween=(value,min,max)=>Number.isInteger(value)&&value>=min&&value<=max;
 const validCard=c=>c&&savedCardKinds.includes(c.kind)&&Number.isSafeInteger(c.value)&&
@@ -33,6 +33,7 @@ export function readCheckpoint(serialized) {
     if(version!==checkpointVersion||!state||!integerBetween(randomState,-2147483648,2147483647)||
       !resumablePhases.includes(state.phase)||typeof state.seed!=='string'||typeof notice!=='string'||
       !integerBetween(state.act,1,4)||!integerBetween(state.stage,0,30)||!integerBetween(state.hp,1,100)||
+      (state.omens!==undefined&&(!Number.isSafeInteger(state.omens)||state.omens<0))||
       !Number.isSafeInteger(state.gold)||state.gold<0||!validCards(state.deck)||!state.deck.length||
       !Array.isArray(state.owned)||!state.owned.every(validRelic)||!Array.isArray(state.map)||
       !Array.isArray(state.routes)||!Array.isArray(state.visited)||!Array.isArray(state.history)||
@@ -51,6 +52,7 @@ export function readCheckpoint(serialized) {
       ![...rewardDecisions,'none'].includes(state.cardDecision?.status)||
       (state.cardDecision.status==='taken'&&!validCard(state.cardDecision.card))||
       !rewardDecisions.includes(state.goldDecision)||
+      (state.omenDecision!=null&&!rewardDecisions.includes(state.omenDecision))||
       (state.relicAlternative!=null&&(!validRelic(state.relicAlternative)||state.relicAlternative===state.relicDrop))||
       (state.relicDecision!==null&&(!rewardDecisions.includes(state.relicDecision)||!validRelic(state.relicDrop))))) return null;
     if(craftResult&&(!shopKinds.includes(craftResult.kind)||(craftResult.result&&!validCard(craftResult.result))||

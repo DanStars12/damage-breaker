@@ -257,8 +257,6 @@ main{position:relative;perspective:1300px}
 .sold{padding:15px;color:var(--sub);border:1px dashed var(--edge)}
 .workshop-relic{--metal:#e1b7ff;--aura:#765298}.workshop-remove{--metal:#e1979b;--aura:#813d4a}
 @media(max-width:510px){.hand{grid-template-columns:repeat(auto-fit,minmax(57px,1fr))}.map-node small{font-size:9px}.route-map{height:410px}}
-.enemy-double .hero canvas{animation:double-recoil .45s both}
-@keyframes double-recoil{15%,52%{transform:translateX(-11px);filter:brightness(2.55)}29%,70%{transform:translateX(-2px);filter:none}}
 .turn-fast .workshop-reveal .workshop-sigil span{animation-duration:.24s}
 .map-node.live:focus-visible{outline:2px solid #ffe4a9;outline-offset:3px}
 .map-node:disabled:not(.traveled){opacity:.72;color:#d6bc9b}
@@ -295,7 +293,6 @@ main{position:relative;perspective:1300px}
 .enemy-magic[data-move="pct"] .enemy-cast{background:radial-gradient(ellipse at 28% 51%,#e49b6f99,#aa433263 26%,transparent 59%)}
 .enemy-magic[data-move="sub"] .enemy-cast{background:linear-gradient(0deg,transparent 38%,#ffa88785 47%,transparent 58%)}
 .enemy-strike .enemy-cast{opacity:1;background:linear-gradient(37deg,transparent 34%,#ff8b7cb9 39%,transparent 47%);animation:melee-cast .43s both}
-.enemy-double .enemy-cast{animation:melee-twice .59s both}
 .enemy-strike:is([data-form="golem"],[data-form="titan"],[data-form="colossus"],[data-form="idol"]) .foe canvas{animation-name:heavy-foe}
 .enemy-strike:is([data-form="wyrm"],[data-form="dragon"],[data-form="hydra"],[data-form="mantis"]) .foe canvas{animation-name:beast-lunge}
 .dealing .card{animation:draw-card .35s calc(var(--deal)*33ms) ease-out both}
@@ -306,7 +303,6 @@ main{position:relative;perspective:1300px}
 @keyframes drain-cast{0%{opacity:0;transform:scale(.7)}37%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:translateX(32%) scale(.5)}}
 @keyframes hex-cast{0%,100%{opacity:0}38%{opacity:1;transform:scale(1.08)}}
 @keyframes melee-cast{0%,100%{opacity:0}27%{opacity:.9;transform:translateX(-9%)}}
-@keyframes melee-twice{0%,47%,100%{opacity:0}21%,64%{opacity:1;transform:translateX(-9%)}}
 @keyframes heavy-foe{25%{transform:translate(-5px,-14px) scale(1.05)}53%{transform:translate(-15px,5px) scale(1.04)}}
 @keyframes beast-lunge{37%{transform:translate(-23px,-5px) skewX(-8deg) scale(1.07)}}
 @keyframes relic-arrival{0%{filter:brightness(1.7);transform:translateY(7px)}100%{filter:none;transform:none}}
@@ -640,11 +636,7 @@ header nav { flex-wrap: wrap; }
   0% { transform:translateY(-12px) rotate(-5deg); opacity:.45; }
   100% { transform:none; opacity:1; }
 }
-.enemy-double .hero canvas { animation:recoil-twice .49s both; }
-@keyframes recoil-twice {
-  0%,40%,78%,100% { transform:none; filter:none; }
-  17%,57% { transform:translateX(-7px) rotate(-4deg); filter:brightness(1.65); }
-}
+
 .enemy-magic[data-move="ward"] .hero canvas { animation:ward-answer .48s both; }
 @keyframes ward-answer {
   0%,100% { filter:none; }
@@ -789,11 +781,7 @@ header nav { flex-wrap: wrap; }
   32% { opacity:.88; transform:none; }
   100% { opacity:0; transform:translateX(-12%) scaleX(1.09); }
 }
-.enemy-triple .hero canvas { animation:recoil-triple .55s both; }
-@keyframes recoil-triple {
-  0%,23%,53%,83%,100% { transform:none; }
-  12%,39%,68% { transform:translateX(-6px); filter:brightness(1.55); }
-}
+
 .enemy.ward-answer .hero canvas { animation:ward-answer .46s both; }
 #app[data-motion="fast"] .boss-attack i,#app[data-motion="fast"] :is(.base-banner,.base-awaken,.base-spark) { animation-duration:175ms; }
 #app[data-motion="off"] :is(.base-banner,.base-awaken,.base-spark,.boss-attack i) { animation:none; }
@@ -1325,3 +1313,96 @@ header nav { flex-wrap: wrap; }
   .shop-cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @keyframes mobile-arena-arrival { from { opacity:.4; } to { opacity:1; } }
+
+.coin-icon { width:1em; height:1em; vertical-align:-.13em; margin-inline-end:.3em; }
+.facility-hero { min-height:130px; height:clamp(135px,25dvh,253px); }
+.shop-head { margin-block:8px; }
+.craft-dialog { max-width:min(780px,95vw); }
+.craft-stock {
+  grid-template-columns:repeat(auto-fill,minmax(min(84px,100%),1fr));
+  max-height:min(35dvh,300px);
+  overflow:auto;
+  overscroll-behavior:contain;
+  padding:4px;
+  margin-block:8px;
+}
+.craft-stock .card { width:100%; }
+.craft-dialog [aria-pressed="true"] { outline:2px solid #ffe1a1; outline-offset:1px; }
+.forge-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin-block:8px; }
+.forge-options > div { display:grid; gap:4px; align-content:start; }
+.forge-options .result-card,.craft-confirm .result-card,.craft-materials .result-card { min-width:0; width:100%; }
+.forge-options button { padding-inline:4px; }
+.craft-confirm { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-block:8px; }
+.craft-confirm .result-card { width:min(105px,100%); }
+.craft-confirm p:empty { display:none; }
+.craft-materials { flex:0 1 235px; min-width:0; display:flex; align-items:center; gap:5px; }
+.craft-materials .result-card { flex:1 1 108px; }
+.workshop-fuse.workshop-reveal:not([data-motion="off"]) .craft-materials .card { animation:weave-material .66s ease-out both; }
+.workshop-fuse.workshop-reveal:not([data-motion="off"]) .craft-materials .card:nth-child(2) { --weave-drift:-7px; }
+@keyframes weave-material { 38% { transform:translateX(var(--weave-drift,7px)) scale(.93); filter:brightness(1.5); } }
+
+.hint-line { display:flex; justify-content:flex-end; margin:0 0 6px; }
+.hint-line button { color:#eee0ff; border-color:#aa87ca; background:#30233d; }
+.divination-glow { animation:divination-flash .72s ease-out; }
+@keyframes divination-flash { 34% { border-color:#e4c3ff; box-shadow:inset 0 0 22px #9f6bcc70,0 0 16px #9f6bcc65; } }
+
+.idle-sprite { position:relative; isolation:isolate; }
+.barrier-shell {
+  position:absolute;
+  z-index:1;
+  pointer-events:none;
+  opacity:0;
+  inset:0 8% -4%;
+  border-radius:50% 50% 44% 44%;
+  color:#7ce9cc;
+  border:2px solid currentColor;
+  background:repeating-linear-gradient(122deg,transparent 0 5px,currentColor 6px,transparent 7px 15px);
+  box-shadow:0 0 12px currentColor,inset 0 0 14px currentColor;
+}
+.foe .barrier-shell { color:#b49afb; }
+.hero[data-defense="guard"] .barrier-shell { color:#ffd486; }
+.combatant:is([data-defense="ward"],[data-defense="guard"]) .barrier-shell { opacity:.32; }
+.hero-barrier-struck .hero .barrier-shell,.barrier-cast .hero .barrier-shell,.foe-barrier-struck .foe .barrier-shell {
+  animation:barrier-pulse 320ms ease-out both;
+}
+.barrier-shatter .hero .barrier-shell,.foe-barrier-struck .foe .barrier-shell {
+  animation:barrier-fragments 550ms ease-out both;
+}
+@keyframes barrier-pulse {
+  12% { opacity:.9; transform:scale(1.12); }
+}
+@keyframes barrier-fragments {
+  0% { opacity:.92; }
+  40% { opacity:.76; transform:scale(1.16) skewX(8deg); filter:brightness(1.35); }
+  100% { opacity:0; transform:scale(1.36); }
+}
+.enemy-hit-fx {
+  pointer-events:none;
+  position:absolute;
+  left:5%;
+  top:12%;
+  width:44%;
+  height:76%;
+  z-index:2;
+  opacity:0;
+  color:#ffb393;
+  background:linear-gradient(160deg,transparent 42%,currentColor 49%,#fff4ce 50%,transparent 57%);
+}
+.enemy-strike[data-hit] .enemy-hit-fx { animation:individual-hit 290ms ease-out both; }
+.enemy-strike[data-hit="2"] .enemy-hit-fx { rotate:-48deg; }
+.enemy-strike[data-hit="3"] .enemy-hit-fx { rotate:24deg; scale:1.22; }
+.enemy-strike:is(.hero-barrier-struck,.intercept-reaction) .enemy-hit-fx { color:#92f2de; }
+.enemy-strike[data-move="shatter"] .enemy-hit-fx { color:#dd9fff; }
+@keyframes individual-hit {
+  0% { opacity:0; transform:translate(20%,-14%) scaleX(.55); }
+  28% { opacity:1; }
+  95%,100% { opacity:0; transform:translate(-17%,15%) scaleX(1.1); }
+}
+#app[data-motion="fast"] .enemy-hit-fx,#app[data-motion="fast"] .barrier-shell { animation-duration:155ms; }
+#app[data-motion="off"] .divination-glow { animation:none; }
+@media (max-width:550px), (max-width:850px) and (pointer:coarse), (max-height:550px) and (max-width:1100px) and (pointer:coarse) {
+  .facility-hero { min-height:116px; height:clamp(116px,23dvh,173px); }
+  .craft-dialog { max-height:calc(100dvh - 20px); }
+  .craft-stock .card { min-height:65px; }
+  .craft-confirm .result-card { width:min(90px,42%); }
+}

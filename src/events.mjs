@@ -29,5 +29,9 @@ export const events={
   coast:{name:'鯨骨の海岸',story:'引き潮の跡に、海藻で包まれた浄化札が残る。',offer:'浄化カードを獲得',support:19,kind:'clean'},
   sand:{name:'砂の集落',story:'旅の商いは終わり、最後の天幕で湯と薬を分けてくれる。',offer:'7金貨でHPを最大32回復',gold:-7,hp:32,choices:[{offer:'道案内のお礼に16金貨を受け取る',gold:16}]},
   clock:{name:'零時の歯車室',story:'止まった巨時計に差し込まれた術式が、歯車をもう一度回す。',offer:'HP10を払い高品質のカードを獲得',hp:-10,card:49},
-  banquet:{name:'残灯の宴席',story:'広間の食卓には、先を急ぐ旅人のための包みが残る。',offer:'HPを最大22回復',hp:22,choices:[{offer:'持ち帰りの包みから23金貨を受け取る',gold:23}]}
+  banquet:{name:'残灯の宴席',story:'広間の食卓には、先を急ぐ旅人のための包みが残る。',offer:'HPを最大22回復',hp:22,choices:[{offer:'持ち帰りの包みから23金貨を受け取る',gold:23}]},
+  oracle:{name:'天球占いの小屋',story:'占い師が星図の余白を一頁だけ切り離し、旅人に差し出す。',offer:'星詠みの頁を1枚受け取る',omen:1},
+  cistern:{name:'反響する貯水廟',story:'水底に二つの反射が見える。片方は旅銭、もう片方は護符だ。',offer:'18金貨を受け取る',gold:18,choices:[{offer:'結界カードを受け取る',support:23,kind:'ward'}]},
+  rookery:{name:'真鍮梟の塔',story:'梟は嘴に演算札をくわえ、止まり木で取引を待っている。',offer:'11金貨で高品質のカードを獲得',gold:-11,card:38},
+  hearth:{name:'雪路の炭火',story:'消えかけた炭火に手をかざすと、旅の疲れがほどける。',offer:'HPを最大21回復',hp:21}
 };

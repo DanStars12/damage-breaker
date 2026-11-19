@@ -16,7 +16,7 @@ const eliteSpecs=[
     ['グラニト・タイタン',1,'衝撃波で三段追撃。','pursuit','attack','sub'],
     ['クリオヒュドラ',3,'加算を封じ、基礎値も冷却する。','lock:add','drain','attack'],
     ['サンドクロノス',0,'基礎値を半減し、除算を差し込む。','drain','attack','div'],
-    ['カルサイト・レイパー',0,'局所封印と斬撃で術式を崩す。','fracture','cleave','double']
+    ['カルサイト・レイパー',0,'破界の一撃で結界を最大2層破壊する。','shatter','cleave','double']
   ],[
     ['ヴォイドベヒモス',7,'BURSTを1回だけ無効化する。', 'attack','div','double','barrier'],
     ['シジルゴーレム',4,'乗算を封じ、基礎値を削ぐ。','lock:mul','drain','attack'],
@@ -41,7 +41,7 @@ const bossSpecs=[
   ],[
     ['アエテル・ドラゴンロード',8,'HPの⅔と⅓で耐える。最低3回の有効BURSTが必要。','div','double','drain','flare','gate3'],
     ['エクリプス・エンペラー',9,'2回の無効バリアに加え、最大HPを削る吸命と累乗封印を使う。','wither','lock:pow','double','eclipse','barrier2'],
-    ['アストラ・グラーヴェ',0,'HPの⅔と⅓で耐え、指数を封じて隕鉄を落とす。','lock:exp','meteor','tax','cleave','gate3']
+    ['アストラ・グラーヴェ',0,'HPの⅔と⅓で耐え、指数封印・隕鉄・結界破壊を使う。','lock:exp','meteor','shatter','cleave','gate3']
   ]
 ];
 const normalFloors=[330n,320000n,10n**11n];
@@ -51,7 +51,7 @@ const bossAttack=[12,18,25];
 const finalBossBalance=[
   {floor:4n*10n**18n, scaleDivisor:3n, armor:2, attack:16},
   {floor:3n*10n**18n, scaleDivisor:4n, armor:2, attack:19},
-  {floor:4n*10n**18n, scaleDivisor:3n, armor:2, attack:19}
+  {floor:4n*10n**18n, scaleDivisor:3n, armor:2, attack:17}
 ];
 export const operationNames={add:'加算',mul:'乗算',pct:'割合',pow:'累乗',exp:'指数'};
 const extraEnemyName='エコー・オブ・インフィニティ';
@@ -87,6 +87,7 @@ export function makeEnemy(act,kind,variant,row,bench=0n) {
     hp:max,max,armor:balance?.armor??(1+a),attack:boss?(balance?.attack??bossAttack[a]):5+a*3+(elite?3:0),barrier:trait==='barrier2'?2:trait==='barrier'?1:0,gates,cycle:moves};
 }
 export const attackPatterns={
+  shatter:{name:'破界の一撃',hits:1,penalty:'shatter'},
   attack:{name:'通常攻撃',hits:1},double:{name:'二連撃',hits:2},
   cleave:{name:'黒鉄の斬撃',hits:1},wave:{name:'深淵の潮撃',hits:1},
   meteor:{name:'天秤の隕鉄',hits:1},dust:{name:'月蛾の燐粉',hits:1,penalty:'jam'},
@@ -99,7 +100,7 @@ export function intent(enemy,turn,act) {
   const [kind,target]=enemy.cycle[turn%enemy.cycle.length].split(':');
   const values={attack:enemy.attack,double:Math.ceil(enemy.attack*.65),wither:8+act*2,drain:50,
     div:[2,4,8,10][act-1],pct:-20-act*5,sub:20*act,
-    cleave:enemy.attack,wave:enemy.attack,meteor:enemy.attack,eclipse:enemy.attack,
+    shatter:Math.ceil(enemy.attack*.48),cleave:enemy.attack,wave:enemy.attack,meteor:enemy.attack,eclipse:enemy.attack,
     dust:Math.floor(enemy.attack*.67),flare:Math.floor(enemy.attack*.88),pursuit:Math.round(enemy.attack*.42)};
   return {kind,...(target?{target}:{}),value:values[kind]??0,at:1+turn%2,enemy:true};
 }

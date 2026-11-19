@@ -33,12 +33,22 @@ const eventScenes={
   coast:['1a384c','366c88','70a5ae','f5ebce',false,(p)=>{p.water(96,73,192);p.ribs(98,67);p.gem(124,67,6);p.rock(29,76,34,10);}],
   sand:['4a3041','985e54','d49c74','ffe69f',false,(p)=>{p.moon(42,27,15);p.tent(117,71,68,36);p.tent(58,73,36,22);p.vase(151,73,8);p.lamp(84,69);}],
   clock:['29263b','504557','8f767c','fbd39d',true,(p)=>{p.wheel(96,44,22);p.wheel(58,60,12);p.wheel(133,58,14);p.star(96,44,6);}],
-  banquet:['352134','663b50','a77273','ffcb81',true,(p)=>{p.arch(96,59,114,55);p.table(95,72,102);p.vase(96,62,8);p.flame(57,59,13);p.flame(133,59,13);}]
+  banquet:['352134','663b50','a77273','ffcb81',true,(p)=>{p.arch(96,59,114,55);p.table(95,72,102);p.vase(96,62,8);p.flame(57,59,13);p.flame(133,59,13);}],
+  oracle:['211f3c','4b3c6e','8773b3','f9deae',true,p=>{p.arch(98,56,102,57);p.moon(127,28,10);p.table(86,70,55);p.book(86,59,27);p.star(86,33,11);p.lamp(59,64);}],
+  cistern:['153342','2b5862','65949b','d3f1bd',true,p=>{p.arch(96,57,90,57);p.pillar(42,69,47);p.pillar(152,69,47);p.water(96,76,190);p.gem(87,58,6);p.gem(112,66,4);}],
+  rookery:['372b41','66506c','9c7978','ffd58a',false,p=>{p.tower(98,74,60);p.tower(137,73,38);p.moon(42,22,13);p.bird(80,33,3);p.bird(125,29,2);p.scroll(96,65);}],
+  hearth:['212c44','4d6481','9caabe','ffc67d',false,p=>{p.moon(155,20,10);p.tree(35,70,43);p.tree(159,78,41);p.rock(96,73,52,12);p.flame(96,63,17);}]
 };
+
+const facilityScenes={
+  rest:['192f38','3b5958','779680','f5c87e',false,p=>{p.moon(139,20,13);p.tree(25,74,56);p.tree(169,76,51);p.tent(73,71,62,34);p.rock(124,74,40,11);p.flame(124,63,15);p.lamp(93,69);}],
+  shop:['362437','6b4650','b87a60','ffe098',true,p=>{p.arch(97,59,125,54);p.shelves(28,65,38);p.shelves(134,65,35);p.table(100,71,77);p.chest(106,60);p.vase(136,60,6);p.lamp(58,60,2);p.lamp(157,56);}]
+};
+export const facilityArtIds=Object.keys(facilityScenes);
 export const eventArtIds=Object.keys(eventScenes);
 
 export function paintEvent(canvas,id) {
-  const scene=eventScenes[id];
+  const scene=eventScenes[id]??facilityScenes[id];
   if(!scene) return false;
   const [night,mid,light,glow,interior,compose]=scene;
   const ctx=canvas.getContext('2d');
