@@ -14,7 +14,7 @@ test('all enemy encounters including EXTRA have distinct face silhouettes using 
   }
   enemies.push(makeEnemy(4,'extra',0));
   const silhouettes=new Set();
-  assert.equal(new Set(enemies.map(e=>e.name)).size,46);
+  assert.equal(new Set(enemies.map(e=>e.name)).size,52);
   assert(enemies.every(e=>/^[ァ-ヺー・]+$/.test(e.name)));
   for(const {name,art:{form,palette}} of enemies) {
     let path, silhouette;
@@ -31,7 +31,7 @@ test('all enemy encounters including EXTRA have distinct face silhouettes using 
     assert(!silhouettes.has(silhouette),name+' has a repeated silhouette');
     silhouettes.add(silhouette);
   }
-  assert.equal(silhouettes.size,46);
+  assert.equal(silhouettes.size,52);
 });
 
 test('seeded maps can roll every ACT encounter variant',()=>{
@@ -48,6 +48,6 @@ test('seeded maps can roll every ACT encounter variant',()=>{
         rolled[node.kind].add(node.variant);
       }
     }
-    assert.deepEqual(Object.values(rolled).map(variants=>variants.size),[8,4,3]);
+    assert.deepEqual(Object.values(rolled).map(variants=>variants.size),[10,4,3]);
   }
 });

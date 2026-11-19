@@ -1599,10 +1599,6 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
 .command { min-width:96px; text-align:center; }
 .command small { font-size:11px; overflow-wrap:anywhere; }
 .command.primary small { color:inherit; }
-.command.command-win { background:#a8e0bb; border-color:#d2f5df; color:#193021; }
-.command.command-danger { background:#643048; border-color:#ee8799; color:#fff1ee; }
-.command.command-danger small { color:#ffcfda; }
-.command.command-danger:hover:not(:disabled) { background:#853451; color:#fff1ee; }
 .battle :is(.board-card,.card,.command):focus-visible { outline:2px solid #fff0c7; outline-offset:2px; }
 @media (max-width:550px), (max-width:850px) and (pointer:coarse), (max-height:550px) and (max-width:1100px) and (pointer:coarse) {
   .battle { padding-bottom:calc(86px + env(safe-area-inset-bottom)); }
@@ -1639,33 +1635,47 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
   .exchange-candidates,.exchange-receipt { grid-template-columns:1fr; }
   .exchange-receipt .workshop-arrow { justify-self:center; rotate:90deg; }
 }
-
-.relic-gain {
-  display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:3px 12px;
-  margin:3px 0 7px; padding:5px 9px; border-block:1px solid #a07d5799; color:#ffe3b4;
-  background:#403044; overflow-wrap:anywhere; font:600 12px/1.35 var(--interface);
-}
-.relic-gain[hidden] { display:none; }
-.relic-gain span { min-width:0; }
-.relic-gain strong {
-  min-width:0; color:#ffedaa; font:700 clamp(17px,3.1vw,26px)/1.1 var(--display);
-  font-variant-numeric:tabular-nums;
-}
-.relic-gain.relic-surge {
-  border-color:#f7c984; background:linear-gradient(100deg,#392439,#66473a,#392439);
-  box-shadow:inset 0 0 12px #ffb66358;
-}
 .damage-receipt .record-receipt { grid-column:1/-1; border-left:3px solid #ffcc76; background:#3f2c2c; }
 .record-receipt b { color:#ffe4a0; }
 .record-receipt p { color:#ead4be; margin:.25rem 0 0; overflow-wrap:anywhere; }
-.impact-stamp { display:none; }
-.hitstop .impact-stamp {
-  display:block; position:absolute; z-index:2; left:var(--foe-x); top:48%; pointer-events:none;
-  width:clamp(20px,5vw,54px); aspect-ratio:1; transform:translate(-50%,-50%);
-  background:linear-gradient(145deg,#fffbed 22%,var(--attack-color));
-  clip-path:polygon(50% 0,58% 37%,88% 13%,66% 44%,100% 50%,66% 56%,88% 87%,58% 63%,50% 100%,42% 63%,12% 87%,34% 56%,0 50%,34% 44%,12% 13%,42% 37%);
+
+/* Cut-stone slab with inset sockets and square, bronze corner pins. */
+.battle .board-frame {
+  --stone-border:#333b41;
+  border:1px solid #8a958b;
+  background:linear-gradient(155deg,#454d52,#293137 64%,#30383a);
+  box-shadow:inset 0 0 0 3px #191f24,inset 0 0 0 5px #69716a,0 4px 0 #16191c;
 }
-.enemy.player-strike.hitstop :is(.foe canvas,.burst-scene i,.slash),.enemy.player-strike.hitstop .duel::after { animation-play-state:paused; }
-.hitstop .foe .idle-sprite { filter:brightness(1.25); }
-.enemy.hitstop .foe-hp span { transition:none; }
-.enemy.hitstop #outgoing { animation:none; opacity:1; }
+.battle .board-frame > .heading { color:#fff0ca; }
+.battle .board-frame > .heading small { color:#e1dfce; }
+.battle .board {
+  position:relative;
+  padding:8px;
+  border:2px solid var(--stone-border);
+  background:
+    linear-gradient(#c2a476,#c2a476) 3px 3px/3px 3px no-repeat,
+    linear-gradient(#c2a476,#c2a476) right 3px top 3px/3px 3px no-repeat,
+    linear-gradient(#a98755,#a98755) left 3px bottom 3px/3px 3px no-repeat,
+    linear-gradient(#a98755,#a98755) right 3px bottom 3px/3px 3px no-repeat,
+    repeating-conic-gradient(#ffffff0a 0% 25%,transparent 0% 50%) 0 0/8px 8px,
+    repeating-linear-gradient(90deg,transparent 0 34px,#273638 34px 36px,#748279 36px 38px),
+    repeating-linear-gradient(0deg,transparent 0 21px,#273638 21px 23px,#748279 23px 25px),
+    #505c56;
+  box-shadow:inset 0 2px #87938c,inset 2px 0 #87938c,inset -2px -3px #222b30,0 3px #1c2328;
+}
+.battle .board .slot { border-radius:0; }
+.battle .board .slot.empty {
+  background:repeating-linear-gradient(90deg,transparent 0 7px,#e9f3e008 7px 9px),#263033;
+  color:#d2d8c6; border:1px solid #849089;
+  box-shadow:inset 2px 2px #141b20,inset -2px -2px #4c5b57;
+}
+.battle .board .slot.empty:hover { border-color:#d0b57b; color:#fff0c7; }
+.battle .board .slot.base {
+  color:#f6e7bd; border-color:#b7a477;
+  background:linear-gradient(0deg,#1e302d 48%,#344a40 49% 51%,#293c36 52%);
+  box-shadow:inset 2px 2px #526b62,inset -2px -2px #182823;
+}
+.battle .board .board-card:not(.selected) { box-shadow:inset 2px 2px #f7e7b829,inset -2px -2px #15121d; }
+@media (max-width:550px), (max-width:850px) and (pointer:coarse), (max-height:550px) and (max-width:1100px) and (pointer:coarse) {
+  .battle .board { padding:6px; }
+}

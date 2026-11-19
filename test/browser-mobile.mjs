@@ -19,17 +19,17 @@ const profiles=[
   ['iPhone landscape','iPhone 13',932,430]
 ];
 
-async function openPage(options,run=null,motion='fast') {
+async function openPage(options,run=null) {
   const page=await browser.newPage(options);
   page.setDefaultTimeout(6000);
   const errors=[];
   page.on('pageerror',error=>errors.push(error.message));
   await page.route(origin,route=>route.fulfill({contentType:'text/html',body:html}));
-  if(run) await page.addInitScript(({key,checkpoint,motion})=>{
+  if(run) await page.addInitScript(({key,checkpoint})=>{
     if(sessionStorage.getItem('fixture')) return;
     sessionStorage.setItem('fixture','yes');
-    localStorage.setItem(key,JSON.stringify({best:{max:'0'},runs:[],prefs:{motion},checkpoint}));
-  },{key:storageKey,motion,checkpoint:writeCheckpoint({run})});
+    localStorage.setItem(key,JSON.stringify({best:{max:'0'},runs:[],prefs:{motion:'fast'},checkpoint}));
+  },{key:storageKey,checkpoint:writeCheckpoint({run})});
   await page.goto(origin);
   return {page,errors};
 }
@@ -85,6 +85,7 @@ async function battleFlow(options) {
   await dockVisible(page,'burst');
   await settle(page);
   await noOverflow(page,'battle');
+  assert.match(await page.locator('.board').evaluate(el=>getComputedStyle(el).backgroundImage),/repeating-conic-gradient/);
   assert.equal(await action(page,'intercept').count(),0);
   assert(await page.locator('.hp-forecast').count());
   assert(await page.locator('.duel [data-act-art]').isVisible());
@@ -375,8 +376,9 @@ async function commandFeedback(options) {
   run.board=[{kind:'add',value:5,tier:0,cost:1}];
   const {page,errors}=await openPage(options,run);
   await action(page,'resume').tap();
-  assert.match(await action(page,'hold').innerText(),/反撃で敗北/);
-  assert.match(await action(page,'burst').innerText(),/反撃で敗北/);
+  assert.equal(await action(page,'hold').locator('small').innerText(),'盤のカードを維持');
+  assert.equal(await action(page,'burst').locator('small').innerText(),'今の盤で演算');
+  assert.match(await page.locator('.tactics').innerText(),/反撃で敗北/);
   assert.match(await page.locator('.intent').innerText(),/致命的/);
   const before=await readState(page);
   await action(page,'hand:0').tap();
@@ -388,62 +390,10 @@ async function commandFeedback(options) {
   assert.equal(after.hand.length,before.hand.length);
   assert.match(await page.locator('.battle-notice').innerText(),/2 枚を手札に戻しました/);
   await action(page,'hand:0').tap();
-  assert.match(await action(page,'burst').innerText(),/この一撃で撃破/);
-  assert(await action(page,'burst').evaluate(button=>button.classList.contains('command-win')));
+  assert.equal(await action(page,'burst').locator('small').innerText(),'今の盤で演算');
+  assert.match(await page.locator('.tactics-win').innerText(),/このBURSTで撃破/);
   assert.deepEqual(errors,[]);
   await page.close();
-}
-
-async function burstRhythm(options) {
-  const run=fixture('fight');
-  run.owned=['grimoire'];
-  run.enemy.armor=1;
-  run.enemy.barrier=0;
-  run.enemy.cycle=['attack'];
-  run.board=[{kind:'add',value:100,cost:1,tier:0},{kind:'mul',value:100,cost:1,tier:0}];
-  for(const mode of ['full','off','skip-stop']) {
-    run.enemy.gates=mode==='off'?[15n]:[];
-    const {page,errors}=await openPage(options,run,mode==='off'?'off':'full');
-    await action(page,'resume').tap();
-    await settle(page);
-    await page.evaluate(skip=>{
-      const gain=document.querySelector('#relicGain'), enemy=document.querySelector('.enemy');
-      new MutationObserver(()=>{
-        if(!gain.hidden) document.body.dataset.gain=gain.innerText;
-      }).observe(gain,{subtree:true,childList:true,attributes:true});
-      new MutationObserver(()=>{
-        if(!enemy.classList.contains('hitstop')) return;
-        const foe=enemy.querySelector('.foe canvas');
-        document.body.dataset.stop=[enemy.dataset.hitStop,getComputedStyle(foe).animationPlayState,enemy.querySelector('#foeHp').textContent].join('|');
-        if(skip) document.querySelector('.skip-sequence').click();
-      }).observe(enemy,{attributes:true,attributeFilter:['class']});
-    },mode==='skip-stop');
-    await action(page,'burst').tap();
-    if(mode==='off') {
-      await page.locator('.last-strike').waitFor();
-      assert.equal((await readState(page)).phase,'battle');
-      await action(page,'burst').tap();
-    }
-    await page.locator('.record-receipt').waitFor();
-    const body=page.locator('body');
-    if(mode==='off') {
-      assert.equal(await body.getAttribute('data-gain'),null);
-      assert.equal(await body.getAttribute('data-stop'),null);
-    } else {
-      assert.match(await body.getAttribute('data-gain')??'',/×12,000/);
-      assert.match(await body.getAttribute('data-stop')??'',/^75\|paused\|HP 0 /);
-    }
-    assert.match(await page.locator('.record-receipt').innerText(),/同頭累乗の魔導書/);
-    const result=await readState(page);
-    assert.equal(result.battleRecord.final.$bigint,'144000000');
-    assert.equal(result.lastBurst.final.$bigint,mode==='off'?'20':'144000000');
-    await noOverflow(page,'record receipt');
-    await page.reload();
-    await action(page,'resume').tap();
-    assert(await page.locator('.record-receipt').isVisible());
-    assert.deepEqual(errors,[]);
-    await page.close();
-  }
 }
 
 async function desktopFlow() {
@@ -497,10 +447,8 @@ try {
       await combatEffects(options);
       await phaseGauges(options);
       await commandFeedback(options);
-      await burstRhythm(options);
-      console.log('PASS relic multiplier → hitstop → record resume, motion off and skip interruption');
       console.log('PASS divination → 3 visual hits → shatter → breach relic');
-      console.log('PASS lethal intent → return provisional cards and energy → winning BURST forecast');
+      console.log('PASS static HOLD and BURST labels, lethal intent and winning forecast, provisional refund');
     }
     if(width===320||width===390) {
       await relicExchange(options);

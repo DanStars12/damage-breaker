@@ -1,4 +1,4 @@
-import {burstVisual,reelTiming,attackAnimation,relicGain,hitStop,burstImpactCue} from './presentation.mjs';
+import {burstVisual,reelTiming,attackAnimation} from './presentation.mjs';
 import {paintEvent,eventCanvasSize} from './event-art.mjs';
 import {events} from './events.mjs';
 import {supportValue,supportKinds} from './cards.mjs';
@@ -160,21 +160,11 @@ function tacticalReadout(p,outcome) {
     <div class="${lethal&&run.holds<run.holdLimit?'tactics-danger':''}"><b>HOLD</b><span>${holdText}${outcome.broken&&run.holds<run.holdLimit?' · 結界 −'+outcome.broken:outcome.blocked&&run.holds<run.holdLimit&&!lethal?' · 結界で妨害を防ぐ':''}${outcome.absorbed&&run.holds<run.holdLimit?' · 防御 '+outcome.absorbed:''}${held!==null&&held!==p.final?` <small title="${held}"> · 引く前の予測 ${compact(held)}</small>`:''}</span></div>
     <div class="${victory?'tactics-win':lethal?'tactics-danger':''}"><b>BURST</b><span>${burstText}${lethal&&!victory?' · 反撃で敗北':''}</span></div></div>`;
 }
-function battleCommands(p,outcome) {
-  const limited=run.holds>=run.holdLimit;
-  const lethal=outcome.hp===0;
-  const finish=p.impact.dealt===run.enemy.hp;
-  const loss=run.hp-outcome.hp;
-  const damage=p.impact.kind==='barrier'?'バリア '+p.impact.breaks+'層破壊':
-    p.impact.kind==='gate'?'耐久ライン突破':p.impact.kind==='miss'?'敵HP変化なし':'敵HP −'+compact(p.impact.dealt,false);
-  const holdText=limited?'上限到達':lethal?'反撃で敗北':loss?'術師HP −'+loss:
-    outcome.deb!==run.deb?'妨害が盤に入る':outcome.drain!==run.drain?'基礎値が低下':
-    outcome.drawPenalty?'次のドロー −1':outcome.energyPenalty?'次のエナジー −1':'盤を維持して引く';
-  const burstText=finish?'この一撃で撃破':lethal?'反撃で敗北':damage;
-  const command=(name,title,summary,variant='',disabled=false)=>`<button type="button" class="command ${variant}" data-action="${name}" ${disabled?'disabled':''}><b>${title}</b><small>${summary}</small></button>`;
+function battleCommands() {
   return `<div class="actions battle-commands">
-    ${command('hold','HOLD '+run.holds+'/'+run.holdLimit,holdText,lethal&&!limited?'command-danger':'',limited)}
-    ${command('burst','BURST',burstText,'primary '+(finish?'command-win':lethal?'command-danger':''))}
+    <button type="button" class="command" data-action="hold" ${run.holds>=run.holdLimit?'disabled':''}>
+      <b>HOLD ${run.holds}/${run.holdLimit}</b><small>盤のカードを維持</small></button>
+    <button type="button" class="command primary" data-action="burst"><b>BURST</b><small>今の盤で演算</small></button>
     <button type="button" data-action="skip" class="skip-sequence" hidden>演出をスキップ</button>
   </div>`;
 }
@@ -230,7 +220,7 @@ function battle() {
           <i class="burst-ring"></i><i class="burst-ring echo"></i><i class="burst-wake"></i><i class="burst-nova"></i><i class="burst-crown"></i><i class="burst-glyph"></i><span class="burst-sparks"></span></span>
         ${e.kind==='boss'?`<div class="boss-entry" aria-hidden="true"><i></i><span>ACT BOSS</span><strong>${enemyNameHTML(e.name)}</strong></div>`:''}
         <span class="boss-attack" aria-hidden="true"><i></i><i></i><i></i></span>
-        <i class="impact-stamp" aria-hidden="true"></i><span class="slash" aria-hidden="true"></span><span class="enemy-cast" aria-hidden="true"></span><span class="enemy-hit-fx" aria-hidden="true"></span><span id="incoming" aria-hidden="true"></span><span id="outgoing" aria-hidden="true"></span>
+        <span class="slash" aria-hidden="true"></span><span class="enemy-cast" aria-hidden="true"></span><span class="enemy-hit-fx" aria-hidden="true"></span><span id="incoming" aria-hidden="true"></span><span id="outgoing" aria-hidden="true"></span>
       </div>
       <div class="enemy-info">
       ${e.detail?`<p class="enemy-rule">${e.detail}</p>`:''}
@@ -246,7 +236,7 @@ function battle() {
       <div class="preview"><div><small>通常演算</small><strong title="${exactRat(p.normal)}">${visibleNumber(p.normal)}</strong></div><div><small>レリック適用後</small><strong title="${exactRat(p.result)}">${visibleNumber(p.result)}</strong></div>
       <div class="preview-final"><small>最終ダメージ予測</small><strong title="${p.final}">${compact(p.final)}</strong><small title="${p.impact.dealt}">敵HP −${compact(p.impact.dealt,false)}${p.impact.kind==='barrier'?' · バリア '+p.impact.breaks+'層破壊':p.impact.kind==='gate'?' · 耐久段階まで':''}</small></div></div>
       <div id="reel" class="reel" hidden><div class="reel-head"><span id="stepName"></span><span id="stepCombo"></span></div>
-      <div class="reel-display"><i aria-hidden="true"></i><strong id="reelNumber"></strong><small id="reelDigits"></small></div><div id="relicGain" class="relic-gain" hidden><span></span><strong></strong></div><div class="reel-foot"><div id="stepProgress"></div>${btn('演出をスキップ','skip')}</div></div>
+      <div class="reel-display"><i aria-hidden="true"></i><strong id="reelNumber"></strong><small id="reelDigits"></small></div><div class="reel-foot"><div id="stepProgress"></div>${btn('演出をスキップ','skip')}</div></div>
       ${run.lastBurst?`<div class="last-strike" title="${[...relicActivations(run.lastBurst)].map(id=>relics[id].name).join(' ／ ')}">直前BURST <b title="${run.lastBurst.final}">${compact(run.lastBurst.final)}</b> · 敵HP −${compact(run.lastBurst.impact.dealt,false)}</div>`:''}
       ${notice?`<small class="battle-notice" role="status">${moneyText(notice)}</small>`:''}</section>
     <section class="frame hand-frame"><div class="heading"><h2>手札</h2><span class="energy">エネルギー ${run.energy} / ${run.capacity} <small>· ドロー ${run.drawCount}枚</small></span></div>
@@ -254,7 +244,7 @@ function battle() {
       <div class="hand" data-hand-return>${run.hand.map((c,i)=>cardButton(c,'hand:'+i,i,!run.canPlay(c))).join('')}</div>
       ${tacticalReadout(p,outcome)}
       <div class="controls"><small>仮置きは選択して手札に戻せます。HOLDまたはBURSTで確定。${run.holds===run.holdLimit?' 次はBURST。':''}</small>
-      ${battleCommands(p,outcome)}
+      ${battleCommands()}
       </div></section>
     </div>${sidebar(p)}</main>`;
 }
@@ -548,7 +538,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.3.3</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.3.4</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -645,6 +635,8 @@ function burstFX(n,best) {
     effect.style.setProperty('--burst-hue',visual.hue);
     effect.className='flash'+(inf||tier>=4?' high':'')+(tier>=3&&mode==='full'?' shake':'')+(mode==='fast'?' fast':'');
   }
+  cue(inf?'infinity':tier>=3?'impactNova':'hit',{level:tier});
+  if(best&&!inf) cue('record');
 }
 effect.addEventListener('animationend',()=>{effect.className='';});
 const prefsHTML=()=>`<p><label><input type="checkbox" id="scientific" ${book.prefs.scientific?'checked':''}> 指数表記</label></p>
@@ -1106,21 +1098,12 @@ async function showBurst() {
   sequence=control;
   const signal=control.signal;
   const reel=app.querySelector('#reel'), field=app.querySelector('.enemy');
-  const stop=hitStop(p,mode);
-  const level=magnitude([p.final,1n]);
-  const finishSound=()=> {
-    if(best&&p.final<=CAP) cue('record');
-    else if(run.enemy.hp===0n&&p.final<=CAP) cue('victory');
-    else if(stop&&p.impact.kind==='hit'&&p.final<=CAP) cue('impactRelease');
-  };
   try {
     if(mode!=='off') {
       const name=reel.querySelector('#stepName'), counter=reel.querySelector('#reelNumber');
       const combo=reel.querySelector('#stepCombo'), progress=reel.querySelector('#stepProgress');
       const steps=timeline(p,armor);
       const countDigits=reel.querySelector('#reelDigits');
-      const gainBanner=reel.querySelector('#relicGain');
-      const [gainValues,gainRatio]=gainBanner.children;
       let prior=[BigInt(base),1n];
       let lastDigits=0, lastLevel=0, lastInfinity=false;
       const showValue=(value,infinity=false)=>{
@@ -1167,24 +1150,7 @@ async function showBurst() {
           } else strip.insertAdjacentHTML('beforeend',badge);
           firingRelic=strip.querySelector('[data-relic="'+step.relic+'"]');
         }
-        const stepLevel=magnitude(step.value);
-        const gain=step.relic?relicGain(prior,step.value):null;
-        const surge=Boolean(gain?.strong);
-        gainBanner.hidden=!gain;
-        gainBanner.classList.toggle('relic-surge',surge);
-        if(gain) {
-          gainValues.textContent=visibleNumber(prior)+' → '+visibleNumber(step.value);
-          gainRatio.title=gain.numerator+' / '+gain.denominator;
-          const whole=gain.hundredths/100n;
-          const fraction=String(gain.hundredths%100n).padStart(2,'0').replace(/0+$/,'');
-          if(whole>=1000000n) {
-            const amount=compact(whole,false);
-            const approximate=amount.startsWith('≈')||Boolean(gain.numerator%gain.denominator);
-            gainRatio.textContent=(approximate?'≈':'')+'×'+amount.replace(/^≈/,'');
-          } else {
-            gainRatio.textContent=(gain.numerator*100n%gain.denominator?'≈':'')+'×'+whole.toLocaleString('ja-JP')+(fraction?'.'+fraction:'');
-          }
-        }
+        const level=magnitude(step.value);
         reel.dataset.kind=step.type;
         if(step.relic) name.innerHTML=relicIcon(step.relic)+' 発動 · '+esc(step.name);
         else name.textContent=step.name;
@@ -1194,13 +1160,12 @@ async function showBurst() {
         void counter.offsetWidth;
         counter.classList.add('count-pop');
         progress.style.width=((i+1)*100/steps.length)+'%';
-        if(step.type!=='impact') cue(step.type==='relic'?(surge?'relicSurge':'relic'):step.type==='enemy'?'hex':cardCue(p.steps[step.index].card),{level:stepLevel});
+        if(step.type!=='impact') cue(step.type==='relic'?'relic':step.type==='enemy'?'hex':cardCue(p.steps[step.index].card),{level});
         const {samples,duration}=reelTiming(prior,step.value,step.type,mode==='fast');
         await clock(duration,signal,position=>{
           const value=reelValue(prior,step.value,Math.floor(position*samples),samples);
           showValue(value,step.type==='impact'&&position===1&&p.final>CAP);
         });
-        if(surge&&mode==='full'&&!signal.aborted) await clock(160,signal);
         prior=step.value;
       }
       const attack=attackAnimation(p.final);
@@ -1236,10 +1201,6 @@ async function showBurst() {
         const impact=p.impact.kind;
         const reaction={barrier:'player-blocked',miss:'player-miss',gate:'player-landed',hit:'player-landed'};
         field.classList.add('player-strike',reaction[impact]);
-        if(stop) {
-          field.dataset.hitStop=String(stop);
-          field.classList.add('hitstop');
-        }
         if(impact==='gate') field.classList.add('gate-shatter');
         if(impact==='barrier') field.classList.add('foe-barrier-struck');
         if(p.impact.relic) {
@@ -1258,25 +1219,20 @@ async function showBurst() {
         hpBar.querySelector('.hp-forecast')?.remove();
         hpBar.querySelectorAll('.gate-tick').forEach(mark=>mark.remove());
         hpBar.insertAdjacentHTML('beforeend',gateTicks(e));
-        cue(burstImpactCue(p),{level:impact==='barrier'?0:level});
-        if(stop) {
-          await clock(stop,signal);
-          field.classList.remove('hitstop');
-        }
-        if(!signal.aborted) {
-          if(impact==='hit') burstFX(p.final,best);
-          finishSound();
-          await clock(mode==='fast'?160:impact==='hit'?attack.impact:680,signal);
-        }
+        if(impact==='hit') burstFX(p.final,best);
+        else cue(impact);
+        if(e.hp===0n) cue('victory');
+        await clock(mode==='fast'?160:impact==='hit'?attack.impact:695,signal);
         field.querySelector('.foe').dataset.defense=e.barrier?'ward':'none';
         if(e.hp>0n&&!signal.aborted) {
           await showEnemyReaction(field,move,prediction,hpBefore-run.hp,outcome,signal);
         }
       }
     } else {
-      cue(burstImpactCue(p),{level:p.impact.kind==='barrier'?0:level});
-      finishSound();
-      if(run.enemy.hp>0n) enemyReaction(move,outcome,outcome.hitDetails[0]);
+      if(p.impact.kind==='hit') burstFX(p.final,best);
+      else cue(p.impact.kind);
+      if(run.enemy.hp===0n) cue('victory');
+      else enemyReaction(move,outcome,outcome.hitDetails[0]);
     }
   } finally {
     if(signal.aborted) effect.className='';

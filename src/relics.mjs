@@ -123,6 +123,20 @@ Object.assign(relics,{
   finishing:{name:'星尾の彗針',desc:'有効な割合と乗算を含み、最後の有効な演算が指数で4枚以上なら×52。',effect:({own})=>
     amplify(own.length>=4&&own.at(-1).kind==='exp'&&effectCount(own,'pct')>0&&effectCount(own,'mul')>0,52)}
 });
+Object.assign(relics,{
+  evenChisel:{name:'双数の石鑿',desc:'偶数の加算が3枚続くと×18。',effect:({cards})=>
+    amplify(cards.some((_,i)=>i>=2&&cards.slice(i-2,i+1).every(c=>numeric(c)&&c.kind==='add'&&c.value%2===0)),18)},
+  watchRune:{name:'見張りの刻印',desc:'HOLDがちょうど1回で、敵の妨害が盤にあり、有効な演算が3枚以上なら×17。',effect:({holds,count,cards})=>
+    amplify(holds===1&&count>=3&&cards.some(c=>c.enemy&&c.kind!=='sealed'),17)},
+  seedTablet:{name:'雛石の算板',desc:'有効な演算が3枚以上あり、すべて数値20以下の加算・乗算・割合なら×26。',effect:({own})=>
+    amplify(own.length>=3&&own.every(c=>numeric(c)&&c.value<=20),26)},
+  starGlass:{name:'星窓の硝子',desc:'指数→乗算がこの順で隣接すると×40。',effect:({cards})=>
+    amplify(cards.some((c,i)=>i>0&&!c.enemy&&c.kind==='mul'&&!cards[i-1].enemy&&cards[i-1].kind==='exp'),40)},
+  triadSeal:{name:'月蝕の三印',desc:'乗算→累乗→割合がこの順で隣接すると×72。',effect:({cards})=>
+    amplify(cards.some((c,i)=>i>=2&&!c.enemy&&c.kind==='pct'&&cards.slice(i-2,i).every(v=>!v.enemy)&&cards[i-2].kind==='mul'&&cards[i-1].kind==='pow'),72)},
+  graniteOath:{name:'花崗の誓約',desc:'HOLDがちょうど1回で、4種類以上の有効な演算を使うと×84。',effect:({holds,own})=>
+    amplify(holds===1&&new Set(own.map(c=>c.kind)).size>=4,84)}
+});
 export const relicRanks=[
   {name:'コモン',shop:15,drop:10},
   {name:'レア',shop:13,drop:14},
@@ -130,9 +144,9 @@ export const relicRanks=[
   {name:'レジェンド',shop:3,drop:10}
 ];
 const rankedRelics=[
-  ['short','key','reserve','chalk','lens','paper','sealwax','quartette','compass','mirror','ember','keystone','twinScribes','echoQuill','pocket'],
-  ['tail','order','chain','furnace','rack','spring','mantle','ratio','brazier','anvil','helix','vigil','pulse','bell','lensGuard','lanternHeart','balanceStone','refuge','holdCrest','braid','alternate','descending','percentPair','sparse'],
-  ['prism','codex','sum','lattice','tithe','star','mosaic','comet','crown','rootGem','dam','violetSeal','lodestone','spiralKey','breach','runeSundial','stillwater','bookends','bracket','patient','finishing'],
+  ['short','key','reserve','chalk','lens','paper','sealwax','quartette','compass','mirror','ember','keystone','twinScribes','echoQuill','pocket','evenChisel','watchRune'],
+  ['tail','order','chain','furnace','rack','spring','mantle','ratio','brazier','anvil','helix','vigil','pulse','bell','lensGuard','lanternHeart','balanceStone','refuge','holdCrest','braid','alternate','descending','percentPair','sparse','seedTablet','starGlass'],
+  ['prism','codex','sum','lattice','tithe','star','mosaic','comet','crown','rootGem','dam','violetSeal','lodestone','spiralKey','breach','runeSundial','stillwater','bookends','bracket','patient','finishing','triadSeal','graniteOath'],
   ['grimoire','abacus','aurora','nightCrown']
 ];
 for(const [rank,ids] of rankedRelics.entries()) for(const id of ids) relics[id].rank=rank;

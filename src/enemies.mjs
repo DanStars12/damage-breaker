@@ -1,13 +1,16 @@
 const normalSpecs=[
   [['アッシュランタン','lantern','attack','sub'],['ラストテンプラー','knight','attack','div'],['グレイヴハウンド','hound','double','attack'],
    ['エンバーウィスプ','wisp','sub','flare'],['ブラススカラベ','beetle','attack','fracture'],['ラビリンスレイス','specter','pct','attack'],
-   ['コバルトレイヴン','wyrm','jam','double'],['ルーンバック','beetle','sub','cleave']],
+   ['コバルトレイヴン','wyrm','jam','double'],['ルーンバック','beetle','sub','cleave'],
+   ['モスキャップ','mushroom','sub','attack'],['ブロンズミミック','mimic','attack','div']],
   [['セヴラ・オラクル','specter','div','attack'],['ヴェイルガード','knight','lock:add','attack'],['ジオードスカラベ','beetle','attack','div'],
    ['ミストファング','hound','pursuit','pct'],['アズールウィスプ','wisp','drain','jam'],['ルクス・ライブラリアン','lantern','attack','sub'],
-   ['ムーンシルフ','moth','dust','pct'],['フロストジャッカル','hound','drain','double']],
+   ['ムーンシルフ','moth','dust','pct'],['フロストジャッカル','hound','drain','double'],
+   ['ルーンメデューサ','jelly','dust','pct'],['アイアンホーン','boar','cleave','sub']],
   [['アストラヴォア','specter','pct','attack'],['ファントムドラグーン','knight','attack','double'],['ノクスウィスプ','wisp','lock:pct','attack'],
    ['スターフラクチャー','beetle','div','fracture'],['アンブラハウンド','hound','double','sub'],['エーテルゲートキーパー','lantern','drain','tax'],
-   ['ゼノフォージ','golem','tax','meteor'],['ヴェスパーラミア','specter','lock:exp','double']]
+   ['ゼノフォージ','golem','tax','meteor'],['ヴェスパーラミア','specter','lock:exp','double'],
+   ['エクリプスリーパー','reaper','div','cleave'],['オーロラハーピー','harpy','double','fracture']]
 ];
 const monsterForms=[['golem','hydra','wyrm','mantis'],['behemoth','golem','mantis','leviathan'],['hydra','idol','wyrm','moth']];
 const bossForms=[['titan','leviathan','behemoth'],['colossus','moth','hydra'],['dragon','eclipse','titan']];
@@ -59,7 +62,7 @@ const encounterSpecs={fight:normalSpecs,elite:eliteSpecs,boss:bossSpecs};
 export const encounterCount=(act,kind)=>encounterSpecs[kind]?.[act-1]?.length??0;
 
 // Keep the original palette IDs stable for older checkpoints.
-const expansionPalettes={fight:[[18,19],[22,23],[26,27]],elite:[[20],[24],[28]],boss:[[21],[25],[29]]};
+const expansionPalettes={fight:[[18,19,30,31],[22,23,32,33],[26,27,34,35]],elite:[[20],[24],[28]],boss:[[21],[25],[29]]};
 const originalCounts={fight:6,elite:3,boss:2};
 
 export function encounterName(act,kind,variant) {

@@ -376,13 +376,13 @@ test('HOLD forecast agrees with the actual enemy response and does not mutate th
   assert.equal(r.holdPreview(),null);
 });
 
-test('64 ranked relics have distinct pixel icons and seeded, ownership-aware rolls',()=>{
+test('70 ranked relics have distinct pixel icons and seeded, ownership-aware rolls',()=>{
   const ids=Object.keys(relics);
-  assert.equal(ids.length,64);
+  assert.equal(ids.length,70);
   assert.deepEqual(new Set(ids.map(id=>relics[id].rank)),new Set([0,1,2,3]));
   assert.equal(relicRanks.length,4);
   const icons=ids.map(relicIcon);
-  assert.equal(new Set(icons).size,64);
+  assert.equal(new Set(icons).size,70);
   assert(icons.every(svg=>svg.includes('shape-rendering="crispEdges"')));
   const roll=()=>Array.from({length:128},(_,i)=>drawRelic(random('rank-'+i),['grimoire','chalk'],1,{shop:true}));
   const stock=roll();
@@ -618,4 +618,26 @@ test('exchange event enters the pool only if there is an eligible relic',()=>{
   exhausted.seenEvents=[...withRelic.seenEvents].filter(id=>id!=='exchange');
   forceNode(exhausted,'event');
   assert.notEqual(exhausted.event,'exchange');
+});
+
+
+test('stone relics respect numeric caps, HOLD count, and adjacent unsealed operations',()=>{
+  const triggers=(id,board,extra={})=>evaluate({board,owned:[id],...extra}).triggers.map(t=>t.op.value);
+  assert.deepEqual(triggers('evenChisel',[a('add',2),a('add',4),a('add',6)]),[18]);
+  assert.deepEqual(triggers('evenChisel',[a('add',2),a('add',4),a('add',7)]),[]);
+  const small=[a('add',20),a('mul',2),a('pct',19)];
+  assert.deepEqual(triggers('seedTablet',small),[26]);
+  assert.deepEqual(triggers('seedTablet',[...small,a('add',21)]),[]);
+  const deb=[d('div',2,1)];
+  assert.deepEqual(triggers('watchRune',small,{holds:1,deb}),[17]);
+  assert.deepEqual(triggers('watchRune',small,{holds:2,deb}),[]);
+  assert.deepEqual(triggers('watchRune',small,{holds:1}),[]);
+  const stars=[a('exp',1),a('mul',3)];
+  assert.deepEqual(triggers('starGlass',stars),[40]);
+  assert.deepEqual(triggers('starGlass',stars,{deb}),[]);
+  const sequence=[a('mul',2),a('pow',2),a('pct',10)];
+  assert.deepEqual(triggers('triadSeal',sequence),[72]);
+  assert.deepEqual(triggers('triadSeal',sequence,{deb:[d('seal',0,1)]}),[]);
+  assert.deepEqual(triggers('graniteOath',[...sequence,a('add',2)],{holds:1}),[84]);
+  assert.deepEqual(triggers('graniteOath',[...sequence,a('add',2)],{holds:0}),[]);
 });

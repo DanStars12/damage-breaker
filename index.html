@@ -1606,10 +1606,6 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
 .command { min-width:96px; text-align:center; }
 .command small { font-size:11px; overflow-wrap:anywhere; }
 .command.primary small { color:inherit; }
-.command.command-win { background:#a8e0bb; border-color:#d2f5df; color:#193021; }
-.command.command-danger { background:#643048; border-color:#ee8799; color:#fff1ee; }
-.command.command-danger small { color:#ffcfda; }
-.command.command-danger:hover:not(:disabled) { background:#853451; color:#fff1ee; }
 .battle :is(.board-card,.card,.command):focus-visible { outline:2px solid #fff0c7; outline-offset:2px; }
 @media (max-width:550px), (max-width:850px) and (pointer:coarse), (max-height:550px) and (max-width:1100px) and (pointer:coarse) {
   .battle { padding-bottom:calc(86px + env(safe-area-inset-bottom)); }
@@ -1646,36 +1642,50 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
   .exchange-candidates,.exchange-receipt { grid-template-columns:1fr; }
   .exchange-receipt .workshop-arrow { justify-self:center; rotate:90deg; }
 }
-
-.relic-gain {
-  display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:3px 12px;
-  margin:3px 0 7px; padding:5px 9px; border-block:1px solid #a07d5799; color:#ffe3b4;
-  background:#403044; overflow-wrap:anywhere; font:600 12px/1.35 var(--interface);
-}
-.relic-gain[hidden] { display:none; }
-.relic-gain span { min-width:0; }
-.relic-gain strong {
-  min-width:0; color:#ffedaa; font:700 clamp(17px,3.1vw,26px)/1.1 var(--display);
-  font-variant-numeric:tabular-nums;
-}
-.relic-gain.relic-surge {
-  border-color:#f7c984; background:linear-gradient(100deg,#392439,#66473a,#392439);
-  box-shadow:inset 0 0 12px #ffb66358;
-}
 .damage-receipt .record-receipt { grid-column:1/-1; border-left:3px solid #ffcc76; background:#3f2c2c; }
 .record-receipt b { color:#ffe4a0; }
 .record-receipt p { color:#ead4be; margin:.25rem 0 0; overflow-wrap:anywhere; }
-.impact-stamp { display:none; }
-.hitstop .impact-stamp {
-  display:block; position:absolute; z-index:2; left:var(--foe-x); top:48%; pointer-events:none;
-  width:clamp(20px,5vw,54px); aspect-ratio:1; transform:translate(-50%,-50%);
-  background:linear-gradient(145deg,#fffbed 22%,var(--attack-color));
-  clip-path:polygon(50% 0,58% 37%,88% 13%,66% 44%,100% 50%,66% 56%,88% 87%,58% 63%,50% 100%,42% 63%,12% 87%,34% 56%,0 50%,34% 44%,12% 13%,42% 37%);
+
+/* Cut-stone slab with inset sockets and square, bronze corner pins. */
+.battle .board-frame {
+  --stone-border:#333b41;
+  border:1px solid #8a958b;
+  background:linear-gradient(155deg,#454d52,#293137 64%,#30383a);
+  box-shadow:inset 0 0 0 3px #191f24,inset 0 0 0 5px #69716a,0 4px 0 #16191c;
 }
-.enemy.player-strike.hitstop :is(.foe canvas,.burst-scene i,.slash),.enemy.player-strike.hitstop .duel::after { animation-play-state:paused; }
-.hitstop .foe .idle-sprite { filter:brightness(1.25); }
-.enemy.hitstop .foe-hp span { transition:none; }
-.enemy.hitstop #outgoing { animation:none; opacity:1; }
+.battle .board-frame > .heading { color:#fff0ca; }
+.battle .board-frame > .heading small { color:#e1dfce; }
+.battle .board {
+  position:relative;
+  padding:8px;
+  border:2px solid var(--stone-border);
+  background:
+    linear-gradient(#c2a476,#c2a476) 3px 3px/3px 3px no-repeat,
+    linear-gradient(#c2a476,#c2a476) right 3px top 3px/3px 3px no-repeat,
+    linear-gradient(#a98755,#a98755) left 3px bottom 3px/3px 3px no-repeat,
+    linear-gradient(#a98755,#a98755) right 3px bottom 3px/3px 3px no-repeat,
+    repeating-conic-gradient(#ffffff0a 0% 25%,transparent 0% 50%) 0 0/8px 8px,
+    repeating-linear-gradient(90deg,transparent 0 34px,#273638 34px 36px,#748279 36px 38px),
+    repeating-linear-gradient(0deg,transparent 0 21px,#273638 21px 23px,#748279 23px 25px),
+    #505c56;
+  box-shadow:inset 0 2px #87938c,inset 2px 0 #87938c,inset -2px -3px #222b30,0 3px #1c2328;
+}
+.battle .board .slot { border-radius:0; }
+.battle .board .slot.empty {
+  background:repeating-linear-gradient(90deg,transparent 0 7px,#e9f3e008 7px 9px),#263033;
+  color:#d2d8c6; border:1px solid #849089;
+  box-shadow:inset 2px 2px #141b20,inset -2px -2px #4c5b57;
+}
+.battle .board .slot.empty:hover { border-color:#d0b57b; color:#fff0c7; }
+.battle .board .slot.base {
+  color:#f6e7bd; border-color:#b7a477;
+  background:linear-gradient(0deg,#1e302d 48%,#344a40 49% 51%,#293c36 52%);
+  box-shadow:inset 2px 2px #526b62,inset -2px -2px #182823;
+}
+.battle .board .board-card:not(.selected) { box-shadow:inset 2px 2px #f7e7b829,inset -2px -2px #15121d; }
+@media (max-width:550px), (max-width:850px) and (pointer:coarse), (max-height:550px) and (max-width:1100px) and (pointer:coarse) {
+  .battle .board { padding:6px; }
+}
 </style>
 </head>
 <body>
@@ -1873,6 +1883,20 @@ Object.assign(relics,{
   finishing:{name:'星尾の彗針',desc:'有効な割合と乗算を含み、最後の有効な演算が指数で4枚以上なら×52。',effect:({own})=>
     amplify(own.length>=4&&own.at(-1).kind==='exp'&&effectCount(own,'pct')>0&&effectCount(own,'mul')>0,52)}
 });
+Object.assign(relics,{
+  evenChisel:{name:'双数の石鑿',desc:'偶数の加算が3枚続くと×18。',effect:({cards})=>
+    amplify(cards.some((_,i)=>i>=2&&cards.slice(i-2,i+1).every(c=>numeric(c)&&c.kind==='add'&&c.value%2===0)),18)},
+  watchRune:{name:'見張りの刻印',desc:'HOLDがちょうど1回で、敵の妨害が盤にあり、有効な演算が3枚以上なら×17。',effect:({holds,count,cards})=>
+    amplify(holds===1&&count>=3&&cards.some(c=>c.enemy&&c.kind!=='sealed'),17)},
+  seedTablet:{name:'雛石の算板',desc:'有効な演算が3枚以上あり、すべて数値20以下の加算・乗算・割合なら×26。',effect:({own})=>
+    amplify(own.length>=3&&own.every(c=>numeric(c)&&c.value<=20),26)},
+  starGlass:{name:'星窓の硝子',desc:'指数→乗算がこの順で隣接すると×40。',effect:({cards})=>
+    amplify(cards.some((c,i)=>i>0&&!c.enemy&&c.kind==='mul'&&!cards[i-1].enemy&&cards[i-1].kind==='exp'),40)},
+  triadSeal:{name:'月蝕の三印',desc:'乗算→累乗→割合がこの順で隣接すると×72。',effect:({cards})=>
+    amplify(cards.some((c,i)=>i>=2&&!c.enemy&&c.kind==='pct'&&cards.slice(i-2,i).every(v=>!v.enemy)&&cards[i-2].kind==='mul'&&cards[i-1].kind==='pow'),72)},
+  graniteOath:{name:'花崗の誓約',desc:'HOLDがちょうど1回で、4種類以上の有効な演算を使うと×84。',effect:({holds,own})=>
+    amplify(holds===1&&new Set(own.map(c=>c.kind)).size>=4,84)}
+});
 const relicRanks=[
   {name:'コモン',shop:15,drop:10},
   {name:'レア',shop:13,drop:14},
@@ -1880,9 +1904,9 @@ const relicRanks=[
   {name:'レジェンド',shop:3,drop:10}
 ];
 const rankedRelics=[
-  ['short','key','reserve','chalk','lens','paper','sealwax','quartette','compass','mirror','ember','keystone','twinScribes','echoQuill','pocket'],
-  ['tail','order','chain','furnace','rack','spring','mantle','ratio','brazier','anvil','helix','vigil','pulse','bell','lensGuard','lanternHeart','balanceStone','refuge','holdCrest','braid','alternate','descending','percentPair','sparse'],
-  ['prism','codex','sum','lattice','tithe','star','mosaic','comet','crown','rootGem','dam','violetSeal','lodestone','spiralKey','breach','runeSundial','stillwater','bookends','bracket','patient','finishing'],
+  ['short','key','reserve','chalk','lens','paper','sealwax','quartette','compass','mirror','ember','keystone','twinScribes','echoQuill','pocket','evenChisel','watchRune'],
+  ['tail','order','chain','furnace','rack','spring','mantle','ratio','brazier','anvil','helix','vigil','pulse','bell','lensGuard','lanternHeart','balanceStone','refuge','holdCrest','braid','alternate','descending','percentPair','sparse','seedTablet','starGlass'],
+  ['prism','codex','sum','lattice','tithe','star','mosaic','comet','crown','rootGem','dam','violetSeal','lodestone','spiralKey','breach','runeSundial','stillwater','bookends','bracket','patient','finishing','triadSeal','graniteOath'],
   ['grimoire','abacus','aurora','nightCrown']
 ];
 for(const [rank,ids] of rankedRelics.entries()) for(const id of ids) relics[id].rank=rank;
@@ -1985,7 +2009,10 @@ const relicPixels=[
 'c0 e0 f0 78 3c 1e 0f 07','81 a5 a5 99 99 a5 a5 81',
 '18 18 3c 66 5a 42 3c 00','e7 81 89 99 99 89 81 e7',
 '76 54 7c 18 38 2a 6e 00','92 b6 fe 54 38 38 7c 00',
-'18 3c 7e db 24 66 ff 00','81 43 27 1e 78 38 18 00'
+'18 3c 7e db 24 66 ff 00','81 43 27 1e 78 38 18 00',
+'03 07 0e 5c 38 75 e0 00','18 3c 66 5a a5 66 3c 18',
+'7c c6 ca 82 92 9a 7c 00','7e 42 5a 66 66 5a 42 7e',
+'18 3c 66 18 00 66 ff 66','3c 7e 42 99 a5 c3 7e 3c'
 ];
 const rankInk=['#90d3ad','#85c9ff','#df9df5','#ffd379'];
 const relicIds=Object.keys(relics);
@@ -2342,14 +2369,20 @@ const places={
 };
 function makeMap(seed,act) {
   const rng=random(seed+'/map/'+act);
+  const encounterRng=random(seed+'/map-expansion/'+act);
   const facilities=['event','rest','shop'];
   const types=[['fight','fight','fight'],facilities,['fight','elite','fight'],
     ['fight','rest','shop'],['fight','elite','elite'],facilities,
     ['fight','fight','elite'],['event','shop','rest'],['fight','elite','fight'],['boss']];
-  const rows=types.map((kinds,row)=>shuffle(kinds,rng).map((kind,i)=>({
-    id:row+'-'+i, row, col:kind==='boss'?1:i, kind,
-    variant:Math.floor(rng()*(encounterCount(act,kind)||3)),next:[]
-  })));
+  const rows=types.map((kinds,row)=>shuffle(kinds,rng).map((kind,i)=>{
+    const roll=rng();
+    const count=encounterCount(act,kind)||3;
+    // Keep the original rolls and links for the encounters outside the expansion pool.
+    const baseCount=kind==='fight'?8:count;
+    const variant=kind==='fight'&&encounterRng()<(count-baseCount)/count?
+      baseCount+Math.floor(roll*(count-baseCount)):Math.floor(roll*baseCount);
+    return {id:row+'-'+i,row,col:kind==='boss'?1:i,kind,variant,next:[]};
+  }));
   rows.forEach((nodes,row)=>nodes.forEach(node=>{
     const next=rows[row+1]||[];
     const neighbors=next.filter(n=>Math.abs(n.col-node.col)<=1);
@@ -2362,13 +2395,16 @@ function makeMap(seed,act) {
 const normalSpecs=[
   [['アッシュランタン','lantern','attack','sub'],['ラストテンプラー','knight','attack','div'],['グレイヴハウンド','hound','double','attack'],
    ['エンバーウィスプ','wisp','sub','flare'],['ブラススカラベ','beetle','attack','fracture'],['ラビリンスレイス','specter','pct','attack'],
-   ['コバルトレイヴン','wyrm','jam','double'],['ルーンバック','beetle','sub','cleave']],
+   ['コバルトレイヴン','wyrm','jam','double'],['ルーンバック','beetle','sub','cleave'],
+   ['モスキャップ','mushroom','sub','attack'],['ブロンズミミック','mimic','attack','div']],
   [['セヴラ・オラクル','specter','div','attack'],['ヴェイルガード','knight','lock:add','attack'],['ジオードスカラベ','beetle','attack','div'],
    ['ミストファング','hound','pursuit','pct'],['アズールウィスプ','wisp','drain','jam'],['ルクス・ライブラリアン','lantern','attack','sub'],
-   ['ムーンシルフ','moth','dust','pct'],['フロストジャッカル','hound','drain','double']],
+   ['ムーンシルフ','moth','dust','pct'],['フロストジャッカル','hound','drain','double'],
+   ['ルーンメデューサ','jelly','dust','pct'],['アイアンホーン','boar','cleave','sub']],
   [['アストラヴォア','specter','pct','attack'],['ファントムドラグーン','knight','attack','double'],['ノクスウィスプ','wisp','lock:pct','attack'],
    ['スターフラクチャー','beetle','div','fracture'],['アンブラハウンド','hound','double','sub'],['エーテルゲートキーパー','lantern','drain','tax'],
-   ['ゼノフォージ','golem','tax','meteor'],['ヴェスパーラミア','specter','lock:exp','double']]
+   ['ゼノフォージ','golem','tax','meteor'],['ヴェスパーラミア','specter','lock:exp','double'],
+   ['エクリプスリーパー','reaper','div','cleave'],['オーロラハーピー','harpy','double','fracture']]
 ];
 const monsterForms=[['golem','hydra','wyrm','mantis'],['behemoth','golem','mantis','leviathan'],['hydra','idol','wyrm','moth']];
 const bossForms=[['titan','leviathan','behemoth'],['colossus','moth','hydra'],['dragon','eclipse','titan']];
@@ -2420,7 +2456,7 @@ const encounterSpecs={fight:normalSpecs,elite:eliteSpecs,boss:bossSpecs};
 const encounterCount=(act,kind)=>encounterSpecs[kind]?.[act-1]?.length??0;
 
 // Keep the original palette IDs stable for older checkpoints.
-const expansionPalettes={fight:[[18,19],[22,23],[26,27]],elite:[[20],[24],[28]],boss:[[21],[25],[29]]};
+const expansionPalettes={fight:[[18,19,30,31],[22,23,32,33],[26,27,34,35]],elite:[[20],[24],[28]],boss:[[21],[25],[29]]};
 const originalCounts={fight:6,elite:3,boss:2};
 
 function encounterName(act,kind,variant) {
@@ -3487,6 +3523,40 @@ const expansionFaces={
     p('steel',[-12,-7,-8,-5,-7,-13,-2,-9,0,-14,4,-8,10,-12,10,-5,13,0,10,7,6,11,-8,10,-11,5]);
     p('ivory',[-11,-5,-3,-8,-3,8,-8,7,-11,1]);p('void',[1,-5,10,-4,9,5,2,7]);
     d('fire',5,0,4);d('white',5,0,2);b('rust',-4,9,11,2);
+  },
+  30:({p,b})=>{
+    p('edge',[-12,-6,-7,-9,5,-9,11,-6,10,3,7,10,-9,10,-12,7]);
+    p('ivory',[-10,-5,-6,-7,5,-7,9,-5,8,4,6,8,-8,8,-10,6]);
+    b('void',-6,-2,3,3);b('void',4,-3,3,3);b('rust',-2,4,5,1);
+  },
+  31:({p,b,d})=>{
+    p('edge',[-20,-4,-12,-9,14,-8,21,-4,19,5,9,10,-12,9,-19,5]);
+    p('void',[-17,-3,-11,-5,15,-5,18,-2,16,3,10,7,-13,6,-16,3]);
+    for(const x of [-13,-6,5,12]) b('ivory',x,-5,2,4);
+    d('fire',0,2,4);b('white',-1,1,2,2);
+  },
+  32:({p,d,b})=>{
+    p('edge',[-16,-3,-10,-10,0,-13,12,-10,17,-4,12,5,4,9,-2,6,-11,8,-15,4]);
+    p('steel',[-14,-3,-9,-8,0,-11,11,-8,15,-4,11,3,4,7,-2,4,-10,6,-13,3]);
+    d('mint',-7,-2,3);d('mint',0,-4,3);d('mint',8,-2,3);b('void',-6,-2,1,2);b('void',0,-4,1,2);b('void',8,-2,1,2);
+  },
+  33:({p,b})=>{
+    p('edge',[-17,-2,-10,-9,-2,-9,4,-15,10,-10,13,-3,11,7,1,12,-12,9,-17,5]);
+    p('steel',[-15,-1,-9,-7,-1,-7,4,-12,8,-9,11,-3,9,6,1,10,-11,7,-15,4]);
+    p('ivory',[-13,5,-13,-4,-9,0,-7,5,-8,7]);
+    b('void',-13,0,2,2);b('fire',0,-4,4,2);b('void',-6,6,8,1);
+  },
+  34:({p,b})=>{
+    p('edge',[-13,-6,-9,-14,0,-17,9,-11,13,-3,10,8,5,13,-7,12,-12,6]);
+    p('shade',[-11,-5,-8,-12,0,-14,7,-9,10,-3,8,7,4,10,-6,9,-10,5]);
+    p('ivory',[-6,-4,0,-7,7,-3,5,5,2,9,-3,8,-7,4]);
+    b('void',-5,-2,3,3);b('void',3,-1,3,3);b('void',-2,5,5,1);
+  },
+  35:({p,b})=>{
+    p('edge',[-14,-5,-16,-13,-8,-9,-1,-17,2,-10,12,-13,10,-5,13,2,7,11,-5,10,-11,7]);
+    p('steel',[-12,-4,-13,-10,-7,-7,-1,-13,1,-8,9,-10,8,-4,10,2,6,9,-4,8,-9,6]);
+    p('ivory',[-12,2,-3,-1,1,4,-4,8,-8,5,-13,5]);
+    b('mint',-6,-4,3,2);b('mint',5,-3,3,2);b('void',-5,-4,1,2);b('void',5,-3,1,2);
   }
 };
 
@@ -3519,7 +3589,8 @@ const beastPalettes=[
   [181,51],[301,37],[42,53],[78,46],[195,66],[17,61],
   [267,52],[226,59],[24,71],[321,52],[159,47],[286,67],
   [216,76],[53,57],[162,44],[347,61],[213,42],[191,57],
-  [177,63],[285,46],[25,66],[311,73],[260,33],[43,78]
+  [177,63],[285,46],[25,66],[311,73],[260,33],[43,78],
+  [110,43],[28,59],[179,62],[3,45],[282,48],[161,50]
 ];
 const paintOverrides={
   'mantis:8':[348,62],
@@ -3553,6 +3624,51 @@ function paintEnemy(canvas,{form,palette}) {
   const big=['golem','hydra','wyrm','behemoth','mantis','idol','titan','leviathan','colossus','moth','dragon','eclipse'].includes(form);
   if(big) {ring(44,28,31,shade);ring(44,28,36,shade);}
   switch(form) {
+    case 'mushroom':
+      poly(ink,[[18,33],[29,21],[35,14],[51,13],[62,19],[72,34],[64,43],[54,43],[60,55],[55,59],[31,59],[27,53],[32,43],[21,41]]);
+      poly(mid,[[20,33],[31,22],[37,16],[50,15],[60,21],[69,34],[61,40],[26,40]]);
+      poly(light,[[25,31],[34,21],[46,17],[56,21],[43,22],[32,32]]);
+      for(const [x,y] of [[33,29],[47,23],[58,33]]) gem(glow,x,y,2);
+      face(44,45);
+      break;
+    case 'mimic':
+      poly(ink,[[15,33],[21,21],[59,20],[73,26],[75,49],[65,58],[21,58],[13,50]]);
+      poly(mid,[[18,32],[24,23],[59,22],[71,28],[68,34],[27,37]]);
+      poly(light,[[21,31],[26,25],[58,24],[63,27],[33,29],[30,34]]);
+      poly(shade,[[17,40],[73,38],[72,48],[64,55],[23,55],[17,49]]);
+      for(const x of [20,30,59,69]) box(light,x,40,2,12);
+      face(45,38,1.3);
+      break;
+    case 'jelly':
+      poly(ink,[[15,35],[19,23],[31,15],[55,14],[70,22],[73,36],[63,43],[54,41],[46,48],[34,43],[23,45]]);
+      poly(mid,[[17,34],[22,25],[34,17],[54,16],[68,24],[70,33],[62,40],[51,38],[44,43],[34,39],[25,41]]);
+      for(const [x,y] of [[21,44],[30,49],[39,52],[48,54],[58,49],[67,43]]) {
+        box(mid,x,y-4,2,8);box(light,x-2,y+3,2,4);
+      }
+      face(44,30);
+      break;
+    case 'boar':
+      poly(ink,[[10,42],[16,28],[23,22],[29,11],[34,20],[48,15],[52,23],[64,23],[77,36],[79,48],[71,56],[61,56],[58,48],[43,49],[38,57],[27,57],[25,50],[16,51]]);
+      poly(mid,[[13,41],[19,29],[27,24],[31,18],[36,23],[49,19],[53,27],[65,27],[74,36],[76,46],[69,53],[63,53],[60,45],[41,46],[34,53],[27,53],[26,46]]);
+      poly(light,[[24,27],[32,24],[38,19],[42,23],[49,22],[56,28],[45,29],[34,28]]);
+      face(28,39);
+      break;
+    case 'reaper':
+      poly(ink,[[40,16],[54,19],[59,38],[65,53],[52,54],[48,59],[41,54],[31,58],[21,53],[27,43],[29,26]]);
+      poly(mid,[[40,20],[53,23],[55,38],[62,50],[51,50],[47,55],[41,50],[31,55],[25,51],[30,42],[32,28]]);
+      poly(light,[[49,52],[67,13],[70,15],[52,56]]);
+      poly(ink,[[62,17],[67,8],[77,7],[85,15],[82,22],[79,15],[74,13],[70,15],[66,22]]);
+      poly(light,[[64,16],[68,10],[77,9],[83,16],[79,14],[73,12],[67,18]]);
+      face(42,30);
+      break;
+    case 'harpy':
+      pair(ink,[[44,31],[24,12],[8,13],[4,18],[14,26],[7,26],[16,37],[10,40],[24,48],[35,45],[42,55]]);
+      pair(mid,[[43,33],[24,15],[10,15],[7,18],[20,27],[13,28],[23,37],[14,40],[25,45],[34,41],[42,50]]);
+      pair(light,[[40,32],[25,18],[13,18],[22,22],[25,27],[33,26]]);
+      pair(light,[[42,37],[24,29],[19,29],[27,34],[32,34]]);
+      pair(light,[[43,48],[37,56],[29,55],[35,59],[45,57]]);
+      face(44,28);
+      break;
     case 'hound':
     case 'behemoth':
     case 'leviathan': {
@@ -3791,31 +3907,8 @@ function burstVisual(value,infinity=false) {
 function reelTiming(from,to,kind,fast) {
   const change=Math.max(0,burstVisual(to).digits-burstVisual(from).digits);
   const samples=Math.min(74,Math.max(12,change+2));
-  const base=kind==='impact'?135:kind==='relic'?225:155;
-  return {samples,duration:fast?Math.min(430,80+change*6):Math.min(1450,base+change*20)};
-}
-
-function relicGain([beforeN,beforeD],[afterN,afterD]) {
-  if(beforeN<=0n||afterN<=0n) return null;
-  const numerator=afterN*beforeD, denominator=beforeN*afterD;
-  const hundredths=numerator*100n/denominator;
-  if(hundredths<=100n) return null;
-  return {numerator,denominator,hundredths,strong:hundredths>=1000n};
-}
-
-function hitStop({final,impact},motion) {
-  if(motion==='off'||impact.dealt<=0n) return 0;
-  const level=magnitude([final,1n]);
-  if(motion==='fast') return level>=4?45:0;
-  const duration=[0,0,0,75,110,145,180,210][level];
-  return impact.kind==='gate'?Math.min(95,duration):duration;
-}
-
-function burstImpactCue({final,impact}) {
-  if(impact.kind==='barrier') return impact.breaks>1?'barrierCascade':'barrierCrack';
-  if(impact.kind!=='hit') return impact.kind;
-  const level=magnitude([final,1n]);
-  return level===7?'infinity':level>=5?'impactTitan':level>=3?'impactNova':'hit';
+  const base=kind==='impact'?245:kind==='relic'?335:240;
+  return {samples,duration:fast?Math.min(460,105+change*6):Math.min(1630,base+change*21)};
 }
 
 function impactForce({final,impact}) {
@@ -3868,19 +3961,14 @@ const cues={
   launch:[[160,640,0,.14,.07,'triangle']],
   digitRise:[[380,680,0,.12,.065,'sine'],[600,900,.055,.15,.04,'triangle']],
   launchNova:[[92,270,0,.24,.1,'triangle'],[270,730,.08,.24,.1,'sine']],
-  relicSurge:[[220,310,0,.19,.095,'triangle'],[440,660,.018,.19,.09,'triangle'],[880,1320,.05,.15,.06,'sine'],[1320,1760,.093,.23,.04,'sine']],
-  impactNova:[[130,36,0,.34,.19,'sine'],[480,160,0,.063,.105,'triangle'],[1230,215,.012,.057,.052,'sawtooth'],[523,785,.083,.30,.07,'triangle']],
-  impactTitan:[[108,32,0,.46,.22,'sine'],[710,168,0,.101,.11,'triangle'],[1860,370,.006,.072,.063,'sawtooth'],[392,587,.10,.33,.08,'triangle'],[784,1175,.15,.36,.055,'sine']],
-  impactRelease:[[294,196,0,.22,.075,'triangle'],[588,882,.045,.20,.05,'sine']],
-  barrierCrack:[[1370,585,0,.12,.086,'triangle'],[2270,980,.024,.078,.049,'sawtooth'],[705,473,.06,.16,.062,'sine']],
-  barrierCascade:[[1540,700,0,.095,.09,'triangle'],[2050,960,.018,.070,.048,'sawtooth'],[890,450,.055,.11,.085,'triangle'],[530,160,.089,.24,.075,'triangle']],
-  hit:[[215,69,0,.11,.15,'triangle'],[760,218,.006,.042,.055,'triangle']],
+  impactNova:[[120,37,0,.44,.18,'triangle'],[333,84,.026,.2,.10,'triangle'],[523,784,.12,.34,.08,'sine']],
+  hit:[[182,65,0,.17,.16,'triangle'],[495,330,.045,.11,.075,'sine']],
   barrier:[[590,735,0,.20,.13,'triangle'],[813,650,.050,.24,.07,'sine']],
-  gate:[[205,48,0,.26,.175,'triangle'],[810,127,0,.075,.065,'sawtooth'],[450,580,.072,.19,.08,'triangle'],[675,870,.126,.23,.066,'sine']],
+  gate:[[250,60,0,.26,.17,'triangle'],[489,650,.055,.19,.08,'sine'],[733,920,.089,.23,.07,'triangle']],
   miss:[[230,190,0,.13,.045,'sine']],
   record:[[392,392,.09,.22,.08,'triangle'],[523,523,.155,.22,.08,'sine'],[784,784,.22,.28,.07,'triangle']],
-  victory:[[196,196,.045,.16,.08,'triangle'],[392,392,.09,.16,.075,'triangle'],[494,494,.15,.18,.065,'triangle'],[587,587,.21,.25,.07,'sine'],[784,784,.21,.34,.05,'sine']],
-  infinity:[[110,31,0,.51,.21,'sine'],[646,125,0,.136,.12,'triangle'],[2320,420,.007,.069,.06,'sawtooth'],[294,440,.13,.24,.085,'triangle'],[440,660,.19,.29,.075,'sine'],[587,880,.24,.33,.085,'sine'],[880,1175,.29,.39,.065,'triangle']],
+  victory:[[330,330,.11,.18,.08,'triangle'],[440,440,.18,.18,.075,'sine'],[659,659,.26,.29,.085,'triangle']],
+  infinity:[[147,60,0,.49,.135,'triangle'],[294,390,.06,.28,.10,'triangle'],[440,490,.11,.29,.085,'sine'],[587,680,.15,.33,.10,'sine'],[880,965,.22,.39,.08,'triangle']],
   gold:[[920,800,0,.13,.095,'sine'],[1280,1150,.065,.16,.085,'triangle']],
   forge:[[185,98,0,.18,.16,'triangle'],[1120,810,.013,.21,.06,'triangle']],
   remove:[[580,180,0,.24,.095,'triangle'],[390,60,.075,.23,.065,'sine']],
@@ -4086,21 +4174,11 @@ function tacticalReadout(p,outcome) {
     <div class="${lethal&&run.holds<run.holdLimit?'tactics-danger':''}"><b>HOLD</b><span>${holdText}${outcome.broken&&run.holds<run.holdLimit?' · 結界 −'+outcome.broken:outcome.blocked&&run.holds<run.holdLimit&&!lethal?' · 結界で妨害を防ぐ':''}${outcome.absorbed&&run.holds<run.holdLimit?' · 防御 '+outcome.absorbed:''}${held!==null&&held!==p.final?` <small title="${held}"> · 引く前の予測 ${compact(held)}</small>`:''}</span></div>
     <div class="${victory?'tactics-win':lethal?'tactics-danger':''}"><b>BURST</b><span>${burstText}${lethal&&!victory?' · 反撃で敗北':''}</span></div></div>`;
 }
-function battleCommands(p,outcome) {
-  const limited=run.holds>=run.holdLimit;
-  const lethal=outcome.hp===0;
-  const finish=p.impact.dealt===run.enemy.hp;
-  const loss=run.hp-outcome.hp;
-  const damage=p.impact.kind==='barrier'?'バリア '+p.impact.breaks+'層破壊':
-    p.impact.kind==='gate'?'耐久ライン突破':p.impact.kind==='miss'?'敵HP変化なし':'敵HP −'+compact(p.impact.dealt,false);
-  const holdText=limited?'上限到達':lethal?'反撃で敗北':loss?'術師HP −'+loss:
-    outcome.deb!==run.deb?'妨害が盤に入る':outcome.drain!==run.drain?'基礎値が低下':
-    outcome.drawPenalty?'次のドロー −1':outcome.energyPenalty?'次のエナジー −1':'盤を維持して引く';
-  const burstText=finish?'この一撃で撃破':lethal?'反撃で敗北':damage;
-  const command=(name,title,summary,variant='',disabled=false)=>`<button type="button" class="command ${variant}" data-action="${name}" ${disabled?'disabled':''}><b>${title}</b><small>${summary}</small></button>`;
+function battleCommands() {
   return `<div class="actions battle-commands">
-    ${command('hold','HOLD '+run.holds+'/'+run.holdLimit,holdText,lethal&&!limited?'command-danger':'',limited)}
-    ${command('burst','BURST',burstText,'primary '+(finish?'command-win':lethal?'command-danger':''))}
+    <button type="button" class="command" data-action="hold" ${run.holds>=run.holdLimit?'disabled':''}>
+      <b>HOLD ${run.holds}/${run.holdLimit}</b><small>盤のカードを維持</small></button>
+    <button type="button" class="command primary" data-action="burst"><b>BURST</b><small>今の盤で演算</small></button>
     <button type="button" data-action="skip" class="skip-sequence" hidden>演出をスキップ</button>
   </div>`;
 }
@@ -4156,7 +4234,7 @@ function battle() {
           <i class="burst-ring"></i><i class="burst-ring echo"></i><i class="burst-wake"></i><i class="burst-nova"></i><i class="burst-crown"></i><i class="burst-glyph"></i><span class="burst-sparks"></span></span>
         ${e.kind==='boss'?`<div class="boss-entry" aria-hidden="true"><i></i><span>ACT BOSS</span><strong>${enemyNameHTML(e.name)}</strong></div>`:''}
         <span class="boss-attack" aria-hidden="true"><i></i><i></i><i></i></span>
-        <i class="impact-stamp" aria-hidden="true"></i><span class="slash" aria-hidden="true"></span><span class="enemy-cast" aria-hidden="true"></span><span class="enemy-hit-fx" aria-hidden="true"></span><span id="incoming" aria-hidden="true"></span><span id="outgoing" aria-hidden="true"></span>
+        <span class="slash" aria-hidden="true"></span><span class="enemy-cast" aria-hidden="true"></span><span class="enemy-hit-fx" aria-hidden="true"></span><span id="incoming" aria-hidden="true"></span><span id="outgoing" aria-hidden="true"></span>
       </div>
       <div class="enemy-info">
       ${e.detail?`<p class="enemy-rule">${e.detail}</p>`:''}
@@ -4172,7 +4250,7 @@ function battle() {
       <div class="preview"><div><small>通常演算</small><strong title="${exactRat(p.normal)}">${visibleNumber(p.normal)}</strong></div><div><small>レリック適用後</small><strong title="${exactRat(p.result)}">${visibleNumber(p.result)}</strong></div>
       <div class="preview-final"><small>最終ダメージ予測</small><strong title="${p.final}">${compact(p.final)}</strong><small title="${p.impact.dealt}">敵HP −${compact(p.impact.dealt,false)}${p.impact.kind==='barrier'?' · バリア '+p.impact.breaks+'層破壊':p.impact.kind==='gate'?' · 耐久段階まで':''}</small></div></div>
       <div id="reel" class="reel" hidden><div class="reel-head"><span id="stepName"></span><span id="stepCombo"></span></div>
-      <div class="reel-display"><i aria-hidden="true"></i><strong id="reelNumber"></strong><small id="reelDigits"></small></div><div id="relicGain" class="relic-gain" hidden><span></span><strong></strong></div><div class="reel-foot"><div id="stepProgress"></div>${btn('演出をスキップ','skip')}</div></div>
+      <div class="reel-display"><i aria-hidden="true"></i><strong id="reelNumber"></strong><small id="reelDigits"></small></div><div class="reel-foot"><div id="stepProgress"></div>${btn('演出をスキップ','skip')}</div></div>
       ${run.lastBurst?`<div class="last-strike" title="${[...relicActivations(run.lastBurst)].map(id=>relics[id].name).join(' ／ ')}">直前BURST <b title="${run.lastBurst.final}">${compact(run.lastBurst.final)}</b> · 敵HP −${compact(run.lastBurst.impact.dealt,false)}</div>`:''}
       ${notice?`<small class="battle-notice" role="status">${moneyText(notice)}</small>`:''}</section>
     <section class="frame hand-frame"><div class="heading"><h2>手札</h2><span class="energy">エネルギー ${run.energy} / ${run.capacity} <small>· ドロー ${run.drawCount}枚</small></span></div>
@@ -4180,7 +4258,7 @@ function battle() {
       <div class="hand" data-hand-return>${run.hand.map((c,i)=>cardButton(c,'hand:'+i,i,!run.canPlay(c))).join('')}</div>
       ${tacticalReadout(p,outcome)}
       <div class="controls"><small>仮置きは選択して手札に戻せます。HOLDまたはBURSTで確定。${run.holds===run.holdLimit?' 次はBURST。':''}</small>
-      ${battleCommands(p,outcome)}
+      ${battleCommands()}
       </div></section>
     </div>${sidebar(p)}</main>`;
 }
@@ -4474,7 +4552,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.3.3</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.3.4</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -4571,6 +4649,8 @@ function burstFX(n,best) {
     effect.style.setProperty('--burst-hue',visual.hue);
     effect.className='flash'+(inf||tier>=4?' high':'')+(tier>=3&&mode==='full'?' shake':'')+(mode==='fast'?' fast':'');
   }
+  cue(inf?'infinity':tier>=3?'impactNova':'hit',{level:tier});
+  if(best&&!inf) cue('record');
 }
 effect.addEventListener('animationend',()=>{effect.className='';});
 const prefsHTML=()=>`<p><label><input type="checkbox" id="scientific" ${book.prefs.scientific?'checked':''}> 指数表記</label></p>
@@ -5032,21 +5112,12 @@ async function showBurst() {
   sequence=control;
   const signal=control.signal;
   const reel=app.querySelector('#reel'), field=app.querySelector('.enemy');
-  const stop=hitStop(p,mode);
-  const level=magnitude([p.final,1n]);
-  const finishSound=()=> {
-    if(best&&p.final<=CAP) cue('record');
-    else if(run.enemy.hp===0n&&p.final<=CAP) cue('victory');
-    else if(stop&&p.impact.kind==='hit'&&p.final<=CAP) cue('impactRelease');
-  };
   try {
     if(mode!=='off') {
       const name=reel.querySelector('#stepName'), counter=reel.querySelector('#reelNumber');
       const combo=reel.querySelector('#stepCombo'), progress=reel.querySelector('#stepProgress');
       const steps=timeline(p,armor);
       const countDigits=reel.querySelector('#reelDigits');
-      const gainBanner=reel.querySelector('#relicGain');
-      const [gainValues,gainRatio]=gainBanner.children;
       let prior=[BigInt(base),1n];
       let lastDigits=0, lastLevel=0, lastInfinity=false;
       const showValue=(value,infinity=false)=>{
@@ -5093,24 +5164,7 @@ async function showBurst() {
           } else strip.insertAdjacentHTML('beforeend',badge);
           firingRelic=strip.querySelector('[data-relic="'+step.relic+'"]');
         }
-        const stepLevel=magnitude(step.value);
-        const gain=step.relic?relicGain(prior,step.value):null;
-        const surge=Boolean(gain?.strong);
-        gainBanner.hidden=!gain;
-        gainBanner.classList.toggle('relic-surge',surge);
-        if(gain) {
-          gainValues.textContent=visibleNumber(prior)+' → '+visibleNumber(step.value);
-          gainRatio.title=gain.numerator+' / '+gain.denominator;
-          const whole=gain.hundredths/100n;
-          const fraction=String(gain.hundredths%100n).padStart(2,'0').replace(/0+$/,'');
-          if(whole>=1000000n) {
-            const amount=compact(whole,false);
-            const approximate=amount.startsWith('≈')||Boolean(gain.numerator%gain.denominator);
-            gainRatio.textContent=(approximate?'≈':'')+'×'+amount.replace(/^≈/,'');
-          } else {
-            gainRatio.textContent=(gain.numerator*100n%gain.denominator?'≈':'')+'×'+whole.toLocaleString('ja-JP')+(fraction?'.'+fraction:'');
-          }
-        }
+        const level=magnitude(step.value);
         reel.dataset.kind=step.type;
         if(step.relic) name.innerHTML=relicIcon(step.relic)+' 発動 · '+esc(step.name);
         else name.textContent=step.name;
@@ -5120,13 +5174,12 @@ async function showBurst() {
         void counter.offsetWidth;
         counter.classList.add('count-pop');
         progress.style.width=((i+1)*100/steps.length)+'%';
-        if(step.type!=='impact') cue(step.type==='relic'?(surge?'relicSurge':'relic'):step.type==='enemy'?'hex':cardCue(p.steps[step.index].card),{level:stepLevel});
+        if(step.type!=='impact') cue(step.type==='relic'?'relic':step.type==='enemy'?'hex':cardCue(p.steps[step.index].card),{level});
         const {samples,duration}=reelTiming(prior,step.value,step.type,mode==='fast');
         await clock(duration,signal,position=>{
           const value=reelValue(prior,step.value,Math.floor(position*samples),samples);
           showValue(value,step.type==='impact'&&position===1&&p.final>CAP);
         });
-        if(surge&&mode==='full'&&!signal.aborted) await clock(160,signal);
         prior=step.value;
       }
       const attack=attackAnimation(p.final);
@@ -5162,10 +5215,6 @@ async function showBurst() {
         const impact=p.impact.kind;
         const reaction={barrier:'player-blocked',miss:'player-miss',gate:'player-landed',hit:'player-landed'};
         field.classList.add('player-strike',reaction[impact]);
-        if(stop) {
-          field.dataset.hitStop=String(stop);
-          field.classList.add('hitstop');
-        }
         if(impact==='gate') field.classList.add('gate-shatter');
         if(impact==='barrier') field.classList.add('foe-barrier-struck');
         if(p.impact.relic) {
@@ -5184,25 +5233,20 @@ async function showBurst() {
         hpBar.querySelector('.hp-forecast')?.remove();
         hpBar.querySelectorAll('.gate-tick').forEach(mark=>mark.remove());
         hpBar.insertAdjacentHTML('beforeend',gateTicks(e));
-        cue(burstImpactCue(p),{level:impact==='barrier'?0:level});
-        if(stop) {
-          await clock(stop,signal);
-          field.classList.remove('hitstop');
-        }
-        if(!signal.aborted) {
-          if(impact==='hit') burstFX(p.final,best);
-          finishSound();
-          await clock(mode==='fast'?160:impact==='hit'?attack.impact:680,signal);
-        }
+        if(impact==='hit') burstFX(p.final,best);
+        else cue(impact);
+        if(e.hp===0n) cue('victory');
+        await clock(mode==='fast'?160:impact==='hit'?attack.impact:695,signal);
         field.querySelector('.foe').dataset.defense=e.barrier?'ward':'none';
         if(e.hp>0n&&!signal.aborted) {
           await showEnemyReaction(field,move,prediction,hpBefore-run.hp,outcome,signal);
         }
       }
     } else {
-      cue(burstImpactCue(p),{level:p.impact.kind==='barrier'?0:level});
-      finishSound();
-      if(run.enemy.hp>0n) enemyReaction(move,outcome,outcome.hitDetails[0]);
+      if(p.impact.kind==='hit') burstFX(p.final,best);
+      else cue(p.impact.kind);
+      if(run.enemy.hp===0n) cue('victory');
+      else enemyReaction(move,outcome,outcome.hitDetails[0]);
     }
   } finally {
     if(signal.aborted) effect.className='';

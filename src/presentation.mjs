@@ -76,31 +76,8 @@ export function burstVisual(value,infinity=false) {
 export function reelTiming(from,to,kind,fast) {
   const change=Math.max(0,burstVisual(to).digits-burstVisual(from).digits);
   const samples=Math.min(74,Math.max(12,change+2));
-  const base=kind==='impact'?135:kind==='relic'?225:155;
-  return {samples,duration:fast?Math.min(430,80+change*6):Math.min(1450,base+change*20)};
-}
-
-export function relicGain([beforeN,beforeD],[afterN,afterD]) {
-  if(beforeN<=0n||afterN<=0n) return null;
-  const numerator=afterN*beforeD, denominator=beforeN*afterD;
-  const hundredths=numerator*100n/denominator;
-  if(hundredths<=100n) return null;
-  return {numerator,denominator,hundredths,strong:hundredths>=1000n};
-}
-
-export function hitStop({final,impact},motion) {
-  if(motion==='off'||impact.dealt<=0n) return 0;
-  const level=magnitude([final,1n]);
-  if(motion==='fast') return level>=4?45:0;
-  const duration=[0,0,0,75,110,145,180,210][level];
-  return impact.kind==='gate'?Math.min(95,duration):duration;
-}
-
-export function burstImpactCue({final,impact}) {
-  if(impact.kind==='barrier') return impact.breaks>1?'barrierCascade':'barrierCrack';
-  if(impact.kind!=='hit') return impact.kind;
-  const level=magnitude([final,1n]);
-  return level===7?'infinity':level>=5?'impactTitan':level>=3?'impactNova':'hit';
+  const base=kind==='impact'?245:kind==='relic'?335:240;
+  return {samples,duration:fast?Math.min(460,105+change*6):Math.min(1630,base+change*21)};
 }
 
 export function impactForce({final,impact}) {
