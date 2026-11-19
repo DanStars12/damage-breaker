@@ -86,6 +86,7 @@ async function battleFlow(options) {
   await settle(page);
   await noOverflow(page,'battle');
   assert.equal(await action(page,'intercept').count(),0);
+  assert(await page.locator('.hp-forecast').count());
   assert(await page.locator('.duel [data-act-art]').isVisible());
   const firstCard=page.locator('.hand button:not(:disabled)').first();
   const handWidth=(await firstCard.boundingBox()).width;
@@ -98,6 +99,7 @@ async function battleFlow(options) {
   await action(page,'shift:1').tap();
   assert.equal(await page.locator('.board-card.card-shift-right').count(),1);
   assert.deepEqual((await readState(page)).board,[board[1],board[0]]);
+  assert.match(await page.locator('.board-picked').innerText(),/2枠目/);
   await action(page,'unplay').tap();
   const placed=await readState(page);
   assert.equal(placed.energy,energy+board[0].cost);
@@ -326,6 +328,35 @@ async function phaseGauges(options) {
   await page.close();
 }
 
+async function commandFeedback(options) {
+  const run=fixture('fight');
+  run.hp=3;
+  run.enemy.cycle=['double'];
+  run.enemy.hp=run.enemy.max=200n;
+  run.energy=3;
+  run.hand=[{kind:'add',value:20,tier:0,cost:1},{kind:'add',value:30,tier:0,cost:1},{kind:'mul',value:10,tier:0,cost:1}];
+  run.board=[{kind:'add',value:5,tier:0,cost:1}];
+  const {page,errors}=await openPage(options,run);
+  await action(page,'resume').tap();
+  assert.match(await action(page,'hold').innerText(),/反撃で敗北/);
+  assert.match(await action(page,'burst').innerText(),/反撃で敗北/);
+  assert.match(await page.locator('.intent').innerText(),/致命的/);
+  const before=await readState(page);
+  await action(page,'hand:0').tap();
+  await action(page,'hand:0').tap();
+  await action(page,'unplayAll').tap();
+  const after=await readState(page);
+  assert.deepEqual(after.board,before.board);
+  assert.equal(after.energy,before.energy);
+  assert.equal(after.hand.length,before.hand.length);
+  assert.match(await page.locator('.battle-notice').innerText(),/2 枚を手札に戻しました/);
+  await action(page,'hand:0').tap();
+  assert.match(await action(page,'burst').innerText(),/この一撃で撃破/);
+  assert(await action(page,'burst').evaluate(button=>button.classList.contains('command-win')));
+  assert.deepEqual(errors,[]);
+  await page.close();
+}
+
 async function desktopFlow() {
   const {page,errors}=await openPage({viewport:{width:1366,height:768},reducedMotion:'reduce'});
   assert(await action(page,'menu').isHidden());
@@ -336,6 +367,15 @@ async function desktopFlow() {
   const card=page.locator('.hand button:not(:disabled)').first();
   await card.dragTo(page.locator('.board .empty').first());
   assert.equal((await readState(page)).board.length,1);
+  await page.locator('.hand button:not(:disabled)').first().click();
+  const beforeMove=(await readState(page)).board;
+  await dockVisible(page,'burst');
+  await action(page,'slot:0').press('ArrowRight');
+  assert.deepEqual((await readState(page)).board,beforeMove.toReversed());
+  assert.equal(await page.locator(':focus').getAttribute('data-board'),'1');
+  await page.keyboard.press('Delete');
+  assert.deepEqual((await readState(page)).board,[beforeMove[1]]);
+  assert.equal(await page.locator(':focus').getAttribute('data-hand'),String((await readState(page)).hand.length-1));
   await action(page,'burst').click();
   await page.locator('.last-strike').waitFor();
   await noOverflow(page,'desktop battle');
@@ -367,7 +407,9 @@ try {
     if(width===390) {
       await combatEffects(options);
       await phaseGauges(options);
+      await commandFeedback(options);
       console.log('PASS divination → 3 visual hits → shatter → breach relic');
+      console.log('PASS lethal intent → return provisional cards and energy → winning BURST forecast');
     }
     if(width===320||width===390||width===932) {
       await facilityFlow(options);

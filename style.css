@@ -1571,3 +1571,56 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
   .battle .hand { grid-template-columns:repeat(auto-fit,minmax(min(74px,100%),108px)); }
   .battle .hand .card { min-height:115px; }
 }
+
+.enemy .intent { border-left-width:4px; background:#211823; }
+.intent small { color:#e5cdb7; }
+.intent-danger { color:#ffd5d7; background:#703147; padding:1px 4px; margin-inline-start:4px; }
+.enemy:has(.intent-danger) .intent { border-left-color:#f17a8f; }
+.foe-hp .hp-forecast {
+  position:absolute;
+  inset-block:0;
+  inset-inline-start:var(--damage-from);
+  width:calc(var(--damage-to) - var(--damage-from));
+  background:repeating-linear-gradient(135deg,#fff4c4 0 2px,#9c5d37 2px 4px);
+  opacity:.8;
+}
+.foe-hp .gate-tick { z-index:1; }
+.board-picked {
+  color:#ffeacc;
+  font-weight:700;
+  background:#443144;
+  border-left:3px solid #efc189;
+  padding:4px 7px;
+}
+.board .board-card.selected { outline:2px solid #ffdf95; outline-offset:2px; background:#582e45; }
+.battle .preview .preview-final { background:#31241e; border-left:3px solid #d7a760; }
+.battle .preview-final > small { color:#eed1aa; }
+.command b,.command small { display:block; }
+.command { min-width:96px; text-align:center; }
+.command small { font-size:11px; overflow-wrap:anywhere; }
+.command.primary small { color:inherit; }
+.command.command-win { background:#a8e0bb; border-color:#d2f5df; color:#193021; }
+.command.command-danger { background:#643048; border-color:#ee8799; color:#fff1ee; }
+.command.command-danger small { color:#ffcfda; }
+.command.command-danger:hover:not(:disabled) { background:#853451; color:#fff1ee; }
+.battle :is(.board-card,.card,.command):focus-visible { outline:2px solid #fff0c7; outline-offset:2px; }
+@media (max-width:550px), (max-width:850px) and (pointer:coarse), (max-height:550px) and (max-width:1100px) and (pointer:coarse) {
+  .battle { padding-bottom:calc(86px + env(safe-area-inset-bottom)); }
+  html:has(.battle) { scroll-padding-bottom:calc(78px + env(safe-area-inset-bottom)); }
+  .battle-commands .command { min-width:0; min-height:53px; }
+  .battle-commands .command small { margin-top:3px; font-weight:600; }
+  .board-picked { flex-basis:100%; }
+}
+
+@media (min-width:1050px) and (max-height:850px) and (pointer:fine) {
+  .battle .duel { min-height:0; }
+  .battle .hero canvas { height:92px; }
+  .battle .enemy[data-rank] .foe canvas { height:110px; }
+  .battle .enemy:is([data-rank="elite"],[data-rank="boss"],[data-rank="extra"]) .foe canvas { height:126px; }
+  .battle .hand-frame { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:5px 10px; }
+  .hand-frame > :is(.heading,.tactics,.hint-line) { grid-column:1/-1; }
+  .hand-frame .controls { grid-column:2; grid-row:2; align-self:center; margin:0; }
+  .hand-frame:has(.hint-line) .controls { grid-row:3; }
+  .hand-frame .controls > small { display:none; }
+  .battle .hand-frame .hand { margin:0; }
+}

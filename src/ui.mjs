@@ -144,8 +144,7 @@ function damageReceipt() {
     <div><small>敵HPの減少</small><strong title="${p.impact.dealt}">${compact(p.impact.dealt,false)}</strong>${status?`<small>${status}</small>`:''}</div>
     ${fired.length?`<p class="relic-receipt">✦ 発動レリック　${fired.join(' ／ ')}</p>`:''}</section>`;
 }
-function tacticalReadout(p) {
-  const outcome=run.enemyOutcome();
+function tacticalReadout(p,outcome) {
   const held=run.holdPreview(outcome);
   const lethal=!outcome.hp;
   const victory=p.impact.dealt===run.enemy.hp;
@@ -159,6 +158,25 @@ function tacticalReadout(p) {
     <div class="${lethal&&run.holds<run.holdLimit?'tactics-danger':''}"><b>HOLD</b><span>${holdText}${outcome.broken&&run.holds<run.holdLimit?' · 結界 −'+outcome.broken:outcome.blocked&&run.holds<run.holdLimit&&!lethal?' · 結界で妨害を防ぐ':''}${outcome.absorbed&&run.holds<run.holdLimit?' · 防御 '+outcome.absorbed:''}${held!==null&&held!==p.final?` <small title="${held}"> · 引く前の予測 ${compact(held)}</small>`:''}</span></div>
     <div class="${victory?'tactics-win':lethal?'tactics-danger':''}"><b>BURST</b><span>${burstText}${lethal&&!victory?' · 反撃で敗北':''}</span></div></div>`;
 }
+function battleCommands(p,outcome) {
+  const limited=run.holds>=run.holdLimit;
+  const lethal=outcome.hp===0;
+  const finish=p.impact.dealt===run.enemy.hp;
+  const loss=run.hp-outcome.hp;
+  const damage=p.impact.kind==='barrier'?'バリア '+p.impact.breaks+'層破壊':
+    p.impact.kind==='gate'?'耐久ライン突破':p.impact.kind==='miss'?'敵HP変化なし':'敵HP −'+compact(p.impact.dealt,false);
+  const holdText=limited?'上限到達':lethal?'反撃で敗北':loss?'術師HP −'+loss:
+    outcome.deb!==run.deb?'妨害が盤に入る':outcome.drain!==run.drain?'基礎値が低下':
+    outcome.drawPenalty?'次のドロー −1':outcome.energyPenalty?'次のエナジー −1':'盤を維持して引く';
+  const burstText=finish?'この一撃で撃破':lethal?'反撃で敗北':damage;
+  const command=(name,title,summary,variant='',disabled=false)=>`<button type="button" class="command ${variant}" data-action="${name}" ${disabled?'disabled':''}><b>${title}</b><small>${summary}</small></button>`;
+  return `<div class="actions battle-commands">
+    ${command('hold','HOLD '+run.holds+'/'+run.holdLimit,holdText,lethal&&!limited?'command-danger':'',limited)}
+    ${command('burst','BURST',burstText,'primary '+(finish?'command-win':lethal?'command-danger':''))}
+    <button type="button" data-action="skip" class="skip-sequence" hidden>演出をスキップ</button>
+  </div>`;
+}
+const hpPercent=(hp,max)=>Number(hp*1000n/max)/10;
 const enemyNameHTML=name=>name.split(/(?<=・)/u).map(part=>`<span class="enemy-name-part">${esc(part)}</span>`).join('<wbr>');
 const actBackdrop=()=>`<canvas class="act-backdrop" data-act-art="act-${run.act}" width="${eventCanvasSize[0]}" height="${eventCanvasSize[1]}" aria-hidden="true"></canvas>`;
 function gateLabel(g,max) {
@@ -182,6 +200,8 @@ function gateTicks(enemy) {
 }
 function battle() {
   const p=run.preview(), e=run.enemy;
+  const outcome=run.enemyOutcome();
+  const provisional=run.board.filter((_,i)=>run.canReturn(i)).length;
   const slots=Array.from({length:run.slots},(_,i)=>{
     const c=run.board[i];
     const status=c?p.steps.find(s=>s.card===c):null;
@@ -189,7 +209,7 @@ function battle() {
     const deb=i<=run.board.length?run.deb.filter(d=>Math.min(d.at,run.board.length)===i).map(d=>
       `<span class="slot debuff" data-calc="${p.steps.findIndex(s=>s.card===d)}" title="敵の妨害 · ${d.at}枠目の後">${label(d)}</span>`).join(''):'';
     return deb+(c?`<button type="button" class="slot board-card t${c.tier} ${status?.op===null?'is-sealed':''} ${i===selected?'selected':''}" style="border-color:var(--tone)"
-      data-calc="${p.steps.indexOf(status)}" data-action="slot:${i}" data-at="${i}" data-board="${i}" draggable="true" aria-pressed="${i===selected}" title="${run.canReturn(i)?'選択して移動・取り消し':'選択して移動'}"><strong>${label(c)}</strong><small>${types[c.kind]}</small>${run.canReturn(i)?'<small class="returnable-label">仮置き</small>':''}${status?.op===null?'<small>封印</small>':''}</button>`:
+      data-calc="${p.steps.indexOf(status)}" data-action="slot:${i}" data-at="${i}" data-board="${i}" draggable="true" aria-pressed="${i===selected}" aria-keyshortcuts="ArrowLeft ArrowRight Delete Escape" title="${run.canReturn(i)?'選択して移動・取り消し':'選択して移動'}"><strong>${label(c)}</strong><small>${types[c.kind]}</small>${run.canReturn(i)?'<small class="returnable-label">仮置き</small>':''}${status?.op===null?'<small>封印</small>':''}</button>`:
       `<button type="button" class="slot empty" data-at="${at}" data-action="slot:${at}" aria-label="空き枠 ${i+1}">${i+1}</button>`);
   }).join('');
   const tail=run.board.length===run.slots?run.deb.filter(d=>d.at>=run.slots).map(d=>`<span class="slot debuff" data-calc="${p.steps.findIndex(s=>s.card===d)}">${label(d)}</span>`).join(''):'';
@@ -203,7 +223,7 @@ function battle() {
         <figcaption>術師</figcaption><div class="hpBar hero-hp" aria-hidden="true"><span style="width:${100*run.hp/run.maxHp}%"></span></div><small id="heroHp">HP ${run.hp} / ${run.maxHp}</small></figure>
         <span class="arena-seal" aria-hidden="true">✧</span>
         <figure class="combatant foe" data-defense="${e.barrier?'ward':'none'}"><div class="idle-sprite"><i class="barrier-shell" aria-hidden="true"></i><canvas data-enemy-art width="88" height="64" aria-hidden="true"></canvas></div>
-        <figcaption>敵</figcaption><div class="hpBar foe-hp" aria-hidden="true"><span style="width:${Number(e.hp*1000n/e.max)/10}%"></span>${gateTicks(e)}</div><small id="foeHp" title="${e.hp} / ${e.max}">HP ${compact(e.hp)} / ${compact(e.max)}</small></figure>
+        <figcaption>敵</figcaption><div class="hpBar foe-hp" aria-hidden="true"><span style="width:${hpPercent(e.hp,e.max)}%"></span>${p.impact.dealt>0n?`<i class="hp-forecast" style="--damage-from:${hpPercent(e.hp-p.impact.dealt,e.max)}%;--damage-to:${hpPercent(e.hp,e.max)}%"></i>`:''}${gateTicks(e)}</div><small id="foeHp" title="${e.hp} / ${e.max}">HP ${compact(e.hp)} / ${compact(e.max)}</small></figure>
         <span class="burst-scene" aria-hidden="true"><i class="burst-seal"></i><i class="burst-bolt"></i>
           <i class="burst-ring"></i><i class="burst-ring echo"></i><i class="burst-wake"></i><i class="burst-nova"></i><i class="burst-crown"></i><i class="burst-glyph"></i><span class="burst-sparks"></span></span>
         ${e.kind==='boss'?`<div class="boss-entry" aria-hidden="true"><i></i><span>ACT BOSS</span><strong>${enemyNameHTML(e.name)}</strong></div>`:''}
@@ -213,24 +233,26 @@ function battle() {
       <div class="enemy-info">
       ${e.detail?`<p class="enemy-rule">${e.detail}</p>`:''}
       <div class="enemy-defenses">${defenseStatus(e)}</div>
-      <div class="intent" data-move="${run.next.kind}"><small>敵の次の行動</small><strong>${intentText()}</strong></div></div></section>
+      <div class="intent" data-move="${run.next.kind}"><small>敵の次の行動 ${outcome.hp===0?'<b class="intent-danger">致命的</b>':''}</small><strong>${intentText()}</strong></div></div></section>
     <section class="frame board-frame"><div class="heading"><h2>演算盤</h2><small>${run.board.length} / ${run.slots} 枠 · コンボ ${run.board.length}${run.wardCharges?' · 結界 '+run.wardCharges:''}${run.guardPoints?' · 防御 '+run.guardPoints:''}</small></div>
       <div class="board-relics" aria-label="演算盤のレリック">${relicStrip(p)}</div>
       <div class="board"><span class="slot base${baseGlow?' base-awaken':''}"><small>基礎</small>${run.base}</span>${slots}${tail}</div>
-      ${selected!==null?`<div class="actions board-actions">${btn('← 左へ','shift:-1','',selected===0)}${btn('右へ →','shift:1','',selected===run.board.length-1)}${run.canReturn(selected)?btn('手札に戻す','unplay'):''}</div>`:''}
+      ${selected!==null||provisional>1?`<div class="actions board-actions">
+        ${selected!==null?`<span class="board-picked">${selected+1}枠目 · ${label(run.board[selected])}</span>${btn('← 左へ','shift:-1','',selected===0)}${btn('右へ →','shift:1','',selected===run.board.length-1)}${run.canReturn(selected)?btn('手札に戻す','unplay'):''}`:''}
+        ${provisional>1?btn('仮置き'+provisional+'枚を戻す','unplayAll'):''}
+      </div>`:''}
       <div class="preview"><div><small>通常演算</small><strong title="${exactRat(p.normal)}">${visibleNumber(p.normal)}</strong></div><div><small>レリック適用後</small><strong title="${exactRat(p.result)}">${visibleNumber(p.result)}</strong></div>
-      <div><small>最終ダメージ予測</small><strong title="${p.final}">${compact(p.final)}</strong><small title="${p.impact.dealt}">敵HP −${compact(p.impact.dealt,false)}${p.impact.kind==='barrier'?' · バリア '+p.impact.breaks+'層破壊':p.impact.kind==='gate'?' · 耐久段階まで':''}</small></div></div>
+      <div class="preview-final"><small>最終ダメージ予測</small><strong title="${p.final}">${compact(p.final)}</strong><small title="${p.impact.dealt}">敵HP −${compact(p.impact.dealt,false)}${p.impact.kind==='barrier'?' · バリア '+p.impact.breaks+'層破壊':p.impact.kind==='gate'?' · 耐久段階まで':''}</small></div></div>
       <div id="reel" class="reel" hidden><div class="reel-head"><span id="stepName"></span><span id="stepCombo"></span></div>
       <div class="reel-display"><i aria-hidden="true"></i><strong id="reelNumber"></strong><small id="reelDigits"></small></div><div class="reel-foot"><div id="stepProgress"></div>${btn('演出をスキップ','skip')}</div></div>
       ${run.lastBurst?`<div class="last-strike" title="${[...relicActivations(run.lastBurst)].map(id=>relics[id].name).join(' ／ ')}">直前BURST <b title="${run.lastBurst.final}">${compact(run.lastBurst.final)}</b> · 敵HP −${compact(run.lastBurst.impact.dealt,false)}</div>`:''}
       ${notice?`<small class="battle-notice" role="status">${moneyText(notice)}</small>`:''}</section>
-    <section class="frame"><div class="heading"><h2>手札</h2><span class="energy">エネルギー ${run.energy} / ${run.capacity} <small>· ドロー ${run.drawCount}枚</small></span></div>
+    <section class="frame hand-frame"><div class="heading"><h2>手札</h2><span class="energy">エネルギー ${run.energy} / ${run.capacity} <small>· ドロー ${run.drawCount}枚</small></span></div>
       ${run.omens>0?`<div class="hint-line">${btn('✧ 星詠みの頁 · 残り'+run.omens,'divine')}</div>`:''}
       <div class="hand" data-hand-return>${run.hand.map((c,i)=>cardButton(c,'hand:'+i,i,!run.canPlay(c))).join('')}</div>
-      ${tacticalReadout(p)}
+      ${tacticalReadout(p,outcome)}
       <div class="controls"><small>仮置きは選択して手札に戻せます。HOLDまたはBURSTで確定。${run.holds===run.holdLimit?' 次はBURST。':''}</small>
-      <div class="actions battle-commands">${btn('HOLD '+run.holds+'/'+run.holdLimit,'hold','',run.holds>=run.holdLimit)}${btn('BURST','burst','primary')}
-      <button type="button" data-action="skip" class="skip-sequence" hidden>演出をスキップ</button></div>
+      ${battleCommands(p,outcome)}
       </div></section>
     </div>${sidebar(p)}</main>`;
 }
@@ -494,7 +516,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.3</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.3.1</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -642,6 +664,7 @@ function action(command) {
   sound.unlock();
   const i=Number(arg);
   if(name==='help') return modal('遊び方',`<p>手札の演算を盤に置き、基礎攻撃力から左順に計算します。地図は下から上へ、光っているマスを選びます。たとえば 20 → +10 → ×3 は90です。</p>
+    <p>演算盤のカードにフォーカスして、左右キーで移動、Deleteで仮置きを手札に戻せます。確定前のカードは「仮置き○枚を戻す」でまとめて戻せます。</p>
     <p>HOLDは盤を維持して新しい手札を引きます。敵はHOLD後、またはBURSTで生き残った後に予告どおり行動します。</p>
     <p>差し引きで負になった値や分数も計算中は保持します。装甲適用後、負のダメージは0、小数は切り捨てです。</p>
     <p>星詠みの頁は、手札の演算カードを現在のエネルギーと空き枠の範囲で並べ、レリック込みの最大ダメージになる候補を仮置きします。結界・防御・浄化は手動で使えます。ダメージを伸ばせた場合に1枚消費します。</p>
@@ -680,7 +703,8 @@ function action(command) {
     render();
     return;
   }
-  const keepNotice=name==='craftNext'||name==='slot'||name==='shift'||name==='hand'||name==='unplay';
+  const hasFocus=app.contains(document.activeElement)&&document.activeElement.matches('button');
+  const keepNotice=name==='craftNext'||name==='slot'||name==='shift'||name==='hand'||name==='unplay'||name==='unplayAll';
   if(!keepNotice) notice='';
   const oldBase=run.baseAt();
   let feedback=null;
@@ -694,7 +718,19 @@ function action(command) {
       feedback=undoCard(selected);
       if(feedback) selected=null;
       break;
+    case 'unplayAll': {
+      const cards=run.board.filter((_,at)=>run.canReturn(at));
+      for(const card of cards) run.returnToHand(run.board.indexOf(card));
+      if(cards.length) {
+        notice='仮置き '+cards.length+' 枚を手札に戻しました。';
+        feedback={selector:'.hand [data-hand]:last-child',className:'card-returned'};
+        selected=null;
+        cue('undo');
+      }
+      break;
+    }
     case 'shift': {
+      if(selected===null) break;
       const to=selected+i;
       feedback=moveCard(selected,to);
       if(feedback) selected=to;
@@ -738,6 +774,12 @@ function action(command) {
   saveProgress();
   render();
   animateFeedback(feedback);
+  if(hasFocus&&run?.phase==='battle') {
+    const focus=name==='shift'||name==='slot'?selected!==null?`[data-board="${selected}"]`:name==='slot'?`[data-board="${i}"]`:null:
+      name==='hand'?'.hand button:not(:disabled)':
+        name==='unplay'||name==='unplayAll'?feedback?.selector:null;
+    if(focus) app.querySelector(focus)?.focus({preventScroll:true});
+  }
 }
 async function useDivination() {
   if(run.phase!=='battle'||!(run.omens>0)) return;
@@ -1145,6 +1187,7 @@ async function showBurst() {
         foeHp.title=e.hp+' / '+e.max;
         field.querySelector('.enemy-defenses').innerHTML=defenseStatus(e);
         const hpBar=field.querySelector('.foe-hp');
+        hpBar.querySelector('.hp-forecast')?.remove();
         hpBar.querySelectorAll('.gate-tick').forEach(mark=>mark.remove());
         hpBar.insertAdjacentHTML('beforeend',gateTicks(e));
         if(impact==='hit') burstFX(p.final,best);
@@ -1171,5 +1214,22 @@ async function showBurst() {
   }
 }
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'&&sequence) sequence.abort();
+  if(e.key==='Escape'&&sequence) {sequence.abort();return;}
+  if(sequence||dialog.open||run?.phase!=='battle'||e.altKey||e.ctrlKey||e.metaKey||e.shiftKey) return;
+  const card=e.target instanceof Element?e.target.closest('.board-card[data-board]'):null;
+  if(!card) return;
+  const at=Number(card.dataset.board);
+  if(e.key==='Escape'&&selected!==null) {
+    selected=null;
+    render();
+    app.querySelector(`[data-board="${at}"]`)?.focus({preventScroll:true});
+  } else if(e.key==='ArrowLeft'||e.key==='ArrowRight') {
+    e.preventDefault();
+    selected=at;
+    action(e.key==='ArrowLeft'?'shift:-1':'shift:1');
+  } else if(e.key==='Delete'&&run.canReturn(at)) {
+    e.preventDefault();
+    selected=at;
+    action('unplay');
+  }
 });
