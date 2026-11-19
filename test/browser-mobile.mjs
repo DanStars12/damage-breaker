@@ -19,17 +19,17 @@ const profiles=[
   ['iPhone landscape','iPhone 13',932,430]
 ];
 
-async function openPage(options,run=null) {
+async function openPage(options,run=null,motion='fast') {
   const page=await browser.newPage(options);
   page.setDefaultTimeout(6000);
   const errors=[];
   page.on('pageerror',error=>errors.push(error.message));
   await page.route(origin,route=>route.fulfill({contentType:'text/html',body:html}));
-  if(run) await page.addInitScript(({key,checkpoint})=>{
+  if(run) await page.addInitScript(({key,checkpoint,motion})=>{
     if(sessionStorage.getItem('fixture')) return;
     sessionStorage.setItem('fixture','yes');
-    localStorage.setItem(key,JSON.stringify({best:{max:'0'},runs:[],prefs:{motion:'fast'},checkpoint}));
-  },{key:storageKey,checkpoint:writeCheckpoint({run})});
+    localStorage.setItem(key,JSON.stringify({best:{max:'0'},runs:[],prefs:{motion},checkpoint}));
+  },{key:storageKey,motion,checkpoint:writeCheckpoint({run})});
   await page.goto(origin);
   return {page,errors};
 }
@@ -394,6 +394,58 @@ async function commandFeedback(options) {
   await page.close();
 }
 
+async function burstRhythm(options) {
+  const run=fixture('fight');
+  run.owned=['grimoire'];
+  run.enemy.armor=1;
+  run.enemy.barrier=0;
+  run.enemy.cycle=['attack'];
+  run.board=[{kind:'add',value:100,cost:1,tier:0},{kind:'mul',value:100,cost:1,tier:0}];
+  for(const mode of ['full','off','skip-stop']) {
+    run.enemy.gates=mode==='off'?[15n]:[];
+    const {page,errors}=await openPage(options,run,mode==='off'?'off':'full');
+    await action(page,'resume').tap();
+    await settle(page);
+    await page.evaluate(skip=>{
+      const gain=document.querySelector('#relicGain'), enemy=document.querySelector('.enemy');
+      new MutationObserver(()=>{
+        if(!gain.hidden) document.body.dataset.gain=gain.innerText;
+      }).observe(gain,{subtree:true,childList:true,attributes:true});
+      new MutationObserver(()=>{
+        if(!enemy.classList.contains('hitstop')) return;
+        const foe=enemy.querySelector('.foe canvas');
+        document.body.dataset.stop=[enemy.dataset.hitStop,getComputedStyle(foe).animationPlayState,enemy.querySelector('#foeHp').textContent].join('|');
+        if(skip) document.querySelector('.skip-sequence').click();
+      }).observe(enemy,{attributes:true,attributeFilter:['class']});
+    },mode==='skip-stop');
+    await action(page,'burst').tap();
+    if(mode==='off') {
+      await page.locator('.last-strike').waitFor();
+      assert.equal((await readState(page)).phase,'battle');
+      await action(page,'burst').tap();
+    }
+    await page.locator('.record-receipt').waitFor();
+    const body=page.locator('body');
+    if(mode==='off') {
+      assert.equal(await body.getAttribute('data-gain'),null);
+      assert.equal(await body.getAttribute('data-stop'),null);
+    } else {
+      assert.match(await body.getAttribute('data-gain')??'',/×12,000/);
+      assert.match(await body.getAttribute('data-stop')??'',/^75\|paused\|HP 0 /);
+    }
+    assert.match(await page.locator('.record-receipt').innerText(),/同頭累乗の魔導書/);
+    const result=await readState(page);
+    assert.equal(result.battleRecord.final.$bigint,'144000000');
+    assert.equal(result.lastBurst.final.$bigint,mode==='off'?'20':'144000000');
+    await noOverflow(page,'record receipt');
+    await page.reload();
+    await action(page,'resume').tap();
+    assert(await page.locator('.record-receipt').isVisible());
+    assert.deepEqual(errors,[]);
+    await page.close();
+  }
+}
+
 async function desktopFlow() {
   const {page,errors}=await openPage({viewport:{width:1366,height:768},reducedMotion:'reduce'});
   assert(await action(page,'menu').isHidden());
@@ -445,6 +497,8 @@ try {
       await combatEffects(options);
       await phaseGauges(options);
       await commandFeedback(options);
+      await burstRhythm(options);
+      console.log('PASS relic multiplier → hitstop → record resume, motion off and skip interruption');
       console.log('PASS divination → 3 visual hits → shatter → breach relic');
       console.log('PASS lethal intent → return provisional cards and energy → winning BURST forecast');
     }

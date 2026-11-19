@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {CAP} from '../src/math.mjs';
 import {evaluate} from '../src/relics.mjs';
 import {card,upgraded} from '../src/cards.mjs';
-import {timeline,magnitude,reelValue,impactForce,relicActivations,boardRelicStates,burstVisual,reelTiming,attackAnimation} from '../src/presentation.mjs';
+import {timeline,magnitude,reelValue,impactForce,relicActivations,boardRelicStates,burstVisual,reelTiming,attackAnimation,relicGain,hitStop,burstImpactCue} from '../src/presentation.mjs';
 
 test('timeline preserves resolution order, exact relic value and armored damage',()=>{
   const result=evaluate({board:[card('add',10),card('mul',12),card('add',100),card('mul',101)],
@@ -95,4 +95,43 @@ test('each finite digit has its own attack timing and spread, with a dedicated i
   assert.equal(new Set(profiles.map(profile=>profile.motif)).size,9);
   assert.equal(attackAnimation(CAP).motif,'horizon');
   assert.equal(attackAnimation(CAP+1n).motif,'infinity');
+});
+
+
+test('hitstop scales with landed damage and preserves light-mode timing',()=>{
+  const hit=(final,kind='hit',dealt=1n)=>({final,impact:{kind,dealt}});
+  assert.equal(hitStop(hit(10n**8n-1n),'full'),0);
+  assert.equal(hitStop(hit(10n**8n),'full'),75);
+  assert.equal(hitStop(hit(10n**12n),'full'),110);
+  assert.equal(hitStop(hit(10n**20n),'full'),145);
+  assert.equal(hitStop(hit(CAP),'full'),180);
+  assert.equal(hitStop(hit(CAP+1n),'full'),210);
+  assert.equal(hitStop(hit(CAP+1n,'barrier',0n),'full'),0);
+  assert.equal(hitStop(hit(CAP+1n,'gate'),'full'),95);
+  assert.equal(hitStop(hit(CAP+1n),'fast'),45);
+  assert.equal(hitStop(hit(10n**8n),'fast'),0);
+  assert.equal(hitStop(hit(CAP+1n),'off'),0);
+});
+
+test('relic gain compares exact rational values, including huge multipliers',()=>{
+  assert.deepEqual(relicGain([12000n,1n],[144000000n,1n]),{
+    numerator:144000000n,denominator:12000n,hundredths:1200000n,strong:true
+  });
+  assert.equal(relicGain([3n,8n],[1n,2n]).hundredths,133n);
+  assert.equal(relicGain([3n,8n],[1n,2n]).strong,false);
+  assert.equal(relicGain([1n,1n],[2n,3n]),null);
+  assert.equal(relicGain([0n,1n],[1n,1n]),null);
+  assert.equal(relicGain([3n,7n],[CAP+1n,2n]).numerator,(CAP+1n)*7n);
+});
+
+test('BURST impact cue differentiates cracked barriers, gate breaks and attack scale',()=>{
+  const cue=(final,kind='hit',breaks=0)=>burstImpactCue({final,impact:{kind,breaks}});
+  assert.equal(cue(200n),'hit');
+  assert.equal(cue(10n**8n),'impactNova');
+  assert.equal(cue(10n**20n),'impactTitan');
+  assert.equal(cue(CAP+1n),'infinity');
+  assert.equal(cue(CAP+1n,'barrier',1),'barrierCrack');
+  assert.equal(cue(CAP+1n,'barrier',2),'barrierCascade');
+  assert.equal(cue(CAP+1n,'gate'),'gate');
+  assert.equal(cue(0n,'miss'),'miss');
 });

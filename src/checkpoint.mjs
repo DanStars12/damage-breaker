@@ -35,6 +35,7 @@ export function readCheckpoint(serialized) {
       !integerBetween(state.act,1,4)||!integerBetween(state.stage,0,30)||!integerBetween(state.hp,1,100)||
       (state.omens!==undefined&&(!Number.isSafeInteger(state.omens)||state.omens<0))||
       !Number.isSafeInteger(state.gold)||state.gold<0||!validCards(state.deck)||!state.deck.length||
+      (state.battleRecord!=null&&(!nonnegativeBigInt(state.battleRecord.final)||typeof state.battleRecord.formula!=='string'))||
       !Array.isArray(state.owned)||!state.owned.every(validRelic)||!Array.isArray(state.map)||
       !Array.isArray(state.routes)||!Array.isArray(state.visited)||!Array.isArray(state.history)||
       !Array.isArray(state.recent)||!state.recent.every(nonnegativeBigInt)||!nonnegativeBigInt(state.stats?.max)) return null;

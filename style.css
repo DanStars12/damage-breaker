@@ -1639,3 +1639,33 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
   .exchange-candidates,.exchange-receipt { grid-template-columns:1fr; }
   .exchange-receipt .workshop-arrow { justify-self:center; rotate:90deg; }
 }
+
+.relic-gain {
+  display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:3px 12px;
+  margin:3px 0 7px; padding:5px 9px; border-block:1px solid #a07d5799; color:#ffe3b4;
+  background:#403044; overflow-wrap:anywhere; font:600 12px/1.35 var(--interface);
+}
+.relic-gain[hidden] { display:none; }
+.relic-gain span { min-width:0; }
+.relic-gain strong {
+  min-width:0; color:#ffedaa; font:700 clamp(17px,3.1vw,26px)/1.1 var(--display);
+  font-variant-numeric:tabular-nums;
+}
+.relic-gain.relic-surge {
+  border-color:#f7c984; background:linear-gradient(100deg,#392439,#66473a,#392439);
+  box-shadow:inset 0 0 12px #ffb66358;
+}
+.damage-receipt .record-receipt { grid-column:1/-1; border-left:3px solid #ffcc76; background:#3f2c2c; }
+.record-receipt b { color:#ffe4a0; }
+.record-receipt p { color:#ead4be; margin:.25rem 0 0; overflow-wrap:anywhere; }
+.impact-stamp { display:none; }
+.hitstop .impact-stamp {
+  display:block; position:absolute; z-index:2; left:var(--foe-x); top:48%; pointer-events:none;
+  width:clamp(20px,5vw,54px); aspect-ratio:1; transform:translate(-50%,-50%);
+  background:linear-gradient(145deg,#fffbed 22%,var(--attack-color));
+  clip-path:polygon(50% 0,58% 37%,88% 13%,66% 44%,100% 50%,66% 56%,88% 87%,58% 63%,50% 100%,42% 63%,12% 87%,34% 56%,0 50%,34% 44%,12% 13%,42% 37%);
+}
+.enemy.player-strike.hitstop :is(.foe canvas,.burst-scene i,.slash),.enemy.player-strike.hitstop .duel::after { animation-play-state:paused; }
+.hitstop .foe .idle-sprite { filter:brightness(1.25); }
+.enemy.hitstop .foe-hp span { transition:none; }
+.enemy.hitstop #outgoing { animation:none; opacity:1; }

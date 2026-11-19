@@ -1646,6 +1646,36 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
   .exchange-candidates,.exchange-receipt { grid-template-columns:1fr; }
   .exchange-receipt .workshop-arrow { justify-self:center; rotate:90deg; }
 }
+
+.relic-gain {
+  display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:3px 12px;
+  margin:3px 0 7px; padding:5px 9px; border-block:1px solid #a07d5799; color:#ffe3b4;
+  background:#403044; overflow-wrap:anywhere; font:600 12px/1.35 var(--interface);
+}
+.relic-gain[hidden] { display:none; }
+.relic-gain span { min-width:0; }
+.relic-gain strong {
+  min-width:0; color:#ffedaa; font:700 clamp(17px,3.1vw,26px)/1.1 var(--display);
+  font-variant-numeric:tabular-nums;
+}
+.relic-gain.relic-surge {
+  border-color:#f7c984; background:linear-gradient(100deg,#392439,#66473a,#392439);
+  box-shadow:inset 0 0 12px #ffb66358;
+}
+.damage-receipt .record-receipt { grid-column:1/-1; border-left:3px solid #ffcc76; background:#3f2c2c; }
+.record-receipt b { color:#ffe4a0; }
+.record-receipt p { color:#ead4be; margin:.25rem 0 0; overflow-wrap:anywhere; }
+.impact-stamp { display:none; }
+.hitstop .impact-stamp {
+  display:block; position:absolute; z-index:2; left:var(--foe-x); top:48%; pointer-events:none;
+  width:clamp(20px,5vw,54px); aspect-ratio:1; transform:translate(-50%,-50%);
+  background:linear-gradient(145deg,#fffbed 22%,var(--attack-color));
+  clip-path:polygon(50% 0,58% 37%,88% 13%,66% 44%,100% 50%,66% 56%,88% 87%,58% 63%,50% 100%,42% 63%,12% 87%,34% 56%,0 50%,34% 44%,12% 13%,42% 37%);
+}
+.enemy.player-strike.hitstop :is(.foe canvas,.burst-scene i,.slash),.enemy.player-strike.hitstop .duel::after { animation-play-state:paused; }
+.hitstop .foe .idle-sprite { filter:brightness(1.25); }
+.enemy.hitstop .foe-hp span { transition:none; }
+.enemy.hitstop #outgoing { animation:none; opacity:1; }
 </style>
 </head>
 <body>
@@ -2494,6 +2524,7 @@ class Run {
     this.energyPenalty=0;
     this.battlePeak=0n;
     this.lastBurst=null;
+    this.battleRecord=null;
     this.deckDraw=shuffle(this.deck,this.rng);
     this.discard=[];
     this.hand=[];
@@ -2955,6 +2986,7 @@ function readCheckpoint(serialized) {
       !integerBetween(state.act,1,4)||!integerBetween(state.stage,0,30)||!integerBetween(state.hp,1,100)||
       (state.omens!==undefined&&(!Number.isSafeInteger(state.omens)||state.omens<0))||
       !Number.isSafeInteger(state.gold)||state.gold<0||!validCards(state.deck)||!state.deck.length||
+      (state.battleRecord!=null&&(!nonnegativeBigInt(state.battleRecord.final)||typeof state.battleRecord.formula!=='string'))||
       !Array.isArray(state.owned)||!state.owned.every(validRelic)||!Array.isArray(state.map)||
       !Array.isArray(state.routes)||!Array.isArray(state.visited)||!Array.isArray(state.history)||
       !Array.isArray(state.recent)||!state.recent.every(nonnegativeBigInt)||!nonnegativeBigInt(state.stats?.max)) return null;
@@ -3759,8 +3791,31 @@ function burstVisual(value,infinity=false) {
 function reelTiming(from,to,kind,fast) {
   const change=Math.max(0,burstVisual(to).digits-burstVisual(from).digits);
   const samples=Math.min(74,Math.max(12,change+2));
-  const base=kind==='impact'?245:kind==='relic'?335:240;
-  return {samples,duration:fast?Math.min(460,105+change*6):Math.min(1630,base+change*21)};
+  const base=kind==='impact'?135:kind==='relic'?225:155;
+  return {samples,duration:fast?Math.min(430,80+change*6):Math.min(1450,base+change*20)};
+}
+
+function relicGain([beforeN,beforeD],[afterN,afterD]) {
+  if(beforeN<=0n||afterN<=0n) return null;
+  const numerator=afterN*beforeD, denominator=beforeN*afterD;
+  const hundredths=numerator*100n/denominator;
+  if(hundredths<=100n) return null;
+  return {numerator,denominator,hundredths,strong:hundredths>=1000n};
+}
+
+function hitStop({final,impact},motion) {
+  if(motion==='off'||impact.dealt<=0n) return 0;
+  const level=magnitude([final,1n]);
+  if(motion==='fast') return level>=4?45:0;
+  const duration=[0,0,0,75,110,145,180,210][level];
+  return impact.kind==='gate'?Math.min(95,duration):duration;
+}
+
+function burstImpactCue({final,impact}) {
+  if(impact.kind==='barrier') return impact.breaks>1?'barrierCascade':'barrierCrack';
+  if(impact.kind!=='hit') return impact.kind;
+  const level=magnitude([final,1n]);
+  return level===7?'infinity':level>=5?'impactTitan':level>=3?'impactNova':'hit';
 }
 
 function impactForce({final,impact}) {
@@ -3813,14 +3868,19 @@ const cues={
   launch:[[160,640,0,.14,.07,'triangle']],
   digitRise:[[380,680,0,.12,.065,'sine'],[600,900,.055,.15,.04,'triangle']],
   launchNova:[[92,270,0,.24,.1,'triangle'],[270,730,.08,.24,.1,'sine']],
-  impactNova:[[120,37,0,.44,.18,'triangle'],[333,84,.026,.2,.10,'triangle'],[523,784,.12,.34,.08,'sine']],
-  hit:[[182,65,0,.17,.16,'triangle'],[495,330,.045,.11,.075,'sine']],
+  relicSurge:[[220,310,0,.19,.095,'triangle'],[440,660,.018,.19,.09,'triangle'],[880,1320,.05,.15,.06,'sine'],[1320,1760,.093,.23,.04,'sine']],
+  impactNova:[[130,36,0,.34,.19,'sine'],[480,160,0,.063,.105,'triangle'],[1230,215,.012,.057,.052,'sawtooth'],[523,785,.083,.30,.07,'triangle']],
+  impactTitan:[[108,32,0,.46,.22,'sine'],[710,168,0,.101,.11,'triangle'],[1860,370,.006,.072,.063,'sawtooth'],[392,587,.10,.33,.08,'triangle'],[784,1175,.15,.36,.055,'sine']],
+  impactRelease:[[294,196,0,.22,.075,'triangle'],[588,882,.045,.20,.05,'sine']],
+  barrierCrack:[[1370,585,0,.12,.086,'triangle'],[2270,980,.024,.078,.049,'sawtooth'],[705,473,.06,.16,.062,'sine']],
+  barrierCascade:[[1540,700,0,.095,.09,'triangle'],[2050,960,.018,.070,.048,'sawtooth'],[890,450,.055,.11,.085,'triangle'],[530,160,.089,.24,.075,'triangle']],
+  hit:[[215,69,0,.11,.15,'triangle'],[760,218,.006,.042,.055,'triangle']],
   barrier:[[590,735,0,.20,.13,'triangle'],[813,650,.050,.24,.07,'sine']],
-  gate:[[250,60,0,.26,.17,'triangle'],[489,650,.055,.19,.08,'sine'],[733,920,.089,.23,.07,'triangle']],
+  gate:[[205,48,0,.26,.175,'triangle'],[810,127,0,.075,.065,'sawtooth'],[450,580,.072,.19,.08,'triangle'],[675,870,.126,.23,.066,'sine']],
   miss:[[230,190,0,.13,.045,'sine']],
   record:[[392,392,.09,.22,.08,'triangle'],[523,523,.155,.22,.08,'sine'],[784,784,.22,.28,.07,'triangle']],
-  victory:[[330,330,.11,.18,.08,'triangle'],[440,440,.18,.18,.075,'sine'],[659,659,.26,.29,.085,'triangle']],
-  infinity:[[147,60,0,.49,.135,'triangle'],[294,390,.06,.28,.10,'triangle'],[440,490,.11,.29,.085,'sine'],[587,680,.15,.33,.10,'sine'],[880,965,.22,.39,.08,'triangle']],
+  victory:[[196,196,.045,.16,.08,'triangle'],[392,392,.09,.16,.075,'triangle'],[494,494,.15,.18,.065,'triangle'],[587,587,.21,.25,.07,'sine'],[784,784,.21,.34,.05,'sine']],
+  infinity:[[110,31,0,.51,.21,'sine'],[646,125,0,.136,.12,'triangle'],[2320,420,.007,.069,.06,'sawtooth'],[294,440,.13,.24,.085,'triangle'],[440,660,.19,.29,.075,'sine'],[587,880,.24,.33,.085,'sine'],[880,1175,.29,.39,.065,'triangle']],
   gold:[[920,800,0,.13,.095,'sine'],[1280,1150,.065,.16,.085,'triangle']],
   forge:[[185,98,0,.18,.16,'triangle'],[1120,810,.013,.21,.06,'triangle']],
   remove:[[580,180,0,.24,.095,'triangle'],[390,60,.075,.23,.065,'sine']],
@@ -4005,9 +4065,11 @@ function damageReceipt() {
   if(!p) return '';
   const kind=p.impact.kind, status=kind==='barrier'?'バリアで無効':kind==='gate'?'耐久段階を突破':kind==='miss'?'ダメージなし':'';
   const fired=[...relicActivations(p)].map(id=>relics[id].name);
+  const record=run.battleRecord;
   return `<section class="damage-receipt" aria-label="直前の攻撃結果">
     <div><small>確定BURST</small><strong title="${p.final}">${compact(p.final)}</strong></div>
     <div><small>敵HPの減少</small><strong title="${p.impact.dealt}">${compact(p.impact.dealt,false)}</strong>${status?`<small>${status}</small>`:''}</div>
+    ${record?`<div class="record-receipt"><b>✦ 歴代記録更新${record.final===p.final?'':' · '+compact(record.final)}</b><p>${esc(record.formula)}</p></div>`:''}
     ${fired.length?`<p class="relic-receipt">✦ 発動レリック　${fired.join(' ／ ')}</p>`:''}</section>`;
 }
 function tacticalReadout(p,outcome) {
@@ -4094,7 +4156,7 @@ function battle() {
           <i class="burst-ring"></i><i class="burst-ring echo"></i><i class="burst-wake"></i><i class="burst-nova"></i><i class="burst-crown"></i><i class="burst-glyph"></i><span class="burst-sparks"></span></span>
         ${e.kind==='boss'?`<div class="boss-entry" aria-hidden="true"><i></i><span>ACT BOSS</span><strong>${enemyNameHTML(e.name)}</strong></div>`:''}
         <span class="boss-attack" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span class="slash" aria-hidden="true"></span><span class="enemy-cast" aria-hidden="true"></span><span class="enemy-hit-fx" aria-hidden="true"></span><span id="incoming" aria-hidden="true"></span><span id="outgoing" aria-hidden="true"></span>
+        <i class="impact-stamp" aria-hidden="true"></i><span class="slash" aria-hidden="true"></span><span class="enemy-cast" aria-hidden="true"></span><span class="enemy-hit-fx" aria-hidden="true"></span><span id="incoming" aria-hidden="true"></span><span id="outgoing" aria-hidden="true"></span>
       </div>
       <div class="enemy-info">
       ${e.detail?`<p class="enemy-rule">${e.detail}</p>`:''}
@@ -4110,7 +4172,7 @@ function battle() {
       <div class="preview"><div><small>通常演算</small><strong title="${exactRat(p.normal)}">${visibleNumber(p.normal)}</strong></div><div><small>レリック適用後</small><strong title="${exactRat(p.result)}">${visibleNumber(p.result)}</strong></div>
       <div class="preview-final"><small>最終ダメージ予測</small><strong title="${p.final}">${compact(p.final)}</strong><small title="${p.impact.dealt}">敵HP −${compact(p.impact.dealt,false)}${p.impact.kind==='barrier'?' · バリア '+p.impact.breaks+'層破壊':p.impact.kind==='gate'?' · 耐久段階まで':''}</small></div></div>
       <div id="reel" class="reel" hidden><div class="reel-head"><span id="stepName"></span><span id="stepCombo"></span></div>
-      <div class="reel-display"><i aria-hidden="true"></i><strong id="reelNumber"></strong><small id="reelDigits"></small></div><div class="reel-foot"><div id="stepProgress"></div>${btn('演出をスキップ','skip')}</div></div>
+      <div class="reel-display"><i aria-hidden="true"></i><strong id="reelNumber"></strong><small id="reelDigits"></small></div><div id="relicGain" class="relic-gain" hidden><span></span><strong></strong></div><div class="reel-foot"><div id="stepProgress"></div>${btn('演出をスキップ','skip')}</div></div>
       ${run.lastBurst?`<div class="last-strike" title="${[...relicActivations(run.lastBurst)].map(id=>relics[id].name).join(' ／ ')}">直前BURST <b title="${run.lastBurst.final}">${compact(run.lastBurst.final)}</b> · 敵HP −${compact(run.lastBurst.impact.dealt,false)}</div>`:''}
       ${notice?`<small class="battle-notice" role="status">${moneyText(notice)}</small>`:''}</section>
     <section class="frame hand-frame"><div class="heading"><h2>手札</h2><span class="energy">エネルギー ${run.energy} / ${run.capacity} <small>· ドロー ${run.drawCount}枚</small></span></div>
@@ -4412,7 +4474,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.3.2</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.3.3</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -4509,8 +4571,6 @@ function burstFX(n,best) {
     effect.style.setProperty('--burst-hue',visual.hue);
     effect.className='flash'+(inf||tier>=4?' high':'')+(tier>=3&&mode==='full'?' shake':'')+(mode==='fast'?' fast':'');
   }
-  cue(inf?'infinity':tier>=3?'impactNova':'hit',{level:tier});
-  if(best&&!inf) cue('record');
 }
 effect.addEventListener('animationend',()=>{effect.className='';});
 const prefsHTML=()=>`<p><label><input type="checkbox" id="scientific" ${book.prefs.scientific?'checked':''}> 指数表記</label></p>
@@ -4959,7 +5019,10 @@ async function showBurst() {
   const p=run.burst();
   if(!p) return;
   const best=p.final>BigInt(book.best.max);
-  if(best) book.best={max:String(p.final),formula:run.stats.formula,seed:run.seed};
+  if(best) {
+    run.battleRecord={final:p.final,formula:run.lastBurst.formula};
+    book.best={max:String(p.final),formula:run.stats.formula,seed:run.seed};
+  }
   selected=null;
   const strike=p.impact.kind==='barrier'?'敵バリア '+p.impact.breaks+'層破壊':p.impact.kind==='gate'?'耐久段階を突破 · '+compact(p.impact.dealt,false):'BURST '+compact(p.final);
   notice=strike+(best?' · 新記録':'')+(run.enemy.hp>0n?' ／ '+reactionText(move,prediction,hpBefore-run.hp,outcome):'');
@@ -4969,12 +5032,21 @@ async function showBurst() {
   sequence=control;
   const signal=control.signal;
   const reel=app.querySelector('#reel'), field=app.querySelector('.enemy');
+  const stop=hitStop(p,mode);
+  const level=magnitude([p.final,1n]);
+  const finishSound=()=> {
+    if(best&&p.final<=CAP) cue('record');
+    else if(run.enemy.hp===0n&&p.final<=CAP) cue('victory');
+    else if(stop&&p.impact.kind==='hit'&&p.final<=CAP) cue('impactRelease');
+  };
   try {
     if(mode!=='off') {
       const name=reel.querySelector('#stepName'), counter=reel.querySelector('#reelNumber');
       const combo=reel.querySelector('#stepCombo'), progress=reel.querySelector('#stepProgress');
       const steps=timeline(p,armor);
       const countDigits=reel.querySelector('#reelDigits');
+      const gainBanner=reel.querySelector('#relicGain');
+      const [gainValues,gainRatio]=gainBanner.children;
       let prior=[BigInt(base),1n];
       let lastDigits=0, lastLevel=0, lastInfinity=false;
       const showValue=(value,infinity=false)=>{
@@ -5021,7 +5093,24 @@ async function showBurst() {
           } else strip.insertAdjacentHTML('beforeend',badge);
           firingRelic=strip.querySelector('[data-relic="'+step.relic+'"]');
         }
-        const level=magnitude(step.value);
+        const stepLevel=magnitude(step.value);
+        const gain=step.relic?relicGain(prior,step.value):null;
+        const surge=Boolean(gain?.strong);
+        gainBanner.hidden=!gain;
+        gainBanner.classList.toggle('relic-surge',surge);
+        if(gain) {
+          gainValues.textContent=visibleNumber(prior)+' → '+visibleNumber(step.value);
+          gainRatio.title=gain.numerator+' / '+gain.denominator;
+          const whole=gain.hundredths/100n;
+          const fraction=String(gain.hundredths%100n).padStart(2,'0').replace(/0+$/,'');
+          if(whole>=1000000n) {
+            const amount=compact(whole,false);
+            const approximate=amount.startsWith('≈')||Boolean(gain.numerator%gain.denominator);
+            gainRatio.textContent=(approximate?'≈':'')+'×'+amount.replace(/^≈/,'');
+          } else {
+            gainRatio.textContent=(gain.numerator*100n%gain.denominator?'≈':'')+'×'+whole.toLocaleString('ja-JP')+(fraction?'.'+fraction:'');
+          }
+        }
         reel.dataset.kind=step.type;
         if(step.relic) name.innerHTML=relicIcon(step.relic)+' 発動 · '+esc(step.name);
         else name.textContent=step.name;
@@ -5031,12 +5120,13 @@ async function showBurst() {
         void counter.offsetWidth;
         counter.classList.add('count-pop');
         progress.style.width=((i+1)*100/steps.length)+'%';
-        if(step.type!=='impact') cue(step.type==='relic'?'relic':step.type==='enemy'?'hex':cardCue(p.steps[step.index].card),{level});
+        if(step.type!=='impact') cue(step.type==='relic'?(surge?'relicSurge':'relic'):step.type==='enemy'?'hex':cardCue(p.steps[step.index].card),{level:stepLevel});
         const {samples,duration}=reelTiming(prior,step.value,step.type,mode==='fast');
         await clock(duration,signal,position=>{
           const value=reelValue(prior,step.value,Math.floor(position*samples),samples);
           showValue(value,step.type==='impact'&&position===1&&p.final>CAP);
         });
+        if(surge&&mode==='full'&&!signal.aborted) await clock(160,signal);
         prior=step.value;
       }
       const attack=attackAnimation(p.final);
@@ -5072,6 +5162,10 @@ async function showBurst() {
         const impact=p.impact.kind;
         const reaction={barrier:'player-blocked',miss:'player-miss',gate:'player-landed',hit:'player-landed'};
         field.classList.add('player-strike',reaction[impact]);
+        if(stop) {
+          field.dataset.hitStop=String(stop);
+          field.classList.add('hitstop');
+        }
         if(impact==='gate') field.classList.add('gate-shatter');
         if(impact==='barrier') field.classList.add('foe-barrier-struck');
         if(p.impact.relic) {
@@ -5090,20 +5184,25 @@ async function showBurst() {
         hpBar.querySelector('.hp-forecast')?.remove();
         hpBar.querySelectorAll('.gate-tick').forEach(mark=>mark.remove());
         hpBar.insertAdjacentHTML('beforeend',gateTicks(e));
-        if(impact==='hit') burstFX(p.final,best);
-        else cue(impact);
-        if(e.hp===0n) cue('victory');
-        await clock(mode==='fast'?160:impact==='hit'?attack.impact:695,signal);
+        cue(burstImpactCue(p),{level:impact==='barrier'?0:level});
+        if(stop) {
+          await clock(stop,signal);
+          field.classList.remove('hitstop');
+        }
+        if(!signal.aborted) {
+          if(impact==='hit') burstFX(p.final,best);
+          finishSound();
+          await clock(mode==='fast'?160:impact==='hit'?attack.impact:680,signal);
+        }
         field.querySelector('.foe').dataset.defense=e.barrier?'ward':'none';
         if(e.hp>0n&&!signal.aborted) {
           await showEnemyReaction(field,move,prediction,hpBefore-run.hp,outcome,signal);
         }
       }
     } else {
-      if(p.impact.kind==='hit') burstFX(p.final,best);
-      else cue(p.impact.kind);
-      if(run.enemy.hp===0n) cue('victory');
-      else enemyReaction(move,outcome,outcome.hitDetails[0]);
+      cue(burstImpactCue(p),{level:p.impact.kind==='barrier'?0:level});
+      finishSound();
+      if(run.enemy.hp>0n) enemyReaction(move,outcome,outcome.hitDetails[0]);
     }
   } finally {
     if(signal.aborted) effect.className='';

@@ -55,6 +55,7 @@ export class Run {
     this.energyPenalty=0;
     this.battlePeak=0n;
     this.lastBurst=null;
+    this.battleRecord=null;
     this.deckDraw=shuffle(this.deck,this.rng);
     this.discard=[];
     this.hand=[];

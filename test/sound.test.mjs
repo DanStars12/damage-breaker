@@ -43,5 +43,14 @@ test('sound waits for an interaction and applies volume, mute and cancellation',
   assert.equal(gains[0].gain.value,0);
   engine.play('draw');
   assert.equal(voices.length,2);
+  prefs.mute=false;
+  const fingerprints=['hit','relicSurge','impactNova','impactTitan','impactRelease','infinity','barrierCrack','barrierCascade','gate','victory','record'].map(id=>{
+    const before=voices.length;
+    engine.play(id);
+    const added=voices.slice(before);
+    assert(added.length>=2,id+' has no layered audio');
+    return JSON.stringify(added.map(voice=>[voice.type,voice.at,voice.stops[0]]));
+  });
+  assert.equal(new Set(fingerprints).size,fingerprints.length);
   assert.doesNotThrow(()=>createSound(undefined,()=>prefs).unlock());
 });
