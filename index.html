@@ -3110,14 +3110,19 @@ class Run {
 
 
 // Search interleavings without changing the relative order of cards already on the board.
-function* readDivination(run) {
+function* readDivination(run,{maxVisited=60000}={}) {
   const {board,hand,energy,slots,base,deb,owned,holds}=run;
   const input={base,deb,owned,holds,armor:run.enemy.armor};
   const choices=hand.filter(card=>!supportKinds.includes(card.kind));
+  // BigInt bits avoid hand-index collisions beyond the 32-bit bitwise limit.
+  const bits=choices.map((_,i)=>1n<<BigInt(i));
   const order=[];
+  let limited=false;
   let best={order:[...board],damage:run.preview().final,cost:0};
   let visited=0;
   function* step(existing,spent,bonus,used) {
+    if(limited) return;
+    if(visited>=maxVisited) {limited=true;return;}
     if((++visited%400)===0) yield;
     if(existing===board.length) {
       const damage=evaluate({...input,board:order}).final;
@@ -3131,17 +3136,18 @@ function* readDivination(run) {
     if(order.length+board.length-existing>=slots) return;
     const seen=new Set();
     for(const [i,card] of choices.entries()) {
-      if((used&(1<<i))||spent+card.cost>energy+bonus) continue;
+      if(limited) break;
+      if((used&bits[i])!==0n||spent+card.cost>energy+bonus) continue;
       const key=card.kind+'/'+card.value+'/'+card.cost+'/'+Boolean(card.upgraded)+'/'+card.enchant;
       if(seen.has(key)) continue;
       seen.add(key);
       order.push(card);
-      yield* step(existing,spent+card.cost,bonus+(enchantmentFor(card)?.energy??0),used|(1<<i));
+      yield* step(existing,spent+card.cost,bonus+(enchantmentFor(card)?.energy??0),used|bits[i]);
       order.pop();
     }
   }
-  yield* step(0,0,0,0);
-  return best;
+  yield* step(0,0,0,0n);
+  return {...best,limited,visited};
 }
 
 const key='damage-breaker.v01';
@@ -4355,9 +4361,12 @@ function tacticalReadout(p,outcome,response) {
     outcome.drawPenalty?'次のドロー −1':outcome.energyPenalty?'次のエナジー −1':outcome.deb!==run.deb?'妨害が盤に入る':outcome.blocked||outcome.absorbed?'HP変化なし':'追加の変化なし';
   const burstText=victory?'このBURSTで撃破':p.impact.kind==='gate'?'耐久段階を突破':
     p.impact.kind==='barrier'?'バリアを'+p.impact.breaks+'層破る':p.impact.kind==='miss'?'攻撃が通らない':'敵HP −'+compact(p.impact.dealt,false);
+  const burstDefense=response.status==='success'&&!victory
+    ?response.outcome.hp>0?' · 減衰後 HP '+response.outcome.hp:' · 減衰しても敗北'
+    :burstLethal?' · 反撃で敗北':'';
   return `<div class="tactics" aria-label="HOLDとBURSTの比較">
     <div class="${lethal&&run.holds<run.holdLimit?'tactics-danger':''}"><b>HOLD</b><span>${holdText}${outcome.broken&&run.holds<run.holdLimit?' · 結界 −'+outcome.broken:outcome.blocked&&run.holds<run.holdLimit&&!lethal?' · 結界で妨害を防ぐ':''}${outcome.absorbed&&run.holds<run.holdLimit?' · 防御 '+outcome.absorbed:''}${held!==null&&held!==p.final?` <small title="${held}"> · 引く前の予測 ${compact(held)}</small>`:''}</span></div>
-    <div class="${victory?'tactics-win':burstLethal?'tactics-danger':''}"><b>BURST</b><span>${burstText}${burstLethal?' · 反撃で敗北':response.status==='success'?' · 減衰可能':''}</span></div></div>`;
+    <div class="${victory?'tactics-win':burstLethal?'tactics-danger':''}"><b>BURST</b><span>${burstText}${burstDefense}</span></div></div>`;
 }
 function battleCommands() {
   return `<div class="actions battle-commands">
@@ -4401,8 +4410,10 @@ function attenuationHint(move,response) {
   if(run.attenuationUsed) return '<div class="attenuation-hint">減衰済み</div>';
   const condition=attenuationPattern(move).map(kind=>types[kind]).join(' → ');
   const ready=response.status==='success';
+  const forecast=ready?'<small>BURST時 · '+attenuationEffectText(move,response.outcome)+
+    (response.outcome.hp>0?' · 残HP '+response.outcome.hp:' · 反撃で敗北')+'</small>':'';
   return `<div class="attenuation-hint${ready?' attenuation-ready':''}">
-    <b>${ready?'減衰可能':'減衰条件'}</b> ${condition}${ready?'<small>BURST時 · '+attenuationEffectText(move,response.outcome)+'</small>':''}</div>`;
+    <b>${ready?'減衰可能':'減衰条件'}</b> ${condition}${forecast}</div>`;
 }
 function battle() {
   const p=run.preview(), e=run.enemy;
@@ -4441,7 +4452,7 @@ function battle() {
       <div class="enemy-info">
       ${e.detail?`<p class="enemy-rule">${e.detail}</p>`:''}
       <div class="enemy-defenses">${defenseStatus(e)}</div>
-      <div class="intent" data-move="${move.kind}"><small>敵の次の行動 ${outcome.hp===0?'<b class="intent-danger">致命的</b>':''}</small><strong>${intentText(move)}</strong>${attenuationHint(move,response)}</div></div></section>
+      <div class="intent" data-move="${move.kind}"><small>敵の次の行動 ${outcome.hp===0&&p.impact.dealt!==e.hp?'<b class="intent-danger">通常反撃は致命的</b>':''}</small><strong>${intentText(move)}</strong>${attenuationHint(move,response)}</div></div></section>
     <section class="frame board-frame"><div class="heading"><h2>演算盤</h2><small>${run.board.length} / ${run.slots} 枠 · コンボ ${run.board.length}${run.wardCharges?' · 結界 '+run.wardCharges:''}${run.guardPoints?' · 防御 '+run.guardPoints:''}</small></div>
       <div class="board-relics" aria-label="演算盤のレリック">${relicStrip(p)}</div>
       <div class="board"><span class="slot base${baseGlow?' base-awaken':''}"><small>基礎</small>${run.base}</span>${slots}${tail}</div>
@@ -5068,15 +5079,16 @@ async function useDivination() {
       if(!control.signal.aborted) next=search.next();
     }
     if(control.signal.aborted) return;
-    const {order,damage,cost}=next.value;
+    const {order,damage,cost,limited}=next.value;
     if(cost===0) {
-      notice='星詠み · いまの手札と枠ではこれ以上伸ばせません。頁は保持しました。';
+      notice=limited?'星詠み · 探索上限に達しました。改善案が見つからなかったため頁は保持しました。':
+        '星詠み · いまの手札と枠ではこれ以上伸ばせません。頁は保持しました。';
       return;
     }
     const oldBoard=new Set(run.board);
     for(const [at,card] of order.entries()) if(!oldBoard.has(card)) run.play(run.hand.indexOf(card),at);
     run.omens--;
-    notice='星詠み · '+(order.length-oldBoard.size)+'枚を仮置き · BURST予測 '+compact(damage);
+    notice='星詠み'+(limited?'（探索上限内の推奨）':'')+' · '+(order.length-oldBoard.size)+'枚を仮置き · BURST予測 '+compact(damage);
     selected=null;
     saveProgress();
     cue('mystic');
