@@ -166,9 +166,12 @@ function tacticalReadout(p,outcome,response) {
     outcome.drawPenalty?'次のドロー −1':outcome.energyPenalty?'次のエナジー −1':outcome.deb!==run.deb?'妨害が盤に入る':outcome.blocked||outcome.absorbed?'HP変化なし':'追加の変化なし';
   const burstText=victory?'このBURSTで撃破':p.impact.kind==='gate'?'耐久段階を突破':
     p.impact.kind==='barrier'?'バリアを'+p.impact.breaks+'層破る':p.impact.kind==='miss'?'攻撃が通らない':'敵HP −'+compact(p.impact.dealt,false);
+  const burstDefense=response.status==='success'&&!victory
+    ?response.outcome.hp>0?' · 減衰後 HP '+response.outcome.hp:' · 減衰しても敗北'
+    :burstLethal?' · 反撃で敗北':'';
   return `<div class="tactics" aria-label="HOLDとBURSTの比較">
     <div class="${lethal&&run.holds<run.holdLimit?'tactics-danger':''}"><b>HOLD</b><span>${holdText}${outcome.broken&&run.holds<run.holdLimit?' · 結界 −'+outcome.broken:outcome.blocked&&run.holds<run.holdLimit&&!lethal?' · 結界で妨害を防ぐ':''}${outcome.absorbed&&run.holds<run.holdLimit?' · 防御 '+outcome.absorbed:''}${held!==null&&held!==p.final?` <small title="${held}"> · 引く前の予測 ${compact(held)}</small>`:''}</span></div>
-    <div class="${victory?'tactics-win':burstLethal?'tactics-danger':''}"><b>BURST</b><span>${burstText}${burstLethal?' · 反撃で敗北':response.status==='success'?' · 減衰可能':''}</span></div></div>`;
+    <div class="${victory?'tactics-win':burstLethal?'tactics-danger':''}"><b>BURST</b><span>${burstText}${burstDefense}</span></div></div>`;
 }
 function battleCommands() {
   return `<div class="actions battle-commands">
@@ -212,8 +215,10 @@ function attenuationHint(move,response) {
   if(run.attenuationUsed) return '<div class="attenuation-hint">減衰済み</div>';
   const condition=attenuationPattern(move).map(kind=>types[kind]).join(' → ');
   const ready=response.status==='success';
+  const forecast=ready?'<small>BURST時 · '+attenuationEffectText(move,response.outcome)+
+    (response.outcome.hp>0?' · 残HP '+response.outcome.hp:' · 反撃で敗北')+'</small>':'';
   return `<div class="attenuation-hint${ready?' attenuation-ready':''}">
-    <b>${ready?'減衰可能':'減衰条件'}</b> ${condition}${ready?'<small>BURST時 · '+attenuationEffectText(move,response.outcome)+'</small>':''}</div>`;
+    <b>${ready?'減衰可能':'減衰条件'}</b> ${condition}${forecast}</div>`;
 }
 function battle() {
   const p=run.preview(), e=run.enemy;
@@ -252,7 +257,7 @@ function battle() {
       <div class="enemy-info">
       ${e.detail?`<p class="enemy-rule">${e.detail}</p>`:''}
       <div class="enemy-defenses">${defenseStatus(e)}</div>
-      <div class="intent" data-move="${move.kind}"><small>敵の次の行動 ${outcome.hp===0?'<b class="intent-danger">致命的</b>':''}</small><strong>${intentText(move)}</strong>${attenuationHint(move,response)}</div></div></section>
+      <div class="intent" data-move="${move.kind}"><small>敵の次の行動 ${outcome.hp===0&&p.impact.dealt!==e.hp?'<b class="intent-danger">通常反撃は致命的</b>':''}</small><strong>${intentText(move)}</strong>${attenuationHint(move,response)}</div></div></section>
     <section class="frame board-frame"><div class="heading"><h2>演算盤</h2><small>${run.board.length} / ${run.slots} 枠 · コンボ ${run.board.length}${run.wardCharges?' · 結界 '+run.wardCharges:''}${run.guardPoints?' · 防御 '+run.guardPoints:''}</small></div>
       <div class="board-relics" aria-label="演算盤のレリック">${relicStrip(p)}</div>
       <div class="board"><span class="slot base${baseGlow?' base-awaken':''}"><small>基礎</small>${run.base}</span>${slots}${tail}</div>
@@ -879,15 +884,16 @@ async function useDivination() {
       if(!control.signal.aborted) next=search.next();
     }
     if(control.signal.aborted) return;
-    const {order,damage,cost}=next.value;
+    const {order,damage,cost,limited}=next.value;
     if(cost===0) {
-      notice='星詠み · いまの手札と枠ではこれ以上伸ばせません。頁は保持しました。';
+      notice=limited?'星詠み · 探索上限に達しました。改善案が見つからなかったため頁は保持しました。':
+        '星詠み · いまの手札と枠ではこれ以上伸ばせません。頁は保持しました。';
       return;
     }
     const oldBoard=new Set(run.board);
     for(const [at,card] of order.entries()) if(!oldBoard.has(card)) run.play(run.hand.indexOf(card),at);
     run.omens--;
-    notice='星詠み · '+(order.length-oldBoard.size)+'枚を仮置き · BURST予測 '+compact(damage);
+    notice='星詠み'+(limited?'（探索上限内の推奨）':'')+' · '+(order.length-oldBoard.size)+'枚を仮置き · BURST予測 '+compact(damage);
     selected=null;
     saveProgress();
     cue('mystic');
