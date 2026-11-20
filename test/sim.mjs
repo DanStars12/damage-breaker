@@ -17,21 +17,22 @@ const compare=(a,b)=>a.score>b.score?-1:a.score<b.score?1:0;
 function plan(run) {
   const {board,hand,deb,owned,base,enemy,energy,slots,holds}=run;
   const score=(board,deb)=>evaluate({base,board,deb,owned,armor:enemy.armor,holds}).final;
-  const first={board,deb,energy,used:0,moves:[],score:score(board,deb)};
+  const bits=hand.map((_,i)=>1n<<BigInt(i));
+  const first={board,deb,energy,used:0n,moves:[],score:score(board,deb)};
   let beam=[first],best=first;
   for(let depth=0;depth<4;depth++) {
     const candidates=[];
     const seen=new Set();
     for(const s of beam) for(let i=0;i<hand.length;i++) {
       const c=hand[i];
-      if((s.used&(1<<i))||c.cost>s.energy||['ward','guard'].includes(c.kind)) continue;
+      if((s.used&bits[i])!==0n||c.cost>s.energy||['ward','guard'].includes(c.kind)) continue;
       const clean=c.kind==='clean';
       if(clean?!s.deb.length:s.board.length>=slots) continue;
       for(let at=0;at<=(clean?0:s.board.length);at++) {
         const b=clean?s.board:[...s.board.slice(0,at),c,...s.board.slice(at)];
         const d=clean?cleanseDebuffs(s.deb,s.board.length,supportValue(c)):s.deb;
-        const used=s.used|(1<<i);
-        const key=used+':'+b.map(c=>c.kind+c.value+(c.enchant??'')).join(',')+':'+d.length;
+        const used=s.used|bits[i];
+        const key=used.toString()+':'+b.map(c=>c.kind+c.value+(c.enchant??'')).join(',')+':'+d.length;
         if(seen.has(key)) continue;
         seen.add(key);
         candidates.push({board:b,deb:d,used,energy:s.energy-c.cost+(enchantmentFor(c)?.energy??0),moves:[...s.moves,[c,at]],score:score(b,d)});
