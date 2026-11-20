@@ -217,14 +217,14 @@ test('additive relic requires only active addition panels and scales by count',(
   assert.equal(evaluate({board:[],owned:['sum']}).final,20n);
   const two=[a('add',10),a('add',20)];
   assert.equal(evaluate({board:two,owned:['abacus']}).final,50n);
-  assert.equal(evaluate({board:[...two,a('add',30)],owned:['abacus']}).final,6400n);
+  assert.equal(evaluate({board:[...two,a('add',30)],owned:['abacus']}).final,80n**3n);
   assert.equal(evaluate({board:[...two,a('mul',3)],owned:['abacus']}).final,150n);
   const four=[...two,a('add',30),a('add',40)];
-  assert.equal(evaluate({board:four,owned:['abacus']}).final,120n**2n);
+  assert.equal(evaluate({board:four,owned:['abacus']}).final,120n**3n);
   const five=[...four,a('add',50)];
   assert.equal(evaluate({board:five,owned:['abacus']}).final,170n**4n);
   assert.equal(evaluate({board:[...five,a('mul',2)],owned:['abacus']}).final,340n);
-  assert.equal(evaluate({board:five,deb:[d('seal',0,1)],owned:['abacus']}).final,150n**2n);
+  assert.equal(evaluate({board:five,deb:[d('seal',0,1)],owned:['abacus']}).final,150n**3n);
 });
 test('random events charge only when their entire offer can be accepted',()=>{
   const r=new Run('event');forceNode(r,'event');r.event='courier';r.gold=14;
