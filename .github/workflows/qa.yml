@@ -1,0 +1,26 @@
+name: DAMAGE BREAKER QA
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'improve/**'
+
+permissions:
+  contents: read
+
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run Node regression tests
+        run: node --test test/*.test.mjs
+      - name: Rebuild standalone HTML
+        run: node build.mjs
+      - name: Check generated HTML is synchronized
+        run: git diff --exit-code -- index.html
