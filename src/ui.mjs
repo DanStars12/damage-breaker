@@ -5,7 +5,7 @@ import {supportValue,supportKinds,enchantments,enchantmentFor,canEnchant} from '
 import {numberUnits} from './math.mjs';
 import {boardRelicStates} from './presentation.mjs';
 import {relicIcon} from './relic-art.mjs';
-import {relicRanks} from './relics.mjs';
+import {relicRanks,relicRewardHints} from './relics.mjs';
 import {attackPatterns,attackHits,attenuationPattern} from './enemies.mjs';
 import {readDivination} from './hint.mjs';
 import {createSound} from './sound.mjs';
@@ -66,9 +66,9 @@ const cardFace=c=>{
       <strong class="card-number" style="--value-width:${Math.max(2,valueWidth).toFixed(2)}">${value}</strong></span>
     <span class="card-type">${supportKinds.includes(c.kind)?'スペル · ':''}${cardEffect(c)||'妨害'}</span>`;
 };
-const cardButton=(c,act,i=-1,disabled=false)=>`<button type="button" class="card t${c.tier}${supportKinds.includes(c.kind)?' spell-card':''}" data-action="${act}"
-  ${i<0?'':`draggable="${!disabled&&!supportKinds.includes(c.kind)}" data-hand="${i}"`} title="${cardEffect(c)}・消費 ${c.cost}${c.enchant?' · '+enchantmentFor(c).description:''}" ${disabled?'disabled':''}>
-  ${cardFace(c)}</button>`;
+const cardButton=(c,act,i=-1,disabled=false,hints=[])=>`<button type="button" class="card t${c.tier}${supportKinds.includes(c.kind)?' spell-card':''}" ${hints.length?' data-relic-hint':''} data-action="${act}"
+  ${i<0?'':`draggable="${!disabled&&!supportKinds.includes(c.kind)}" data-hand="${i}"`} title="${cardEffect(c)}・消費 ${c.cost}${c.enchant?' · '+enchantmentFor(c).description:''}${hints.length?' · '+esc(hints.map(({id,reason})=>relics[id].name+'（'+reason+'） '+relics[id].desc).join(' ／ ')):''}" ${disabled?'disabled':''}>
+  ${cardFace(c)}${hints.length?`<span class="reward-relic-hint">${relicIcon(hints[0].id)}<span>${hints[0].reason}</span><span class="reward-relic-name">${esc(relics[hints[0].id].name)}の条件候補</span></span>`:''}</button>`;
 function persist(){storageWarning=!save(book);}
 function saveProgress() {
   const finished=run.phase==='loss'||run.phase==='win';
@@ -293,7 +293,7 @@ function cardReward() {
   const {status,card}=run.cardDecision;
   if(status==='none') return '';
   return `<section class="reward-block reward-cards"><h2>演算パネル</h2>${
-    status==='pending'?`<p>獲得するパネルを1枚選ぶか、見送れます。</p><div class="choices">${run.offers.map((c,i)=>cardButton(c,'take:'+i)).join('')}</div>
+    status==='pending'?`<p>獲得するパネルを1枚選ぶか、見送れます。</p><div class="choices">${run.offers.map((c,i)=>cardButton(c,'take:'+i,-1,false,relicRewardHints(c,run.deck,run.owned))).join('')}</div>
       ${btn('カードを見送る','cardSkip')}`:
       status==='taken'?`<div class="reward-result">${rewardCard(card)}<p><strong>取得済み</strong><br>デッキに ${label(card)} を追加しました。</p></div>`:
       '<p class="muted">カードは見送り済み</p>'}</section>`;
@@ -581,7 +581,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.4.0</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.4.1</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}

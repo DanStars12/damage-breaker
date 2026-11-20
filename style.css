@@ -1708,3 +1708,15 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
 .enchant-dialog [data-enchant-target][aria-pressed="true"] { outline:2px solid #abf6e5; outline-offset:-2px; }
 .enchant-dialog [data-enchant-confirm] { margin-top:.6rem; }
 .reel[data-kind="repeat"] #stepName { color:#a9ffed; }
+
+.reward-cards .card[data-relic-hint] {
+  grid-template-rows:auto minmax(36px,1fr) auto auto;
+}
+.reward-relic-hint {
+  display:flex; align-items:center; justify-content:center; gap:3px;
+  min-width:0; padding:1px 2px; color:#c7f5df; background:#1a3b3a;
+  border:1px solid #446f67; font:600 clamp(8px,10cqi,11px)/1.2 var(--interface);
+}
+.reward-relic-hint .relic-icon { width:1.2em; height:1.2em; flex:none; }
+.reward-relic-hint > span:first-of-type { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.reward-relic-name { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }

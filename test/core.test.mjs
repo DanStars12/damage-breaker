@@ -2,7 +2,7 @@ import {events} from '../src/events.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {apply,CAP,format,damage,label,numberUnits} from '../src/math.mjs';
-import {evaluate,relics,relicRanks,drawRelic} from '../src/relics.mjs';
+import {evaluate,relics,relicRanks,drawRelic,relicRewardHints} from '../src/relics.mjs';
 import {Run,prices} from '../src/run.mjs';
 import {makeMap} from '../src/map.mjs';
 import {makeEnemy,intent,attackHits} from '../src/enemies.mjs';
@@ -640,4 +640,19 @@ test('stone relics respect numeric caps, HOLD count, and adjacent unsealed opera
   assert.deepEqual(triggers('triadSeal',sequence,{deb:[d('seal',0,1)]}),[]);
   assert.deepEqual(triggers('graniteOath',[...sequence,a('add',2)],{holds:1}),[84]);
   assert.deepEqual(triggers('graniteOath',[...sequence,a('add',2)],{holds:0}),[]);
+});
+
+
+test('reward hints prefer the owned relic’s specific contribution and require partners for digit matches',()=>{
+  const even=a('add',12), odd=a('add',31), deck=[a('add',10),a('mul',2)];
+  const owned=['short','sum','grimoire','evenChisel','tail'];
+  assert.deepEqual(relicRewardHints(even,deck,owned),[
+    {id:'evenChisel',reason:'偶数加算3連'},
+    {id:'grimoire',reason:'先頭 1 一致'},
+    {id:'tail',reason:'末尾 2 一致'},
+    {id:'sum',reason:'加算のみ'}
+  ]);
+  assert.deepEqual(relicRewardHints(odd,deck,owned),[{id:'sum',reason:'加算のみ'}]);
+  assert.deepEqual(relicRewardHints(even,deck,[]),[]);
+  assert.deepEqual(relicRewardHints(a('guard',6),deck,owned),[]);
 });

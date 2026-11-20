@@ -128,6 +128,29 @@ async function battleFlow(options) {
   await page.close();
 }
 
+async function rewardRelicHints(options) {
+  const run=fixture('fight');
+  run.enemy.hp=1n;
+  run.enemy.barrier=0;
+  run.owned=['evenChisel','sum'];
+  run.burst();
+  run.offers=[
+    {kind:'add',value:12,cost:1,tier:0},{kind:'mul',value:3,cost:1,tier:0},{kind:'guard',value:6,cost:1,tier:0}
+  ];
+  const {page,errors}=await openPage(options,run);
+  await action(page,'resume').tap();
+  const candidate=action(page,'take:0');
+  assert.match(await candidate.locator('.reward-relic-hint').innerText(),/偶数加算3連/);
+  assert.match(await candidate.getAttribute('title'),/双数の石鑿.*千和の石版/);
+  assert.equal(await page.locator('.reward-cards [data-relic-hint]').count(),1);
+  await noOverflow(page,'reward relic hint');
+  await candidate.tap();
+  assert.equal((await readState(page)).cardDecision.status,'taken');
+  assert.equal(await page.locator('.reward-relic-hint').count(),0);
+  assert.deepEqual(errors,[]);
+  await page.close();
+}
+
 async function facilityFlow(options) {
   const elite=fixture('elite');
   elite.enemy.hp=elite.enemy.max=1n;
@@ -553,6 +576,7 @@ try {
       await relicExchange(options);
       console.log(`PASS relic exchange ${width}×${height} comparison → reload receipt → decline`);
     }
+    if(width===320||width===390) await rewardRelicHints(options);
     if(width===320||width===390||width===932) {
       await facilityFlow(options);
       console.log(`PASS ${name} ${width}×${height} rewards → shop → deck/removal → forge → event`);

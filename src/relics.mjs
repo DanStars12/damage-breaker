@@ -173,6 +173,47 @@ export function drawRelic(rng,owned,act,{shop=false}={}) {
   return weighted.find(entry=>(pick-=entry.weight)<0).id;
 }
 
+// Reward hints highlight card-specific contributions, not completed board conditions.
+const rewardOperationHints={
+  sum:{add:'加算のみ'},abacus:{add:'加算のみ'},lattice:{mul:'乗算のみ'},ratio:{pct:'割合札'},
+  star:{exp:'指数札'},comet:{exp:'指数2枚'},dam:{add:'加算4枚'},sealwax:{add:'最後に加算'},
+  ember:{add:'両端に加算'},balanceStone:{pct:'両端に割合'},
+  twinScribes:{add:'加算と乗算',mul:'加算と乗算'},helix:{add:'加算と乗算',mul:'加算と乗算'},
+  alternate:{add:'加算・乗算交互',mul:'加算・乗算交互'},
+  crown:{pow:'累乗と割合',pct:'累乗と割合'},pulse:{pct:'割合と乗算',mul:'割合と乗算'},
+  violetSeal:{pow:'累乗1枚'},spiralKey:{exp:'指数札'},runeSundial:{exp:'先頭に指数',pct:'最後に割合'},
+  finishing:{exp:'最後に指数',pct:'割合札',mul:'乗算札'},
+  starGlass:{exp:'指数→乗算',mul:'指数→乗算'},bracket:{add:'加算→累乗→加算',pow:'加算→累乗→加算'},
+  braid:{add:'加算→割合→乗算',pct:'加算→割合→乗算',mul:'加算→割合→乗算'},
+  triadSeal:{mul:'乗算→累乗→割合',pow:'乗算→累乗→割合',pct:'乗算→累乗→割合'},
+  nightCrown:{add:'各2枚の加算・乗算・割合',mul:'各2枚の加算・乗算・割合',pct:'各2枚の加算・乗算・割合'}
+};
+
+export function relicRewardHints(card,deck,owned) {
+  if(!['add','mul','pct','pow','exp'].includes(card.kind)) return [];
+  const number=String(card.value);
+  const partner=match=>deck.some(c=>numeric(c)&&match(c));
+  const specific={
+    evenChisel:card.kind==='add'&&card.value%2===0?'偶数加算3連':null,
+    lodestone:card.kind==='mul'&&card.value%2===0?'偶数乗算3枚':null,
+    seedTablet:numeric(card)&&card.value<=20?'数値20以下':null,
+    grimoire:numeric(card)&&partner(c=>String(c.value)[0]===number[0])?'先頭 '+number[0]+' 一致':null,
+    tail:numeric(card)&&partner(c=>String(c.value).at(-1)===number.at(-1))?'末尾 '+number.at(-1)+' 一致':null,
+    mirror:numeric(card)&&partner(c=>c.kind===card.kind&&c.value===card.value)?'同じ演算・同値':null,
+    echoQuill:numeric(card)&&partner(c=>c.kind!==card.kind&&c.value===card.value)?'別の演算で同値':null,
+    bookends:numeric(card)&&partner(c=>c.value===card.value)?'両端に同値':null,
+    percentPair:card.kind==='pct'&&partner(c=>c.kind==='pct'&&c.value+card.value>=100)?'割合の和100%以上':null,
+    anvil:card.upgraded?'強化済み札':null
+  };
+  const hints=[];
+  for(const id of Object.keys(specific)) if(specific[id]&&owned.includes(id)) hints.push({id,reason:specific[id]});
+  for(const id of owned) {
+    const reason=rewardOperationHints[id]?.[card.kind];
+    if(reason) hints.push({id,reason});
+  }
+  return hints;
+}
+
 const effectOrder=['grimoire','tail','order','short','chain','star','sum','abacus','lattice','mosaic','ratio',
   ...Object.keys(relics).slice(20).filter(id=>relics[id].effect)];
 
