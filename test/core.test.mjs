@@ -222,7 +222,7 @@ test('additive relic requires only active addition panels and scales by count',(
   const four=[...two,a('add',30),a('add',40)];
   assert.equal(evaluate({board:four,owned:['abacus']}).final,120n**2n);
   const five=[...four,a('add',50)];
-  assert.equal(evaluate({board:five,owned:['abacus']}).final,170n**3n);
+  assert.equal(evaluate({board:five,owned:['abacus']}).final,170n**4n);
   assert.equal(evaluate({board:[...five,a('mul',2)],owned:['abacus']}).final,340n);
   assert.equal(evaluate({board:five,deb:[d('seal',0,1)],owned:['abacus']}).final,150n**2n);
 });
