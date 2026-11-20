@@ -186,3 +186,50 @@ test('event and relic enchantments apply to one eligible card atomically and nev
   assert(!reward.chooseRelic(true,0,3));
   assert.deepEqual(readCheckpoint(writeCheckpoint({run:reward})).run.relicEnchantedCard,reward.deck[2]);
 });
+
+test('burst preview distinguishes lethal unmitigated retaliation from a surviving attenuated hit',()=>{
+  const run=battle('attack');
+  run.hp=13;
+  run.enemy.attack=19;
+  assert.equal(run.enemyOutcome().hp,0);
+  const preview=run.burstResponse(run.preview());
+  assert.equal(preview.status,'success');
+  assert.equal(preview.outcome.hp,3);
+  assert.equal(run.hp,13);
+  const actual=run.burst();
+  assert.equal(actual.response.outcome.hp,3);
+  assert.equal(run.hp,3);
+  assert.equal(run.phase,'battle');
+});
+
+test('divination can combine cards across the 32-bit hand-index boundary',()=>{
+  const run=battle();
+  run.board=[];
+  run.energy=2;
+  Object.defineProperty(run,'slots',{value:2});
+  run.hand=[card('add',100),...Array.from({length:31},()=>card('add',1)),card('mul',100)];
+  const search=readDivination(run);
+  let next=search.next();
+  while(!next.done) next=search.next();
+  assert.deepEqual(next.value.order.map(c=>[c.kind,c.value]),[['add',100],['mul',100]]);
+  assert.equal(next.value.damage,12000n);
+  assert.equal(next.value.limited,false);
+});
+
+test('divination bounds heavy searches without consuming a page or losing the starting forecast',()=>{
+  const run=battle();
+  run.board=[];
+  run.energy=6;
+  Object.defineProperty(run,'slots',{value:6});
+  run.hand=Array.from({length:10},(_,i)=>card('add',i+1));
+  const initial=run.preview().final;
+  const search=readDivination(run,{maxVisited:40});
+  let next=search.next();
+  while(!next.done) next=search.next();
+  assert.equal(next.value.limited,true);
+  assert.equal(next.value.visited,40);
+  assert(next.value.damage>=initial);
+  assert.equal(run.board.length,0);
+  assert.equal(run.energy,6);
+  assert.equal(run.omens,0);
+});
