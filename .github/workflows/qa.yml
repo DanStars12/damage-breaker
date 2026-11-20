@@ -37,3 +37,24 @@ jobs:
         run: node build.mjs
       - name: Check generated HTML is synchronized
         run: git diff --exit-code -- index.html
+      - name: Smoke-test four combat strategies
+        run: node test/sim.mjs 32 0 > qa-balance.json
+      - name: Report balance smoke on PR
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const rows=JSON.parse(fs.readFileSync('qa-balance.json','utf8'));
+          const total=rows.reduce((n,r)=>n+r.seeds,0);
+          const sums=key=>rows.reduce((n,r)=>n+r[key],0);
+          const pct=n=>(n*100/total).toFixed(1)+'%';
+          const body=['QA balance smoke · '+total+' plays (32 seeds × 4 strategies)',
+            'Normal clear: '+sums('clear')+'/'+total+' ('+pct(sums('clear'))+')',
+            'EXTRA clear: '+sums('extra')+'/'+total+' ('+pct(sums('extra'))+')',
+            '∞ runs: '+sums('infinity')+'/'+total+' ('+pct(sums('infinity'))+')',
+            'By policy: '+rows.map(r=>r.policy+' '+r.clear+'/'+r.seeds).join(' | ')].join('\\n');
+          fs.writeFileSync('qa-balance-comment.txt',body);
+          NODE
+          gh pr comment ${{ github.event.pull_request.number }} --body-file qa-balance-comment.txt
