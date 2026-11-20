@@ -37,8 +37,8 @@ jobs:
         run: node build.mjs
       - name: Check generated HTML is synchronized
         run: git diff --exit-code -- index.html
-      - name: Smoke-test four combat strategies
-        run: node test/sim.mjs 32 0 > qa-balance.json
+      - name: Run 288-seed four-strategy balance baseline
+        run: node test/sim.mjs 288 0 > qa-balance.json
       - name: Report balance smoke on PR
         if: ${{ github.event_name == 'pull_request' }}
         env:
@@ -50,11 +50,29 @@ jobs:
           const total=rows.reduce((n,r)=>n+r.seeds,0);
           const sums=key=>rows.reduce((n,r)=>n+r[key],0);
           const pct=n=>(n*100/total).toFixed(1)+'%';
-          const body=['QA balance smoke · '+total+' plays (32 seeds × 4 strategies)',
+          const body=['QA balance smoke · '+total+' plays (288 seeds × 4 strategies)',
             'Normal clear: '+sums('clear')+'/'+total+' ('+pct(sums('clear'))+')',
             'EXTRA clear: '+sums('extra')+'/'+total+' ('+pct(sums('extra'))+')',
             '∞ runs: '+sums('infinity')+'/'+total+' ('+pct(sums('infinity'))+')',
-            'By policy: '+rows.map(r=>r.policy+' '+r.clear+'/'+r.seeds).join(' | ')].join('\\n');
+            'By policy: '+rows.map(r=>r.policy+' '+r.clear+'/'+r.seeds).join(' | ')].join('\n');
           fs.writeFileSync('qa-balance-comment.txt',body);
           NODE
           gh pr comment ${{ github.event.pull_request.number }} --body-file qa-balance-comment.txt
+
+  browser:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium test dependencies
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Test desktop and mobile viewports
+        run: node test/browser-mobile.mjs
