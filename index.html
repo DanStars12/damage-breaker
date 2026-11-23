@@ -4061,6 +4061,9 @@ function paintEnemyFinish(ctx,{form,palette},{ink,shade,mid,light,glow}) {
       px(ink,x,y,4,2);px(light,x+1,y,2,1);px(shimmer,x+1,y-2,1,1);
     }
     px(light,39,52,7,1);px(shimmer,42,50,2,1);
+    for(const [x,y] of [[20,29],[28,52],[44,55],[60,51]]) {
+      px(shadow,x,y,3,1);px(shimmer,x+1,y-1,1,1);
+    }
     if(form==='eclipse') {
       for(const x of [13,73]) {px(shimmer,x,31,2,1);px(light,x+1,33,2,1);}
     }
@@ -4069,27 +4072,40 @@ function paintEnemyFinish(ctx,{form,palette},{ink,shade,mid,light,glow}) {
       px(shadow,x,y,5,2);px(light,x+1,y,3,1);px(shimmer,x+2,y-1);
     }
     px(shadow,36,52,13,1);px(light,39,51,7,1);
+    for(const [x,y] of [[28,40],[54,42],[38,35]]) {
+      px(shadow,x,y,4,1);px(light,x+1,y-1,2,1);
+    }
   } else if(form==='jelly') {
     for(const [x,y] of [[27,26],[36,20],[52,22],[60,30]]) {
       px(light,x,y,4,1);px(shimmer,x+1,y-1,2,1);
     }
-    for(const x of [26,37,49,61]) {px(shimmer,x,48,2,2);}
+    for(const x of [26,37,49,61]) {
+      px(shimmer,x,48,2,2);
+      px(shadow,x+1,54,3,1);px(light,x+1,52,1,2);
+    }
   } else if(form==='mimic') {
     for(const x of [22,33,55,67]) rivet(x,38);
     px(ink,40,48,9,5);px(mid,42,48,5,3);px(shimmer,44,49,1,2);
     px(light,24,51,14,1);px(light,54,51,12,1);
+    for(const [x,y] of [[27,31],[59,32]]) {
+      px(shadow,x,y,5,1);px(shimmer,x+2,y-1);
+    }
   } else if(form==='harpy') {
     for(let i=0;i<4;i++) {
       const y=25+i*6;
       for(const x of [15,65]) {px(light,x,y,7,1);px(shimmer,x+2,y-1);}
     }
     px(light,40,52,8,1);
+    for(const x of [20,29,59,68]) px(shimmer,x,43,2,1);
   } else if(form==='reaper') {
     for(let i=0;i<4;i++) {
       px(shadow,31+i*6,43+i*2,3,3);
       px(light,32+i*6,43+i*2,2,1);
     }
     px(shimmer,70,12,5,1);px(light,75,13,3,1);
+    for(const [x,y] of [[25,48],[31,52],[42,55],[52,51],[61,47]]) {
+      px(ink,x,y,3,1);px(shimmer,x+1,y-1);
+    }
   }
   // One-pixel glints are palette-dependent but deterministic; no runtime RNG or animation.
   const offset=palette%5;
