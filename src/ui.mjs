@@ -6,7 +6,7 @@ import {numberUnits} from './math.mjs';
 import {boardRelicStates} from './presentation.mjs';
 import {relicIcon} from './relic-art.mjs';
 import {relicRanks,relicRewardHints} from './relics.mjs';
-import {attackPatterns,attackHits,attenuationPattern} from './enemies.mjs';
+import {attackPatterns,attackHits,attenuationPattern,attenuationPair} from './enemies.mjs';
 import {readDivination} from './hint.mjs';
 import {createSound} from './sound.mjs';
 const app=document.querySelector('#app');
@@ -56,7 +56,7 @@ function enchantBadge(card) {
   const e=enchantmentFor(card);
   return e?`<span class="enchant-mark" data-enchant="${card.enchant}" title="${e.name} · ${e.description}" aria-label="${e.name}"><svg viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><path fill-rule="evenodd" d="${enchantPixels[e.mark]}"/></svg></span>`:'';
 }
-const cardFace=c=>{
+const cardFace=(c,unavailable='')=>{
   const value=label(c);
   const valueWidth=Array.from(value).reduce((width,character)=>width+(/^[\x20-\x7E×²³⁰-⁹]$/u.test(character)?.67:1),0);
   return `<span class="card-head"><span class="card-rank" aria-label="${rarity[c.tier]}"><span class="rank-full">${rarity[c.tier]}</span><span class="rank-short" aria-hidden="true">${rarity[c.tier][0]}</span></span>
@@ -64,11 +64,19 @@ const cardFace=c=>{
     <span class="mana" title="消費エネルギー">${c.cost}</span></span>
     <span class="card-display" data-kind="${c.kind}"><span class="sigil" aria-hidden="true">${glyph[c.kind]||'◇'}</span>
       <strong class="card-number" style="--value-width:${Math.max(2,valueWidth).toFixed(2)}">${value}</strong></span>
-    <span class="card-type">${supportKinds.includes(c.kind)?'スペル · ':''}${cardEffect(c)||'妨害'}</span>`;
+    <span class="card-type" ${unavailable?'data-unavailable-reason':''}>${unavailable?esc(unavailable):(supportKinds.includes(c.kind)?'スペル · ':'')+(cardEffect(c)||'妨害')}</span>`;
 };
-const cardButton=(c,act,i=-1,disabled=false,hints=[])=>`<button type="button" class="card t${c.tier}${supportKinds.includes(c.kind)?' spell-card':''}" ${hints.length?' data-relic-hint':''} data-action="${act}"
-  ${i<0?'':`draggable="${!disabled&&!supportKinds.includes(c.kind)}" data-hand="${i}"`} title="${cardEffect(c)}・消費 ${c.cost}${c.enchant?' · '+enchantmentFor(c).description:''}${hints.length?' · '+esc(hints.map(({id,reason})=>relics[id].name+'（'+reason+'） '+relics[id].desc).join(' ／ ')):''}" ${disabled?'disabled':''}>
-  ${cardFace(c)}${hints.length?`<span class="reward-relic-hint">${relicIcon(hints[0].id)}<span>${hints[0].reason}</span><span class="reward-relic-name">${esc(relics[hints[0].id].name)}の条件候補</span></span>`:''}</button>`;
+const cardButton=(c,act,i=-1,disabled=false,hints=[],unavailable='')=>`<button type="button" class="card t${c.tier}${supportKinds.includes(c.kind)?' spell-card':''}" ${hints.length?' data-relic-hint':''} data-action="${act}"
+  ${i<0?'':`draggable="${!disabled&&!supportKinds.includes(c.kind)}" data-hand="${i}"`} title="${unavailable?esc(unavailable)+' · ':''}${cardEffect(c)}・消費 ${c.cost}${c.enchant?' · '+enchantmentFor(c).description:''}${hints.length?' · '+esc(hints.map(({id,reason})=>relics[id].name+'（'+reason+'） '+relics[id].desc).join(' ／ ')):''}" ${disabled?'disabled':''}>
+  ${cardFace(c,unavailable)}${hints.length?`<span class="reward-relic-hint">${relicIcon(hints[0].id)}<span>${hints[0].reason}</span><span class="reward-relic-name">${esc(relics[hints[0].id].name)}の条件候補</span></span>`:''}</button>`;
+function cannotPlayReason(c) {
+  if(c.cost>run.energy) return 'エナジー不足';
+  if(c.kind==='clean'&&!run.deb.length) return '浄化対象なし';
+  if(c.kind==='ward'&&run.wardCharges>=supportCaps.ward) return '結界上限';
+  if(c.kind==='guard'&&run.guardPoints>=supportCaps.guard) return '防御上限';
+  if(!supportKinds.includes(c.kind)&&run.board.length>=run.slots) return '盤が満杯';
+  return '';
+}
 function persist(){storageWarning=!save(book);}
 function saveProgress() {
   const finished=run.phase==='loss'||run.phase==='win';
@@ -157,21 +165,50 @@ function damageReceipt() {
 }
 function tacticalReadout(p,outcome,response) {
   const held=run.holdPreview(outcome);
+  const canHold=run.holds<run.holdLimit;
   const lethal=!outcome.hp;
   const victory=p.impact.dealt===run.enemy.hp;
   const burstLethal=response.outcome?.hp===0;
-  const holdText=run.holds>=run.holdLimit?'HOLD上限':lethal?'反撃で敗北':
+  const attenuated=response.status==='success'&&!victory;
+  const postBurstHp=victory?
+    Math.min(100,run.hp+(run.enemy.kind==='boss'?28:run.enemy.elite?13:7)+run.bonus('victoryRecovery')):
+    !response.outcome?.hp?0:Math.min(response.outcome.maxHp,
+      response.outcome.hp+(attenuated?run.bonus('attenuationHeal'):0));
+  const holdText=!canHold?'HOLD上限':lethal?'反撃で敗北':
     outcome.hp<run.hp?'HP −'+(run.hp-outcome.hp):outcome.maxHp<run.maxHp?'最大HP −'+(run.maxHp-outcome.maxHp):
     outcome.drain!==run.drain?'基礎 '+run.base+' → '+run.baseAt(outcome.drain):
     outcome.drawPenalty?'次のドロー −1':outcome.energyPenalty?'次のエナジー −1':outcome.deb!==run.deb?'妨害が盤に入る':outcome.blocked||outcome.absorbed?'HP変化なし':'追加の変化なし';
   const burstText=victory?'このBURSTで撃破':p.impact.kind==='gate'?'耐久段階を突破':
     p.impact.kind==='barrier'?'バリアを'+p.impact.breaks+'層破る':p.impact.kind==='miss'?'攻撃が通らない':'敵HP −'+compact(p.impact.dealt,false);
-  const burstDefense=response.status==='success'&&!victory
-    ?response.outcome.hp>0?' · 減衰後 HP '+response.outcome.hp:' · 減衰しても敗北'
+  const burstDefense=attenuated
+    ?response.outcome.hp>0?' · 減衰後 HP '+postBurstHp:' · 減衰しても敗北'
     :burstLethal?' · 反撃で敗北':'';
+  const impactLine=p.impact.kind==='barrier'?'バリア '+p.impact.breaks+'層破壊・HPダメージなし':
+    p.impact.kind==='gate'?'耐久ライン到達・超過分は持ち越さない':
+    p.impact.kind==='miss'?'ダメージなし':'敵HP −'+compact(p.impact.dealt,false);
+  const attenuationLine=victory?'撃破するため反撃なし':
+    run.attenuationUsed?'この戦闘では減衰を使用済み':
+    attenuated?'反撃減衰成立・今回の反撃を軽減':
+    '反撃減衰は不成立・通常の反撃';
+  const holdChanges=[outcome.blocked?'結界が妨害を防ぐ':'',outcome.broken?'結界 −'+outcome.broken:'',outcome.absorbed?'防御で '+outcome.absorbed+' 軽減':''].filter(Boolean).join(' · ');
   return `<div class="tactics" aria-label="HOLDとBURSTの比較">
-    <div class="${lethal&&run.holds<run.holdLimit?'tactics-danger':''}"><b>HOLD</b><span>${holdText}${outcome.broken&&run.holds<run.holdLimit?' · 結界 −'+outcome.broken:outcome.blocked&&run.holds<run.holdLimit&&!lethal?' · 結界で妨害を防ぐ':''}${outcome.absorbed&&run.holds<run.holdLimit?' · 防御 '+outcome.absorbed:''}${held!==null&&held!==p.final?` <small title="${held}"> · 引く前の予測 ${compact(held)}</small>`:''}</span></div>
-    <div class="${victory?'tactics-win':burstLethal?'tactics-danger':''}"><b>BURST</b><span>${burstText}${burstDefense}</span></div></div>`;
+    <div class="${lethal&&canHold?'tactics-danger':''}"><b>HOLD</b><span>${holdText}${outcome.broken&&canHold?' · 結界 −'+outcome.broken:outcome.blocked&&canHold&&!lethal?' · 結界で妨害を防ぐ':''}${outcome.absorbed&&canHold?' · 防御 '+outcome.absorbed:''}${held!==null&&held!==p.final?` <small title="${held}"> · 引く前の予測 ${compact(held)}</small>`:''}</span></div>
+    <div class="${victory?'tactics-win':burstLethal?'tactics-danger':''}"><b>BURST</b><span>${burstText}${burstDefense}</span></div>
+    <details class="tactics-more"><summary>行動後の詳細予測</summary>
+      <div class="tactics-detail-grid">
+        <div><b>HOLD · ${canHold?'盤を維持':'使用不可'}</b>
+          <span>${canHold?'HP '+run.hp+' → '+outcome.hp+' / '+outcome.maxHp:'HOLD上限に到達'}</span>
+          ${canHold&&holdChanges?`<small>${holdChanges}</small>`:''}
+          ${canHold&&held!==null?`<small title="${held}">新しい手札を引く前の盤ダメージ ${compact(held)}</small>`:''}
+        </div>
+        <div><b>BURST · 盤を消費</b>
+          <span>演算 ${compact(p.final)} → ${impactLine}</span>
+          <small>敵の残HP ${compact(run.enemy.hp-p.impact.dealt,false)}</small>
+          <small>${attenuationLine} · 術師HP ${run.hp} → ${postBurstHp}</small>
+        </div>
+      </div>
+      <small>HOLDは新しく引くカードを含めず、BURSTは実際に通るダメージと予告中の反撃から計算します。</small>
+    </details></div>`;
 }
 function battleCommands() {
   return `<div class="actions battle-commands">
@@ -211,29 +248,34 @@ function attenuationEffectText(move,{attenuationEffect:{value,nullified},broken}
     move.kind==='shatter'&&broken?`結界 −${broken}層`:'';
   return [damage,extra].filter(Boolean).join(' · ');
 }
-function attenuationHint(move,response) {
+function attenuationHint(move,response,awaiting=false) {
   if(run.attenuationUsed) return '<div class="attenuation-hint">減衰済み</div>';
   const condition=attenuationPattern(move).map(kind=>types[kind]).join(' → ');
   const ready=response.status==='success';
   const forecast=ready?'<small>BURST時 · '+attenuationEffectText(move,response.outcome)+
     (response.outcome.hp>0?' · 残HP '+response.outcome.hp:' · 反撃で敗北')+'</small>':'';
   return `<div class="attenuation-hint${ready?' attenuation-ready':''}">
-    <b>${ready?'減衰可能':'減衰条件'}</b> ${condition}${forecast}</div>`;
+    <b>${ready?'減衰可能':awaiting?'あと1枚':'減衰条件'}</b> ${condition}${forecast}${awaiting?'<small>次に'+types[attenuationPattern(move)[1]]+'を置くと成立候補</small>':''}</div>`;
 }
 function battle() {
   const p=run.preview(), e=run.enemy;
   const move=run.next;
   const outcome=run.enemyOutcome(move);
   const response=run.burstResponse(p,move);
+  const pair=response.status==='success'?attenuationPair(move,p.steps):null;
+  const lastStep=p.steps.at(-1);
+  const awaiting=!run.attenuationUsed&&!pair&&!lastStep?.card?.enemy&&
+    lastStep?.op?.kind===attenuationPattern(move)[0]?lastStep.card:null;
   const provisional=run.board.filter((_,i)=>run.canReturn(i)).length;
   const slots=Array.from({length:run.slots},(_,i)=>{
     const c=run.board[i];
     const status=c?p.steps.find(s=>s.card===c):null;
     const at=Math.min(i,run.board.length);
+    const chain=pair?.[0]===c?'attenuation-first':pair?.[1]===c?'attenuation-second':awaiting===c?'attenuation-start':'';
     const deb=i<=run.board.length?run.deb.filter(d=>Math.min(d.at,run.board.length)===i).map(d=>
       `<span class="slot debuff" data-calc="${p.steps.findIndex(s=>s.card===d)}" title="敵の妨害 · ${d.at}枠目の後">${label(d)}</span>`).join(''):'';
-    return deb+(c?`<button type="button" class="slot board-card t${c.tier} ${status?.op===null?'is-sealed':''} ${i===selected?'selected':''}" style="border-color:var(--tone)"
-      data-calc="${p.steps.indexOf(status)}" data-action="slot:${i}" data-at="${i}" data-board="${i}" draggable="true" aria-pressed="${i===selected}" aria-keyshortcuts="ArrowLeft ArrowRight Delete Escape" title="${run.canReturn(i)?'選択して移動・取り消し':'選択して移動'}"><strong>${label(c)}</strong><small>${types[c.kind]} ${enchantBadge(c)}</small>${run.canReturn(i)?'<small class="returnable-label">仮置き</small>':''}${status?.op===null?'<small>封印</small>':''}</button>`:
+    return deb+(c?`<button type="button" class="slot board-card t${c.tier} ${status?.op===null?'is-sealed':''} ${i===selected?'selected':''} ${chain}" style="border-color:var(--tone)"
+      data-calc="${p.steps.indexOf(status)}" data-action="slot:${i}" data-at="${i}" data-board="${i}" draggable="true" aria-pressed="${i===selected}" aria-keyshortcuts="ArrowLeft ArrowRight Delete Escape" title="${chain?'反撃減衰 '+(chain==='attenuation-start'?'成立候補':chain==='attenuation-first'?'1枚目':'2枚目')+' · ':''}${run.canReturn(i)?'選択して移動・取り消し':'選択して移動'}"><strong>${label(c)}</strong><small>${types[c.kind]} ${enchantBadge(c)}</small>${run.canReturn(i)?'<small class="returnable-label">仮置き</small>':''}${status?.op===null?'<small>封印</small>':''}</button>`:
       `<button type="button" class="slot empty" data-at="${at}" data-action="slot:${at}" aria-label="空き枠 ${i+1}">${i+1}</button>`);
   }).join('');
   const tail=run.board.length===run.slots?run.deb.filter(d=>d.at>=run.slots).map(d=>`<span class="slot debuff" data-calc="${p.steps.findIndex(s=>s.card===d)}">${label(d)}</span>`).join(''):'';
@@ -257,7 +299,7 @@ function battle() {
       <div class="enemy-info">
       ${e.detail?`<p class="enemy-rule">${e.detail}</p>`:''}
       <div class="enemy-defenses">${defenseStatus(e)}</div>
-      <div class="intent" data-move="${move.kind}"><small>敵の次の行動 ${outcome.hp===0&&p.impact.dealt!==e.hp?'<b class="intent-danger">通常反撃は致命的</b>':''}</small><strong>${intentText(move)}</strong>${attenuationHint(move,response)}</div></div></section>
+      <div class="intent" data-move="${move.kind}"><small>敵の次の行動 ${outcome.hp===0&&p.impact.dealt!==e.hp?'<b class="intent-danger">通常反撃は致命的</b>':''}</small><strong>${intentText(move)}</strong>${attenuationHint(move,response,Boolean(awaiting))}</div></div></section>
     <section class="frame board-frame"><div class="heading"><h2>演算盤</h2><small>${run.board.length} / ${run.slots} 枠 · コンボ ${run.board.length}${run.wardCharges?' · 結界 '+run.wardCharges:''}${run.guardPoints?' · 防御 '+run.guardPoints:''}</small></div>
       <div class="board-relics" aria-label="演算盤のレリック">${relicStrip(p)}</div>
       <div class="board"><span class="slot base${baseGlow?' base-awaken':''}"><small>基礎</small>${run.base}</span>${slots}${tail}</div>
@@ -273,7 +315,7 @@ function battle() {
       ${notice?`<small class="battle-notice" role="status">${moneyText(notice)}</small>`:''}</section>
     <section class="frame hand-frame"><div class="heading"><h2>手札</h2><span class="energy">エネルギー ${run.energy} / ${run.capacity} <small>· ドロー ${run.drawCount}枚</small></span></div>
       ${run.omens>0?`<div class="hint-line">${btn('✧ 星詠みの頁 · 残り'+run.omens,'divine')}</div>`:''}
-      <div class="hand" data-hand-return>${run.hand.map((c,i)=>cardButton(c,'hand:'+i,i,!run.canPlay(c))).join('')}</div>
+      <div class="hand" data-hand-return>${run.hand.map((c,i)=>cardButton(c,'hand:'+i,i,!run.canPlay(c),[],cannotPlayReason(c))).join('')}</div>
       ${tacticalReadout(p,outcome,response)}
       <div class="controls"><small>仮置きは選択して手札に戻せます。HOLDまたはBURSTで確定。${run.holds===run.holdLimit?' 次はBURST。':''}</small>
       ${battleCommands()}
