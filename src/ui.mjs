@@ -628,7 +628,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.5.0</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.5.1</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -1282,13 +1282,14 @@ async function showBurst() {
         }
         const level=magnitude(step.value);
         reel.dataset.kind=step.type;
+        reel.dataset.operation=step.operationKind||step.type;
+        reel.dataset.direction=step.direction||'neutral';
         if(step.relic) name.innerHTML=relicIcon(step.relic)+' 発動 · '+esc(step.name);
         else name.textContent=step.name;
         combo.textContent=step.combo+' COMBO';
         counter.title=exactRat(step.value);
-        counter.classList.remove('count-pop');
-        void counter.offsetWidth;
-        counter.classList.add('count-pop');
+        // Alternate equivalent keyframes instead of forcing a synchronous layout per step.
+        counter.dataset.pop=counter.dataset.pop==='a'?'b':'a';
         progress.style.width=((i+1)*100/steps.length)+'%';
         if(step.type!=='impact') cue(step.type==='relic'?'relic':step.type==='enemy'?'hex':step.type==='repeat'?'mystic':cardCue(p.steps[step.index].card),{level});
         const {samples,duration}=reelTiming(prior,step.value,step.type,mode==='fast');
@@ -1315,7 +1316,8 @@ async function showBurst() {
         field.style.setProperty('--cast-lift',-attack.lift+'px');
         field.style.setProperty('--attack-time',attack.impact+'ms');
         field.style.setProperty('--flight',(mode==='fast'?65:attack.flight)+'ms');
-        field.querySelector('.burst-sparks').innerHTML=Array.from({length:mode==='fast'?Math.min(10,attack.sparks):attack.sparks},(_,i)=>{
+        const sparkLimit=compactScreen.matches?(mode==='fast'?8:16):(mode==='fast'?10:28);
+        field.querySelector('.burst-sparks').innerHTML=Array.from({length:Math.min(sparkLimit,attack.sparks)},(_,i)=>{
           const angle=i*2.39996+attack.digits*.17,r=attack.reach*(.48+(i%5)*.13);
           return `<i style="--dx:${Math.round(Math.cos(angle)*r)}px;--dy:${Math.round(Math.sin(angle)*r)}px;--delay:${i%6*13}ms"></i>`;
         }).join('');
