@@ -1817,3 +1817,19 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
   32% { transform:scale(1.06); opacity:1; }
   100% { transform:scale(1); opacity:1; }
 }
+
+
+/* v1.5.2: concise, always rule-grounded boss counterplay in the existing description line. */
+.enemy-rule .boss-counterplay {
+  display:inline;
+  padding:1px 3px;
+  color:#d0f1df;
+  background:#243b34;
+  border-inline-start:2px solid #76bd9f;
+  font-weight:600;
+  box-decoration-break:clone;
+  -webkit-box-decoration-break:clone;
+}
+@media (max-width:510px) {
+  .enemy-rule .boss-counterplay { font-size:10px; line-height:1.35; }
+}
