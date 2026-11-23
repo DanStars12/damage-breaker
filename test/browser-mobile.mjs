@@ -405,6 +405,7 @@ async function commandFeedback(options) {
   assert.equal(await action(page,'hold').locator('small').innerText(),'盤のカードを維持');
   assert.equal(await action(page,'burst').locator('small').innerText(),'今の盤で演算');
   assert.match(await page.locator('.tactics').innerText(),/反撃で敗北/);
+  assert.match(await page.locator('.tactics > div').first().innerText(),/HOLDすると敗北/);
   assert.match(await page.locator('.intent').innerText(),/致命的/);
   const before=await readState(page);
   await action(page,'hand:0').tap();
@@ -418,6 +419,10 @@ async function commandFeedback(options) {
   await action(page,'hand:0').tap();
   assert.equal(await action(page,'burst').locator('small').innerText(),'今の盤で演算');
   assert.match(await page.locator('.tactics-win').innerText(),/このBURSTで撃破/);
+  await page.locator('.tactics-more summary').tap();
+  assert.match(await page.locator('.tactics-detail-grid').innerText(),/撃破するため反撃なし/);
+  assert.match(await page.locator('.tactics-detail-grid').innerText(),/敵の残HP 0/);
+  await noOverflow(page,'lethal HOLD vs winning BURST details');
   assert.deepEqual(errors,[]);
   await page.close();
 }
