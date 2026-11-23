@@ -373,6 +373,8 @@ async function phaseGauges(options) {
   assert.match(await action(page,'hold').innerText(),/0\/3/);
   assert.equal(await page.locator('.gate-tick:not(.passed)').count(),2);
   assert.match(await page.locator('.enemy-defenses').innerText(),/⅔/);
+  assert.match(await page.locator('[data-boss-tactic="gate"]').innerText(),/耐久ライン残2本/);
+  await noOverflow(page,'boss tactic and gate preview');
   await page.evaluate(()=>{
     const arena=document.querySelector('.enemy');
     new MutationObserver(()=>{
@@ -384,6 +386,7 @@ async function phaseGauges(options) {
   assert.equal(await page.locator('body').getAttribute('data-cast-motif'),'cross');
   assert.equal(await page.locator('.gate-tick.passed').count(),1);
   assert.match(await page.locator('.enemy-defenses').innerText(),/次はHP ⅓/);
+  assert.match(await page.locator('[data-boss-tactic="gate"]').innerText(),/耐久ライン残1本/);
   assert.equal((await readState(page)).enemy.hp.$bigint,'200');
   assert.deepEqual(errors,[]);
   await page.close();
