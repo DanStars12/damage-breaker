@@ -1824,6 +1824,22 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
   32% { transform:scale(1.06); opacity:1; }
   100% { transform:scale(1); opacity:1; }
 }
+
+
+/* v1.5.2: concise, always rule-grounded boss counterplay in the existing description line. */
+.enemy-rule .boss-counterplay {
+  display:inline;
+  padding:1px 3px;
+  color:#d0f1df;
+  background:#243b34;
+  border-inline-start:2px solid #76bd9f;
+  font-weight:600;
+  box-decoration-break:clone;
+  -webkit-box-decoration-break:clone;
+}
+@media (max-width:510px) {
+  .enemy-rule .boss-counterplay { font-size:10px; line-height:1.35; }
+}
 </style>
 </head>
 <body>
@@ -2701,6 +2717,20 @@ const attackPatterns={
   tax:{name:'魔力徴収',penalty:'tax'},fracture:{name:'局所封印',penalty:'fracture'}
 };
 const attackHits=move=>attackPatterns[move.kind]?.hits??0;
+/** A short, non-prescriptive counterplay fact for the existing boss information line.
+ * It describes actual barrier, gate, and intent rules; it never estimates a best card order. */
+function bossCounterplay(enemy,move) {
+  if(enemy.kind!=='boss'&&enemy.kind!=='extra') return null;
+  if(enemy.barrier>0) return {kind:'barrier',text:`バリア残${enemy.barrier}層：BURSTではHPを削れない`};
+  if(enemy.gates.length>0) return {kind:'gate',text:`耐久ライン残${enemy.gates.length}本：1BURSTで最大1本だけ突破`};
+  const hits=attackHits(move);
+  if(hits>1) return {kind:'multi',text:`${hits}回攻撃：防御をヒット順に消費`};
+  if(move.kind==='shatter') return {kind:'shatter',text:'破界は結界を破壊。HP被害は防御で軽減'};
+  if(attackPatterns[move.kind]?.penalty||!hits)
+    return {kind:'disruption',text:'妨害は結界で防ぎ、減衰でも軽減可能'};
+  return {kind:'attack',text:'通常攻撃：反撃減衰と防御の使いどころを確認'};
+}
+
 const offensiveAttenuation=['add','mul'];
 const disruptiveAttenuation=['mul','add'];
 const attenuationPattern=move=>attackHits(move)?offensiveAttenuation:disruptiveAttenuation;
@@ -4571,6 +4601,7 @@ function battle() {
   const move=run.next;
   const outcome=run.enemyOutcome(move);
   const response=run.burstResponse(p,move);
+  const counterplay=bossCounterplay(e,move);
   const pair=response.status==='success'?attenuationPair(move,p.steps):null;
   const lastStep=p.steps.at(-1);
   const awaiting=!run.attenuationUsed&&!pair&&!lastStep?.card?.enemy&&
@@ -4606,7 +4637,7 @@ function battle() {
         <span class="slash" aria-hidden="true"></span><span class="enemy-cast" aria-hidden="true"></span><span class="enemy-hit-fx" aria-hidden="true"></span><span id="incoming" aria-hidden="true"></span><span id="outgoing" aria-hidden="true"></span>
       </div>
       <div class="enemy-info">
-      ${e.detail?`<p class="enemy-rule">${e.detail}</p>`:''}
+      ${e.detail?`<p class="enemy-rule">${esc(e.detail)}${counterplay?` <span class="boss-counterplay" data-boss-tactic="${counterplay.kind}">✦ ${esc(counterplay.text)}</span>`:''}</p>`:''}
       <div class="enemy-defenses">${defenseStatus(e)}</div>
       <div class="intent" data-move="${move.kind}"><small>敵の次の行動 ${outcome.hp===0&&p.impact.dealt!==e.hp?'<b class="intent-danger">通常反撃は致命的</b>':''}</small><strong>${intentText(move)}</strong>${attenuationHint(move,response,Boolean(awaiting))}</div></div></section>
     <section class="frame board-frame"><div class="heading"><h2>演算盤</h2><small>${run.board.length} / ${run.slots} 枠 · コンボ ${run.board.length}${run.wardCharges?' · 結界 '+run.wardCharges:''}${run.guardPoints?' · 防御 '+run.guardPoints:''}</small></div>
@@ -4937,7 +4968,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.5.1</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.5.2</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
