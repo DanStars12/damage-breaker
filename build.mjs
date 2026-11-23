@@ -1,6 +1,6 @@
 import {readFileSync,writeFileSync} from 'node:fs';
 const read=path=>readFileSync(new URL(path,import.meta.url),'utf8');
-const game=['math','relics','relic-art','cards','events','event-art','map','enemies','run','hint','storage','checkpoint','art','sprites','faces','enemy-finish','bestiary','catalog','codex-ui','presentation','sound','ui']
+const game=['math','relics','relic-art','cards','events','event-art','map','enemies','run','hint','storage','checkpoint','art','sprites','faces','enemy-finish','bestiary','catalog','codex-ui','help-guide','presentation','sound','ui']
   .map(name=>read('./src/'+name+'.mjs').replace(/^import .*;\n/gm,'')
     .replace(/^export /gm,'')).join('\n');
 const page=read('./index.template.html').replace('/* STYLES */',()=>read('./style.css'))
