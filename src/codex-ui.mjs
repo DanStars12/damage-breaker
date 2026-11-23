@@ -60,10 +60,10 @@ export function codexContents(codex,{tab='enemies',filter='all',page=0,selected=
         `<option value="${value}" ${filter===value?'selected':''}>${name}</option>`).join('')}</select></label>
       <span>${enemies?'遭遇':'発見'} ${known.size} / ${source.length} · ${available.length}件表示</span>
     </div>
+    ${detail}
     <div class="codex-grid" role="tabpanel" aria-label="${enemies?'敵の一覧':'レリックの一覧'}">
       ${tiles||'<p class="muted">該当する記録はまだありません。</p>'}
     </div>
-    ${detail}
     <div class="codex-pager">
       <button type="button" data-codex-page="${activePage-1}" ${activePage===0?'disabled':''} aria-label="図鑑の前のページ">‹ 前へ</button>
       <small>${activePage+1} / ${pages}</small>
