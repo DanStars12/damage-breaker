@@ -25,8 +25,10 @@ const uniqueAllowed=(values,allowed)=>[...new Set((Array.isArray(values)?values:
   .filter(id=>typeof id==='string'&&allowed.has(id)))];
 export const enemyKey=(act,kind,variant=0)=>act+':'+kind+':'+variant;
 export function normalizeCodex(raw) {
+  const acquired=uniqueAllowed(raw?.acquired,relicKeys);
   return {enemies:uniqueAllowed(raw?.enemies,enemyKeys),
-    relics:uniqueAllowed(raw?.relics,relicKeys)};
+    relics:uniqueAllowed([...(Array.isArray(raw?.relics)?raw.relics:[]),...acquired],relicKeys),
+    acquired};
 }
 export function discoverEnemy(codex,act,kind,variant=0) {
   const id=enemyKey(act,kind,variant);
@@ -41,12 +43,23 @@ export function discoverRelics(codex,ids) {
   }
   return changed;
 }
+// A seen offer unlocks its description; acquisition is tracked independently.
+export function acquireRelics(codex,ids) {
+  let changed=discoverRelics(codex,ids);
+  for(const id of uniqueAllowed(ids,relicKeys)) if(!codex.acquired.includes(id)) {
+    codex.acquired.push(id);changed=true;
+  }
+  return changed;
+}
 // Backfill only provable information from old saves; never unlock all past encounters.
 export function inheritCodex(raw,history=[],run=null) {
   const codex=normalizeCodex(raw);
-  for(const record of Array.isArray(history)?history:[]) discoverRelics(codex,record?.relics);
+  for(const record of Array.isArray(history)?history:[]) acquireRelics(codex,record?.relics);
   if(run) {
-    discoverRelics(codex,run.owned);
+    acquireRelics(codex,run.owned);
+    if(run.phase==='reward'&&run.relicDecision==='pending')
+      discoverRelics(codex,[run.relicDrop,run.relicAlternative]);
+    if(run.phase==='facility') discoverRelics(codex,run.stockRelics);
     if(['battle','reward','loss'].includes(run.phase)&&run.enemy)
       discoverEnemy(codex,run.act,run.enemy.kind,run.enemy.variant??0);
     if(Array.isArray(run.visited)&&Array.isArray(run.map))
