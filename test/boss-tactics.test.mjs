@@ -26,6 +26,8 @@ test('all existing ACT bosses advertise a counterplay tied to actual combat defe
     assert.equal(attackHits({kind:'pursuit'}),3);
     assert.match(bossCounterplay(enemy,{kind:'pursuit',value:8}).text,/3回攻撃/);
     assert.equal(bossCounterplay(enemy,{kind:'lock',value:0}).kind,'disruption');
+    assert.equal(bossCounterplay(enemy,{kind:'shatter',value:8}).kind,'shatter');
+    assert.match(bossCounterplay(enemy,{kind:'shatter',value:8}).text,/結界を破壊/);
     assert.equal(bossCounterplay(enemy,{kind:'attack',value:8}).kind,'attack');
   }
   assert(barriers>0&&gates>0&&other>0);
