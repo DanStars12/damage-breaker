@@ -6,7 +6,9 @@ import {CAP} from '../src/math.mjs';
 
 function battle(seed) {
   const run=new Run('v153-forecast-'+seed);
-  assert(run.route(run.routes[0]));
+  const node=run.map.flat().find(entry=>entry.kind==='fight');
+  run.routes=[node.id];
+  assert(run.route(node.id));
   run.enemy.hp=run.enemy.max=1000n;
   run.enemy.barrier=0;
   run.enemy.gates=[];
