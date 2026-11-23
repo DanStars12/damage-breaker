@@ -99,6 +99,19 @@ export const attackPatterns={
   tax:{name:'魔力徴収',penalty:'tax'},fracture:{name:'局所封印',penalty:'fracture'}
 };
 export const attackHits=move=>attackPatterns[move.kind]?.hits??0;
+/** A short, non-prescriptive counterplay fact for the existing boss information line.
+ * It describes actual barrier, gate, and intent rules; it never estimates a best card order. */
+export function bossCounterplay(enemy,move) {
+  if(enemy.kind!=='boss'&&enemy.kind!=='extra') return null;
+  if(enemy.barrier>0) return {kind:'barrier',text:`バリア残${enemy.barrier}層：BURSTではHPを削れない`};
+  if(enemy.gates.length>0) return {kind:'gate',text:`耐久ライン残${enemy.gates.length}本：1BURSTで最大1本だけ突破`};
+  const hits=attackHits(move);
+  if(hits>1) return {kind:'multi',text:`${hits}回攻撃：防御をヒット順に消費`};
+  if(attackPatterns[move.kind]?.penalty||!hits)
+    return {kind:'disruption',text:'妨害は結界で防ぎ、減衰でも軽減可能'};
+  return {kind:'attack',text:'通常攻撃：反撃減衰と防御の使いどころを確認'};
+}
+
 const offensiveAttenuation=['add','mul'];
 const disruptiveAttenuation=['mul','add'];
 export const attenuationPattern=move=>attackHits(move)?offensiveAttenuation:disruptiveAttenuation;
