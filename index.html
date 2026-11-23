@@ -1900,6 +1900,69 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
 }
 /* Shared battle and codex sprites stay on integer pixel boundaries when scaled. */
 .battle .foe canvas[data-enemy-art] { image-rendering:pixelated; image-rendering:crisp-edges; }
+
+
+/* v1.6.1 — high-information, low-clutter beginner guide. */
+.guide-dialog { width:100%; max-width:min(850px,96vw); max-height:min(88dvh,860px); padding:clamp(12px,2.8vw,23px); }
+.guide-dialog > h2 { color:#f3dfb8; margin:0 0 9px; font:700 clamp(19px,2.5vw,26px)/1.3 var(--display); }
+.guide { min-width:0; line-height:1.65; font-family:var(--interface); }
+.guide-lead { padding:8px 11px; border-left:3px solid #dfc088; background:#292d28; font-size:clamp(12px,2vw,14px); }
+.guide-lead strong { color:#ffdea0; }
+.guide-quick { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:10px 0 12px; }
+.guide-quick > div { display:grid; align-content:start; min-width:0; gap:3px; border:1px solid #776548; background:linear-gradient(145deg,#34372f,#252d2d); padding:7px 8px; }
+.guide-quick b { font-size:13px; color:#f7d9a1; }
+.guide-quick small { font:11px/1.5 var(--interface); color:#d7c9b5; }
+.guide-section { border:1px solid #796d5c; background:#252929; margin-top:7px; }
+.guide-section summary { position:relative; cursor:pointer; padding:10px 35px 10px 11px; font:700 clamp(12px,1.8vw,15px)/1.4 var(--interface); color:#f0d5ab; list-style:none; }
+.guide-section summary::-webkit-details-marker { display:none; }
+.guide-section summary::after { content:'＋'; position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:19px; color:#c3d6ce; }
+.guide-section[open] summary::after { content:'−'; }
+.guide-section summary:hover { background:#363933; }
+.guide-section summary:focus-visible { outline:2px solid #ffe5ac; outline-offset:-2px; }
+.guide-section[open] summary { background:#343a35; border-bottom:1px solid #806f57; }
+.guide-section-body { padding:10px 12px 12px; font-size:13px; line-height:1.7; }
+.guide-section-body > p + p { margin-top:8px; }
+.guide-section-body strong,.guide-section-body b { color:#fbe0a9; }
+.guide-steps { counter-reset:step; list-style:none; padding:0; margin:0; display:grid; gap:7px; }
+.guide-steps li { display:grid; grid-template-columns:25px minmax(0,1fr); column-gap:7px; padding:7px 7px 7px 5px; border-bottom:1px solid #776c583d; }
+.guide-steps li::before { counter-increment:step; content:counter(step); grid-row:span 2; display:grid; place-items:center; align-self:start; width:23px; height:23px; border:1px solid #bea47a; background:#3c413c; color:#ffdfaa; font:bold 13px/1 var(--interface); }
+.guide-steps li span { grid-column:2; }
+.guide-tip { border-left:2px solid #85b9a2; background:#243a3440; padding:7px 9px; margin-top:10px; }
+.guide-warning { border-left:2px solid #df9987; background:#492c2b55; padding:7px 9px; margin-top:9px; }
+.guide-equation { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:5px; margin:10px 0; padding:9px 5px; border:1px solid #8e7554; background:#161e22; font:700 clamp(12px,2.4vw,19px)/1.25 var(--display); font-variant-numeric:tabular-nums; }
+.guide-equation > span,.guide-equation > strong { min-width:0; white-space:nowrap; }
+.guide-equation > :is(.guide-base,.guide-add,.guide-mul) { padding:5px 7px; border:1px solid #9b866777; background:#2c3131; }
+.guide-equation .guide-add { color:#bce0a1; }
+.guide-equation .guide-mul { color:#b2dafc; }
+.guide-equation > strong { color:#ffde96; }
+.guide-equation .guide-arrow { color:#b5a891; }
+.guide-terms { margin:9px 0; }
+.guide-terms > div { display:grid; grid-template-columns:minmax(100px,28%) minmax(0,1fr); column-gap:11px; padding:8px 4px; border-bottom:1px solid #84765c53; }
+.guide-terms dt { color:#f1cfa3; font-weight:700; }
+.guide-terms dd { margin:0; color:#e1d9c7; }
+.guide-pair { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; margin:10px 0; }
+.guide-pair > div { padding:10px; background:#2d3435; border:1px solid #786f58; }
+.guide-pair h3 { margin:0 0 5px; font:700 15px/1.4 var(--interface); color:#ffddac; }
+.guide-pair p { font-size:13px; }
+.guide-pair small { display:block; margin-top:5px; font-size:11px; }
+.guide-pair-examples > div { display:grid; gap:4px; }
+.guide-pair-examples span { color:#bde0ce; font-weight:700; }
+.guide-foot { font:11px/1.5 var(--interface); color:#c6bbad; margin-top:10px; }
+@media(max-width:550px) {
+  .guide-dialog { padding:12px 10px; max-height:90dvh; }
+  .guide-lead { padding:7px; }
+  .guide-quick { gap:4px; }
+  .guide-quick > div { padding:6px 4px; }
+  .guide-quick b { font-size:12px; }
+  .guide-quick small { font-size:10px; }
+  .guide-section-body { padding:9px 8px; font-size:12px; }
+  .guide-section summary { padding-left:8px; }
+  .guide-terms > div { grid-template-columns:1fr; row-gap:2px; }
+  .guide-pair { grid-template-columns:1fr; }
+  .guide-equation { gap:3px; font-size:12px; }
+  .guide-equation > :is(.guide-base,.guide-add,.guide-mul) { padding:4px 5px; }
+}
+@media(prefers-reduced-motion:reduce) { .guide-section,.guide-section summary { transition:none; } }
 </style>
 </head>
 <body>
@@ -4520,6 +4583,102 @@ function paintCodexEntries(root) {
   }
 }
 
+// Compact, self-contained help copy. Rules are synchronized with Run, cards and enemies.
+// No event listeners or game-state mutations: native <details> keeps the guide accessible.
+const section=(title,body,open=false)=>`<details class="guide-section" ${open?'open':''}>
+  <summary>${title}</summary><div class="guide-section-body">${body}</div></details>`;
+
+function helpGuide() {
+  return `<div class="guide">
+    <p class="guide-lead">演算カードを<strong>左から順に計算</strong>し、大きなダメージを作るターン制ローグライトです。敵の予告を見ながらカードを組み、ACT IIIのボス、その先のEXTRAを目指します。</p>
+    <div class="guide-quick" aria-label="まず覚える3つのこと">
+      <div><b>① 置く</b><small>手札を選び、演算盤に配置</small></div>
+      <div><b>② 比べる</b><small>HOLDとBURST、敵の次の行動を確認</small></div>
+      <div><b>③ 発動</b><small>BURSTで攻撃。報酬で強化</small></div>
+    </div>
+    ${section('01 · まずは1戦をプレイする',`
+      <ol class="guide-steps">
+        <li><b>地図で次のマスを選ぶ</b><span>光っているマスを選択。戦闘、強敵、店、休息、イベント、ボスなどがあります。</span></li>
+        <li><b>手札を演算盤に並べる</b><span>カードを押すと右端に配置。並び順を変えると、同じカードでも火力が変わります。置ける枚数とエネルギーに注意。</span></li>
+        <li><b>画面の予測を見る</b><span>「最終ダメージ予測」「敵HP −○○」と「敵の次の行動」を確認。敵のバリアなどがある場合、計算上のダメージがそのまま敵HPに通るとは限りません。</span></li>
+        <li><b>HOLDかBURSTを決める</b><span><strong>HOLD</strong>は盤を残して次の手札へ。<strong>BURST</strong>は今の盤で攻撃します。どちらでも、敵が生き残れば予告どおり行動します。</span></li>
+        <li><b>勝利したら報酬を選ぶ</b><span>カード・金貨・レリックなどでデッキを強くします。地図の先へ進み、ボスに備えましょう。</span></li>
+      </ol>
+      <p class="guide-tip"><b>最初のコツ：</b>まずは「＋」を置いてから「×」を置いてBURSTしてみましょう。序盤は1回のBURSTで倒すか、安全にHOLDできるかを見比べるのがおすすめです。</p>
+    `,true)}
+    ${section('02 · 演算の順番とカードの種類',`
+      <p>戦闘開始時の基本は<strong>基礎値20・手札5枚・エネルギー3・盤6枠</strong>（ACT I、強化なし）。カードには消費エネルギーがあり、盤に並べられる枚数にも上限があります。</p>
+      <div class="guide-equation" aria-label="演算例：20に10を足して3倍すると90">
+        <span class="guide-base">基礎 20</span><span class="guide-arrow">→</span>
+        <span class="guide-add">＋10</span><span class="guide-arrow">→</span>
+        <span class="guide-mul">×3</span><span class="guide-arrow">＝</span>
+        <strong>90</strong>
+      </div>
+      <p><b>順番が重要：</b>20 → ×3 → ＋10 なら <strong>70</strong>。同じ2枚でも置く順序で変化します。</p>
+      <dl class="guide-terms">
+        <div><dt>＋10（加算）</dt><dd>今の値に10を足す。乗算や累乗の前に置くと効果を伸ばせます。</dd></div>
+        <div><dt>×3（乗算）</dt><dd>今の値を3倍。加算の後に置くと加算分もまとめて増えます。</dd></div>
+        <div><dt>＋50% / −25%（割合）</dt><dd>その時点の値を1.5倍 / 0.75倍。90 → ＋50% なら135。</dd></div>
+        <div><dt>x² / x³（累乗）</dt><dd>今の値を2乗 / 3乗。たとえば10 → x² なら100。</dd></div>
+        <div><dt>×10²（指数）</dt><dd>今の値を100倍。たとえば90 → ×10² なら9000。</dd></div>
+      </dl>
+      <p class="guide-tip">演算の途中ではマイナスや小数も正確に扱います。最終的なダメージは装甲の除算後に小数点以下を切り捨て、負の値なら0です。</p>
+    `)}
+    ${section('03 · HOLDとBURSTの違い',`
+      <div class="guide-pair">
+        <div><h3>HOLD · ためる</h3><p>今の演算盤を<strong>そのまま残す</strong>。敵の予告行動を受けてからエネルギーと新しい手札を補充します。</p><small>通常はBURSTまでに2回まで。レリックで上限が増えることもあります。</small></div>
+        <div><h3>BURST · 攻撃する</h3><p>左からすべて演算し、レリック・装甲を反映して攻撃。<strong>盤のカードは消費</strong>され、HOLD回数はリセットされます。</p><small>敵を倒せば反撃なし。倒せなければ予告行動を受けて次の手札へ。</small></div>
+      </div>
+      <p><b>迷ったら：</b>手札の下の「HOLD / BURST 比較」を見ましょう。予測残HPや撃破可否が表示されます。「行動後の詳細予測」を開くと、バリア・耐久ライン・反撃後のHPも確認できます。</p>
+      <p class="guide-warning">敵の攻撃で倒される状況では、火力が足りなくてもHOLDが安全とは限りません。予測欄の赤い表示を確認しましょう。</p>
+    `)}
+    ${section('04 · 敵の予告、減衰、防御の使い方',`
+      <p>敵は次の攻撃・妨害を先に表示します。<strong>HOLD後</strong>、または<strong>BURSTで敵が残った後</strong>に発動します。敵の予告を見て、守るか倒し切るかを決めましょう。</p>
+      <dl class="guide-terms">
+        <div><dt>防御カード</dt><dd>その次に受ける攻撃ダメージを数値分軽減。多段攻撃ではヒット順に使われます。</dd></div>
+        <div><dt>結界カード</dt><dd>敵の妨害を1回分（強化後は複数回）防ぎます。破界攻撃では結界が壊される場合があります。HPへの攻撃自体を無効にするものではありません。</dd></div>
+        <div><dt>浄化カード</dt><dd>演算盤に入った妨害を先頭側から取り除きます。妨害がなければ使えません。</dd></div>
+        <div><dt>反撃減衰</dt><dd>敵の予告欄で指定される順序の<strong>有効な演算2枚を隣接</strong>させてBURSTすると、敵が生き残ったときの攻撃・妨害を弱めます。</dd></div>
+      </dl>
+      <div class="guide-pair guide-pair-examples">
+        <div><b>攻撃する敵</b><span>＋（加算）→ ×（乗算）</span></div>
+        <div><b>妨害だけの敵</b><span>×（乗算）→ ＋（加算）</span></div>
+      </div>
+      <p class="guide-tip">反撃減衰は通常、1戦で1回だけ成立します。封印されたカードや敵が挿入した妨害カードは、成立条件の「有効な2枚」として数えません。</p>
+    `)}
+    ${section('05 · バリア、耐久ライン、妨害',`
+      <dl class="guide-terms">
+        <div><dt>敵のバリア</dt><dd>正のダメージを出すBURSTでも敵HPは減りません。まずバリアを削り、次のBURSTで本体へ攻撃。特定のレリックで複数層を壊せます。</dd></div>
+        <div><dt>耐久ライン</dt><dd>ボスなどのHPが一定位置で止まる仕組み。強力なBURSTでも<strong>1回で突破できるラインは1本</strong>です。次のBURSTで続けましょう。</dd></div>
+        <div><dt>演算妨害</dt><dd>敵は「−」「÷」「−%」を指定位置に挿入したり、カードの種類を封印したりします。演算盤の赤い表示や次の予告を確認。</dd></div>
+        <div><dt>吸命・弱体</dt><dd>戦闘中の最大HPや基礎値を減らします。長引く戦闘ほど危険なので、素早く倒すか防御を活用。</dd></div>
+      </dl>
+      <p>「最終ダメージ予測」は式から求めた値、「敵HP −○○」はバリアや耐久ラインを考慮して実際に減るHPです。数字が違っても不具合ではありません。</p>
+    `)}
+    ${section('06 · レリック・エンチャント・育成',`
+      <p><b>レリック</b>は持っているだけで条件に応じて発動する特殊能力です。連続する演算、合計、カードの順番、HOLD回数などで大きな倍率が得られます。戦闘中のレリック一覧と報酬の相性表示がビルド作りのヒントです。</p>
+      <p><b>エンチャント</b>は演算カード1枚につける追加効果です。「再現」はそのカードの演算を2回行いますが、コンボは1枚として数えます。「蓄力」「招札」は配置時にエネルギー・ドローを増やし、配置が確定します。</p>
+      <p><b>報酬</b>ではカードを追加するか見送り、金貨やレリックを獲得できます。<b>店・休息・工房</b>で強化、同系統カードの合成、不要カードの削除などを行いましょう。レリックの発見・取得状況は「図鑑」に保存されます。</p>
+      <p><b>星詠みの頁</b>は今の手札・空き枠・エネルギーで高火力が狙える配置を提案します。自動でスペルを使うことはありません。改善が見つからなければ頁を消費しません。</p>
+    `)}
+    ${section('07 · PC・スマホでの操作と便利な機能',`
+      <dl class="guide-terms">
+        <div><dt>スマホ・タッチ操作</dt><dd>手札のカードをタップして配置。盤のカードをタップし「← 左へ」「右へ →」で順番変更。仮置き中なら「手札に戻す」も使えます。</dd></div>
+        <div><dt>PC・マウス操作</dt><dd>手札をクリックして配置。ドラッグ＆ドロップで位置を指定したり、盤のカードを入れ替えたり、仮置きのカードを手札に戻したりできます。</dd></div>
+        <div><dt>PC・キーボード操作</dt><dd>盤のカードにフォーカスして<strong>← / →</strong>で位置を変更、<strong>Delete</strong>で仮置きを手札に戻せます。</dd></div>
+        <div><dt>仮置きと確定</dt><dd>通常の演算カードはHOLD / BURST前ならやり直せて、エネルギーも返却。防御などのスペル、蓄力・招札付きの配置、行動後のカードは取り消せません。</dd></div>
+        <div><dt>保存・演出設定</dt><dd>探索は中断して続きから再開できます。設定で効果音の音量や演出速度を変更でき、BURST演出中はスキップも可能です。</dd></div>
+      </dl>
+    `)}
+    ${section('08 · 大ダメージと∞について',`
+      <p>高火力を目指すには、加算で数値を育て、乗算や割合で伸ばし、強力な累乗・指数・レリックを組み合わせます。ただし、理想の式を追いすぎて敵の攻撃を受け切れないと負けてしまいます。</p>
+      <p>最大の数値表示は<strong>9999無量大数（9999 × 10<sup>68</sup>）</strong>。これを超える最終ダメージは<strong>∞</strong>と表示します。∞でも敵のバリア・耐久ラインは有効です。</p>
+      <p>記録帳には最大ダメージや探索履歴、図鑑には出会った敵とレリックが残ります。「数字の単位・読み方」で大きな数の読み方も確認できます。</p>
+    `)}
+    <p class="guide-foot">読みたい見出しを押すと説明を開閉できます。最初は「01 → 02 → 03」の順に読めば十分です。</p>
+  </div>`;
+}
+
 
 const damageThresholds=[100n,10000n,10n**8n,10n**12n,10n**20n,10n**40n,CAP+1n];
 function magnitude([n,d]) {
@@ -5345,7 +5504,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.6.0</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.6.1</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -5507,14 +5666,11 @@ function action(command,target) {
   }
   sound.unlock();
   const i=Number(arg);
-  if(name==='help') return modal('遊び方',`<p>手札の演算を盤に置き、基礎攻撃力から左順に計算します。地図は下から上へ、光っているマスを選びます。たとえば 20 → +10 → ×3 は90です。</p>
-    <p>演算盤のカードにフォーカスして、左右キーで移動、Deleteで仮置きを手札に戻せます。確定前のカードは「仮置き○枚を戻す」でまとめて戻せます。</p>
-    <p>HOLDは盤を維持して新しい手札を引きます。敵はHOLD後、またはBURSTで生き残った後に予告どおり行動します。</p>
-    <p>反撃減衰は、予告欄の順序で有効な演算を隣接させてBURSTすると成立します。敵が生き残ったときに反撃や妨害を弱めます。成立は各戦闘で1回です。</p>
-    <p>防御・結界・浄化は手札から直接使うスペルです。エンチャントは演算カードに1つ。再現は同じ演算を2回行い、コンボでは1枚として数えます。エナジーや手札を得た配置は確定します。</p>
-    <p>差し引きで負になった値や分数も計算中は保持します。装甲適用後、負のダメージは0、小数は切り捨てです。</p>
-    <p>星詠みの頁は、手札の演算カードを現在のエネルギーと空き枠の範囲で並べ、レリック込みの最大ダメージになる候補を仮置きします。スペルは手動で使えます。ダメージを伸ばせた場合に1枚消費します。</p>
-    <p>次の盤に入る妨害は、指定枠が空なら一時的に末尾で処理します。種別封印は、次のBURSTまで指定の演算をすべて無効化します。HOLDの予測には新しく引くカードを含めません。</p>`);
+  if(name==='help') {
+    modal('遊び方 · 初心者ガイド',helpGuide());
+    dialog.classList.add('guide-dialog');
+    return;
+  }
   if(name==='settings') return modal('設定',prefsHTML());
   if(name==='records') return openRecords();
   if(name==='codex') return openCodex();

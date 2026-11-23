@@ -646,6 +646,45 @@ async function freshDiscoveryCodex(options) {
   await page.close();
 }
 
+async function helpGuideFlow(options) {
+  const {page,errors}=await openPage(options);
+  if(await action(page,'menu').isVisible()) await action(page,'menu').click();
+  await action(page,'help').click();
+  const dialog=page.locator('#dialog');
+  assert(await dialog.isVisible(),'help dialog opens from menu');
+  assert.match(await dialog.locator('h2').innerText(),/初心者ガイド/);
+  const sections=dialog.locator('.guide-section');
+  assert.equal(await sections.count(),8,'8 accessible help sections');
+  assert.equal(await dialog.locator('.guide-section[open]').count(),1,'only quick start initially expanded');
+  assert.match(await sections.first().innerText(),/地図で次のマスを選ぶ/);
+  assert.match(await dialog.locator('.guide-quick').innerText(),/置く[\s\S]*比べる[\s\S]*発動/);
+  await sections.nth(1).locator('summary').click();
+  assert(await sections.nth(1).evaluate(el=>el.open),'arithmetic examples expand');
+  assert.match(await sections.nth(1).innerText(),/20[\s\S]*＋10[\s\S]*×3[\s\S]*90/);
+  await sections.nth(1).locator('summary').click();
+  assert(!(await sections.nth(1).evaluate(el=>el.open)),'section collapses');
+  const overflow=await dialog.evaluate(el=>({scroll:el.scrollWidth,client:el.clientWidth}));
+  assert(overflow.scroll<=overflow.client+1,'help dialog horizontal overflow '+JSON.stringify(overflow));
+  await noOverflow(page,'help modal');
+  await dialog.locator('form[method="dialog"] button').click();
+  assert(!(await dialog.isVisible()),'help modal closes');
+  const encounter=fixture('fight');
+  await page.close();
+  const next=await openPage(options,encounter);
+  const p=next.page;
+  await action(p,'resume').click();
+  const before=await readState(p);
+  if(await action(p,'menu').isVisible()) await action(p,'menu').click();
+  await action(p,'help').click();
+  await p.locator('.guide-section').nth(2).locator('summary').click();
+  assert.match(await p.locator('.guide-section').nth(2).innerText(),/HOLD/);
+  await p.locator('#dialog form[method="dialog"] button').click();
+  assert.deepEqual(await readState(p),before,'reading help does not modify battle');
+  await noOverflow(p,'help from battle');
+  assert.deepEqual([...errors,...next.errors],[]);
+  await p.close();
+}
+
 async function desktopFlow() {
   const {page,errors}=await openPage({viewport:{width:1366,height:768},reducedMotion:'reduce'});
   assert(await action(page,'menu').isHidden());
@@ -711,6 +750,8 @@ try {
     if(width===320||width===390) {
       await rewardRelicHints(options);
       await discoveryCodex(options);
+      await helpGuideFlow(options);
+      console.log('PASS beginner guide 8 sections → math demo → expand/collapse → battle state intact');
     }
     if(width===390) {
       await freshDiscoveryCodex(options);
@@ -723,6 +764,7 @@ try {
   }
   if(!useWebKit) {
     await desktopFlow();
+    await helpGuideFlow({viewport:{width:1366,height:768},reducedMotion:'reduce'});
     await discoveryCodex({viewport:{width:1366,height:768},reducedMotion:'reduce'});
     console.log('PASS desktop Chrome 1366×768 drag placement → BURST, keyboard removal / reduced motion');
     console.log('PASS persistent discovery codex with encounter portrait and relic detail');

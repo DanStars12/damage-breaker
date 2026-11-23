@@ -1893,3 +1893,66 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
 }
 /* Shared battle and codex sprites stay on integer pixel boundaries when scaled. */
 .battle .foe canvas[data-enemy-art] { image-rendering:pixelated; image-rendering:crisp-edges; }
+
+
+/* v1.6.1 — high-information, low-clutter beginner guide. */
+.guide-dialog { width:100%; max-width:min(850px,96vw); max-height:min(88dvh,860px); padding:clamp(12px,2.8vw,23px); }
+.guide-dialog > h2 { color:#f3dfb8; margin:0 0 9px; font:700 clamp(19px,2.5vw,26px)/1.3 var(--display); }
+.guide { min-width:0; line-height:1.65; font-family:var(--interface); }
+.guide-lead { padding:8px 11px; border-left:3px solid #dfc088; background:#292d28; font-size:clamp(12px,2vw,14px); }
+.guide-lead strong { color:#ffdea0; }
+.guide-quick { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:10px 0 12px; }
+.guide-quick > div { display:grid; align-content:start; min-width:0; gap:3px; border:1px solid #776548; background:linear-gradient(145deg,#34372f,#252d2d); padding:7px 8px; }
+.guide-quick b { font-size:13px; color:#f7d9a1; }
+.guide-quick small { font:11px/1.5 var(--interface); color:#d7c9b5; }
+.guide-section { border:1px solid #796d5c; background:#252929; margin-top:7px; }
+.guide-section summary { position:relative; cursor:pointer; padding:10px 35px 10px 11px; font:700 clamp(12px,1.8vw,15px)/1.4 var(--interface); color:#f0d5ab; list-style:none; }
+.guide-section summary::-webkit-details-marker { display:none; }
+.guide-section summary::after { content:'＋'; position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:19px; color:#c3d6ce; }
+.guide-section[open] summary::after { content:'−'; }
+.guide-section summary:hover { background:#363933; }
+.guide-section summary:focus-visible { outline:2px solid #ffe5ac; outline-offset:-2px; }
+.guide-section[open] summary { background:#343a35; border-bottom:1px solid #806f57; }
+.guide-section-body { padding:10px 12px 12px; font-size:13px; line-height:1.7; }
+.guide-section-body > p + p { margin-top:8px; }
+.guide-section-body strong,.guide-section-body b { color:#fbe0a9; }
+.guide-steps { counter-reset:step; list-style:none; padding:0; margin:0; display:grid; gap:7px; }
+.guide-steps li { display:grid; grid-template-columns:25px minmax(0,1fr); column-gap:7px; padding:7px 7px 7px 5px; border-bottom:1px solid #776c583d; }
+.guide-steps li::before { counter-increment:step; content:counter(step); grid-row:span 2; display:grid; place-items:center; align-self:start; width:23px; height:23px; border:1px solid #bea47a; background:#3c413c; color:#ffdfaa; font:bold 13px/1 var(--interface); }
+.guide-steps li span { grid-column:2; }
+.guide-tip { border-left:2px solid #85b9a2; background:#243a3440; padding:7px 9px; margin-top:10px; }
+.guide-warning { border-left:2px solid #df9987; background:#492c2b55; padding:7px 9px; margin-top:9px; }
+.guide-equation { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:5px; margin:10px 0; padding:9px 5px; border:1px solid #8e7554; background:#161e22; font:700 clamp(12px,2.4vw,19px)/1.25 var(--display); font-variant-numeric:tabular-nums; }
+.guide-equation > span,.guide-equation > strong { min-width:0; white-space:nowrap; }
+.guide-equation > :is(.guide-base,.guide-add,.guide-mul) { padding:5px 7px; border:1px solid #9b866777; background:#2c3131; }
+.guide-equation .guide-add { color:#bce0a1; }
+.guide-equation .guide-mul { color:#b2dafc; }
+.guide-equation > strong { color:#ffde96; }
+.guide-equation .guide-arrow { color:#b5a891; }
+.guide-terms { margin:9px 0; }
+.guide-terms > div { display:grid; grid-template-columns:minmax(100px,28%) minmax(0,1fr); column-gap:11px; padding:8px 4px; border-bottom:1px solid #84765c53; }
+.guide-terms dt { color:#f1cfa3; font-weight:700; }
+.guide-terms dd { margin:0; color:#e1d9c7; }
+.guide-pair { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; margin:10px 0; }
+.guide-pair > div { padding:10px; background:#2d3435; border:1px solid #786f58; }
+.guide-pair h3 { margin:0 0 5px; font:700 15px/1.4 var(--interface); color:#ffddac; }
+.guide-pair p { font-size:13px; }
+.guide-pair small { display:block; margin-top:5px; font-size:11px; }
+.guide-pair-examples > div { display:grid; gap:4px; }
+.guide-pair-examples span { color:#bde0ce; font-weight:700; }
+.guide-foot { font:11px/1.5 var(--interface); color:#c6bbad; margin-top:10px; }
+@media(max-width:550px) {
+  .guide-dialog { padding:12px 10px; max-height:90dvh; }
+  .guide-lead { padding:7px; }
+  .guide-quick { gap:4px; }
+  .guide-quick > div { padding:6px 4px; }
+  .guide-quick b { font-size:12px; }
+  .guide-quick small { font-size:10px; }
+  .guide-section-body { padding:9px 8px; font-size:12px; }
+  .guide-section summary { padding-left:8px; }
+  .guide-terms > div { grid-template-columns:1fr; row-gap:2px; }
+  .guide-pair { grid-template-columns:1fr; }
+  .guide-equation { gap:3px; font-size:12px; }
+  .guide-equation > :is(.guide-base,.guide-add,.guide-mul) { padding:4px 5px; }
+}
+@media(prefers-reduced-motion:reduce) { .guide-section,.guide-section summary { transition:none; } }

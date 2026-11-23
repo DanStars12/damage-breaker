@@ -11,6 +11,7 @@ import {readDivination} from './hint.mjs';
 import {createSound} from './sound.mjs';
 import {inheritCodex,discoverRelics} from './catalog.mjs';
 import {codexContents,paintCodexEntries} from './codex-ui.mjs';
+import {helpGuide} from './help-guide.mjs';
 const app=document.querySelector('#app');
 const dialog=document.querySelector('#dialog');
 const effect=document.querySelector('#effect');
@@ -636,7 +637,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.6.0</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.6.1</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -798,14 +799,11 @@ function action(command,target) {
   }
   sound.unlock();
   const i=Number(arg);
-  if(name==='help') return modal('遊び方',`<p>手札の演算を盤に置き、基礎攻撃力から左順に計算します。地図は下から上へ、光っているマスを選びます。たとえば 20 → +10 → ×3 は90です。</p>
-    <p>演算盤のカードにフォーカスして、左右キーで移動、Deleteで仮置きを手札に戻せます。確定前のカードは「仮置き○枚を戻す」でまとめて戻せます。</p>
-    <p>HOLDは盤を維持して新しい手札を引きます。敵はHOLD後、またはBURSTで生き残った後に予告どおり行動します。</p>
-    <p>反撃減衰は、予告欄の順序で有効な演算を隣接させてBURSTすると成立します。敵が生き残ったときに反撃や妨害を弱めます。成立は各戦闘で1回です。</p>
-    <p>防御・結界・浄化は手札から直接使うスペルです。エンチャントは演算カードに1つ。再現は同じ演算を2回行い、コンボでは1枚として数えます。エナジーや手札を得た配置は確定します。</p>
-    <p>差し引きで負になった値や分数も計算中は保持します。装甲適用後、負のダメージは0、小数は切り捨てです。</p>
-    <p>星詠みの頁は、手札の演算カードを現在のエネルギーと空き枠の範囲で並べ、レリック込みの最大ダメージになる候補を仮置きします。スペルは手動で使えます。ダメージを伸ばせた場合に1枚消費します。</p>
-    <p>次の盤に入る妨害は、指定枠が空なら一時的に末尾で処理します。種別封印は、次のBURSTまで指定の演算をすべて無効化します。HOLDの予測には新しく引くカードを含めません。</p>`);
+  if(name==='help') {
+    modal('遊び方 · 初心者ガイド',helpGuide());
+    dialog.classList.add('guide-dialog');
+    return;
+  }
   if(name==='settings') return modal('設定',prefsHTML());
   if(name==='records') return openRecords();
   if(name==='codex') return openCodex();
