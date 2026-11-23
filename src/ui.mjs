@@ -174,7 +174,7 @@ function tacticalReadout(p,outcome,response) {
     Math.min(100,run.hp+(run.enemy.kind==='boss'?28:run.enemy.elite?13:7)+run.bonus('victoryRecovery')):
     !response.outcome?.hp?0:Math.min(response.outcome.maxHp,
       response.outcome.hp+(attenuated?run.bonus('attenuationHeal'):0));
-  const holdText=!canHold?'HOLD上限':lethal?'反撃で敗北':
+  const holdText=!canHold?'HOLD上限':lethal?'HOLDすると敗北（反撃）':
     outcome.hp<run.hp?'HP −'+(run.hp-outcome.hp):outcome.maxHp<run.maxHp?'最大HP −'+(run.maxHp-outcome.maxHp):
     outcome.drain!==run.drain?'基礎 '+run.base+' → '+run.baseAt(outcome.drain):
     outcome.drawPenalty?'次のドロー −1':outcome.energyPenalty?'次のエナジー −1':outcome.deb!==run.deb?'妨害が盤に入る':outcome.blocked||outcome.absorbed?'HP変化なし':'追加の変化なし';
@@ -629,7 +629,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.5.2</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.5.3</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
