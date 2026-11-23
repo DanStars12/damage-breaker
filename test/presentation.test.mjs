@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CAP} from '../src/math.mjs';
 import {evaluate} from '../src/relics.mjs';
-import {card,upgraded} from '../src/cards.mjs';
+import {card,upgraded,enchanted} from '../src/cards.mjs';
 import {timeline,magnitude,reelValue,impactForce,relicActivations,boardRelicStates,burstVisual,reelTiming,attackAnimation} from '../src/presentation.mjs';
 
 test('timeline preserves resolution order, exact relic value and armored damage',()=>{
@@ -14,6 +14,23 @@ test('timeline preserves resolution order, exact relic value and armored damage'
   assert.deepEqual(steps[5].value,result.triggers[0].result);
   assert.deepEqual(steps.at(-1).value,[result.final,1n]);
 });
+test('BURST timeline identifies operation styles, percentage direction and both repeat passes',()=>{
+  const repeated=enchanted(card('mul',3),'repeat');
+  const board=[card('add',5),repeated,card('pct',-20),card('pow',2),card('exp',2)];
+  const result=evaluate({board});
+  const steps=timeline(result,1);
+  assert.deepEqual(steps.slice(0,6).map(s=>s.operationKind),['add','mul','mul','pct','pow','exp']);
+  assert.deepEqual(steps.slice(0,6).map(s=>s.type),['card','card','repeat','card','card','card']);
+  assert.match(steps[1].name,/1回目/);
+  assert.match(steps[2].name,/2回目/);
+  assert.equal(steps[3].direction,'down');
+  assert.equal(steps.at(-1).operationKind,'impact');
+  assert.deepEqual(steps.at(-1).value,[result.final,1n]);
+  const rising=timeline(evaluate({board:[card('pct',25)]}),1);
+  assert.equal(rising[0].direction,'up');
+  assert.equal(steps[1].combo,steps[2].combo);
+});
+
 test('reel samples preserve giant integer endpoints and fraction transitions',()=>{
   const from=[15n,1n],to=[CAP+1n,1n];
   assert.deepEqual(reelValue(from,to,0),from);
