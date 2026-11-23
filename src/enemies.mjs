@@ -107,6 +107,7 @@ export function bossCounterplay(enemy,move) {
   if(enemy.gates.length>0) return {kind:'gate',text:`耐久ライン残${enemy.gates.length}本：1BURSTで最大1本だけ突破`};
   const hits=attackHits(move);
   if(hits>1) return {kind:'multi',text:`${hits}回攻撃：防御をヒット順に消費`};
+  if(move.kind==='shatter') return {kind:'shatter',text:'破界は結界を破壊。HP被害は防御で軽減'};
   if(attackPatterns[move.kind]?.penalty||!hits)
     return {kind:'disruption',text:'妨害は結界で防ぎ、減衰でも軽減可能'};
   return {kind:'attack',text:'通常攻撃：反撃減衰と防御の使いどころを確認'};
