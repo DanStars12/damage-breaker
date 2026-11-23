@@ -419,6 +419,44 @@ async function commandFeedback(options) {
   await page.close();
 }
 
+async function tacticalClarity(options) {
+  const run=fixture('fight');
+  const op=(kind,value,cost=1)=>({kind,value,tier:0,cost});
+  run.enemy.cycle=['attack'];
+  run.enemy.attack=10;
+  run.enemy.barrier=2;
+  run.enemy.hp=run.enemy.max=1000n;
+  run.enemy.armor=1;
+  run.hp=20;
+  run.guard=0;
+  run.ward=0;
+  run.board=[op('add',5)];
+  run.hand=[op('mul',3),op('add',10,2),op('clean',1)];
+  run.energy=1;
+  const {page,errors}=await openPage(options,run);
+  await action(page,'resume').tap();
+  assert.equal(await page.locator('.attenuation-start').count(),1);
+  assert.match(await page.locator('.attenuation-hint').innerText(),/あと1枚/);
+  assert.equal(await page.locator('.tactics-more').getAttribute('open'),null);
+  assert.match(await action(page,'hand:1').getAttribute('title'),/エナジー不足/);
+  assert.match(await page.locator('.hand [data-hand="2"] .card-type').innerText(),/浄化対象なし/);
+  await page.locator('.tactics-more summary').tap();
+  assert.match(await page.locator('.tactics-detail-grid').innerText(),/HOLD · 盤を維持/);
+  assert.match(await page.locator('.tactics-detail-grid').innerText(),/HP 20 → 10/);
+  assert.match(await page.locator('.tactics-detail-grid').innerText(),/バリア 1層破壊/);
+  await noOverflow(page,'expanded tactical forecast');
+  await action(page,'hand:0').tap();
+  assert.equal(await page.locator('.attenuation-first').count(),1);
+  assert.equal(await page.locator('.attenuation-second').count(),1);
+  assert.match(await page.locator('.attenuation-hint').innerText(),/減衰可能/);
+  await page.locator('.tactics-more summary').tap();
+  assert.match(await page.locator('.tactics-detail-grid').innerText(),/術師HP 20 → 15/);
+  assert.match(await page.locator('.tactics-detail-grid').innerText(),/反撃減衰成立/);
+  await noOverflow(page,'attenuation tactical forecast');
+  assert.deepEqual(errors,[]);
+  await page.close();
+}
+
 async function enchantmentFlow(options) {
   const eventRun=fixture('event');
   eventRun.event='echoShrine';
@@ -566,6 +604,7 @@ try {
       await combatEffects(options);
       await phaseGauges(options);
       await commandFeedback(options);
+      await tacticalClarity(options);
       await enchantmentFlow(options);
       await attenuationFlow(options);
       console.log('PASS enchantment event and relic grants, spell class, attenuation success and failure');

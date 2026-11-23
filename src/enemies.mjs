@@ -102,10 +102,20 @@ export const attackHits=move=>attackPatterns[move.kind]?.hits??0;
 const offensiveAttenuation=['add','mul'];
 const disruptiveAttenuation=['mul','add'];
 export const attenuationPattern=move=>attackHits(move)?offensiveAttenuation:disruptiveAttenuation;
-export function matchesAttenuation(move,steps) {
+// Return the exact adjacent effective cards that satisfy the combat rule.
+// Visual hints use this same match as burstResponse; sealed/enemy steps cannot qualify.
+export function attenuationPair(move,steps) {
   const [first,second]=attenuationPattern(move);
-  return steps.some((step,i)=>i>0&&!step.card.enemy&&step.op?.kind===second&&
-    !steps[i-1].card.enemy&&steps[i-1].op?.kind===first);
+  for(let i=1;i<steps.length;i++) {
+    if(!steps[i].card.enemy&&steps[i].op?.kind===second&&
+      !steps[i-1].card.enemy&&steps[i-1].op?.kind===first) {
+      return [steps[i-1].card,steps[i].card];
+    }
+  }
+  return null;
+}
+export function matchesAttenuation(move,steps) {
+  return attenuationPair(move,steps)!==null;
 }
 export function intent(enemy,turn,act) {
   const [kind,target]=enemy.cycle[turn%enemy.cycle.length].split(':');

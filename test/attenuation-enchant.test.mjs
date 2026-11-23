@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {Run,prices} from '../src/run.mjs';
 import {card,enchanted,fused,spellKinds,upgraded} from '../src/cards.mjs';
 import {evaluate} from '../src/relics.mjs';
-import {makeEnemy,encounterCount,attenuationPattern,intent} from '../src/enemies.mjs';
+import {makeEnemy,encounterCount,attenuationPattern,attenuationPair,matchesAttenuation,intent} from '../src/enemies.mjs';
 import {timeline} from '../src/presentation.mjs';
 import {readCheckpoint,writeCheckpoint} from '../src/checkpoint.mjs';
 import {readDivination} from '../src/hint.mjs';
@@ -34,6 +34,19 @@ test('every regular enemy, elite and boss has an attenuation condition for each 
       }
     }
   }
+});
+
+test('visual attenuation pair uses effective adjacent operations only',()=>{
+  const add=card('add',7),mul=card('mul',3);
+  const attack={kind:'attack',value:10},curse={kind:'sub',value:5};
+  const ready=evaluate({board:[add,mul]}).steps;
+  assert.deepEqual(attenuationPair(attack,ready),[add,mul]);
+  assert.equal(matchesAttenuation(attack,ready),true);
+  assert.equal(attenuationPair(curse,ready),null);
+  assert.deepEqual(attenuationPair(curse,evaluate({board:[mul,add]}).steps),[mul,add]);
+  assert.equal(attenuationPair(attack,evaluate({board:[add,mul],deb:[{kind:'seal',value:0,at:1,enemy:true}]}).steps),null);
+  assert.equal(attenuationPair(attack,evaluate({board:[add,mul],deb:[{kind:'sub',value:1,at:1,enemy:true}]}).steps),null);
+  assert.equal(matchesAttenuation(attack,evaluate({board:[add,mul],deb:[{kind:'sub',value:1,at:1,enemy:true}]}).steps),false);
 });
 
 test('attenuation halves retaliation before guard, grants next-turn relic bonuses and persists once per battle',()=>{
