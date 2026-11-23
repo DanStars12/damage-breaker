@@ -283,9 +283,14 @@ async function relicExchange(options) {
   await page.locator('#exchangeSource').selectOption('grimoire');
   assert(await page.locator('[data-exchange-relic="grimoire"]').isVisible());
   assert.equal(await action(page,'eventExchange:1').locator('..').getAttribute('data-exchange-relic'),expected);
+  const beforeExchange=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).codex,storageKey);
+  assert(beforeExchange.relics.includes(expected),'viewed exchange offer must be recorded');
+  assert(!beforeExchange.acquired.includes(expected),'viewed offer is not yet acquired');
   await noOverflow(page,'exchange candidates');
   await action(page,'eventExchange:1').tap();
   assert.deepEqual((await readState(page)).owned,['chalk',expected]);
+  const afterExchange=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).codex,storageKey);
+  assert(afterExchange.acquired.includes(expected),'exchanged relic should now be marked acquired');
   assert.equal(await page.locator('.exchange-receipt [data-exchange-relic]').count(),2);
   await noOverflow(page,'exchange receipt');
   await page.reload();
