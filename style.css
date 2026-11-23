@@ -1785,3 +1785,35 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
   .battle .board-card.attenuation-first,
   .battle .board-card.attenuation-second { transition:none; }
 }
+
+
+/* v1.5.1 BURST IMPACT: operation-specific color without extra frames or wait. */
+.reel:not([data-level="7"])[data-kind="card"][data-operation="add"] {
+  --reel-light:#dca872; --reel-gold:#ffe4bd;
+}
+.reel:not([data-level="7"])[data-kind="card"][data-operation="mul"] {
+  --reel-light:#69d3ab; --reel-gold:#c9ffdc;
+}
+.reel:not([data-level="7"])[data-kind="card"][data-operation="pct"] {
+  --reel-light:#7db7f0; --reel-gold:#d6edff;
+}
+.reel:not([data-level="7"])[data-kind="card"][data-operation="pct"][data-direction="down"] {
+  --reel-light:#dc988d; --reel-gold:#ffded7;
+}
+.reel:not([data-level="7"])[data-kind="card"][data-operation="pow"] {
+  --reel-light:#ca97e9; --reel-gold:#f5ddff;
+}
+.reel:not([data-level="7"])[data-kind="card"][data-operation="exp"] {
+  --reel-light:#efd074; --reel-gold:#fff1b4;
+}
+.reel:not([data-level="7"])[data-kind="repeat"] {
+  --reel-light:#88ddcd; --reel-gold:#d1fff1;
+}
+.reel[data-kind="repeat"] #stepName { font-weight:800; }
+#reelNumber[data-pop="a"] { animation:count-pop .32s both; }
+#reelNumber[data-pop="b"] { animation:count-pop-alt .32s both; }
+@keyframes count-pop-alt {
+  0% { transform:scale(.94); opacity:.55; }
+  32% { transform:scale(1.06); opacity:1; }
+  100% { transform:scale(1); opacity:1; }
+}
