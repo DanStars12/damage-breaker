@@ -9,7 +9,7 @@ import {relicRanks,relicRewardHints} from './relics.mjs';
 import {attackPatterns,attackHits,attenuationPattern,attenuationPair,bossCounterplay} from './enemies.mjs';
 import {readDivination} from './hint.mjs';
 import {createSound} from './sound.mjs';
-import {inheritCodex} from './catalog.mjs';
+import {inheritCodex,discoverRelics} from './catalog.mjs';
 import {codexContents,paintCodexEntries} from './codex-ui.mjs';
 const app=document.querySelector('#app');
 const dialog=document.querySelector('#dialog');
@@ -1000,7 +1000,11 @@ app.addEventListener('click',e=>{
 
 });
 app.addEventListener('change',e=>{
-  if(e.target.id==='exchangeSource') app.querySelector('#exchangeChoices').innerHTML=exchangeChoices(e.target.value);
+  if(e.target.id==='exchangeSource') {
+    const source=e.target.value;
+    if(source&&discoverRelics(book.codex,run.eventExchanges(source))) persist();
+    app.querySelector('#exchangeChoices').innerHTML=exchangeChoices(source);
+  }
 });
 app.addEventListener('submit',e=>{
   if(e.target.id!=='start') return;
