@@ -1095,7 +1095,9 @@ dialog.addEventListener('click',e=>{
   const codexEntry=e.target.closest('[data-codex-entry]');
   if(codexEntry) {
     codexSelected=codexEntry.dataset.codexEntry;
-    updateCodex('[data-codex-entry="'+codexSelected+'"]');return;
+    updateCodex('[data-codex-entry="'+codexSelected+'"]');
+    dialog.querySelector('.codex-detail')?.scrollIntoView({block:'nearest'});
+    return;
   }
   const enchantOption=e.target.closest('[data-enchant-target],[data-enchant-confirm]');
   if(enchantOption&&enchantSelection&&!enchantOption.disabled) {
