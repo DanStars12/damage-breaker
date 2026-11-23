@@ -9,14 +9,20 @@ import {relicRanks,relicRewardHints} from './relics.mjs';
 import {attackPatterns,attackHits,attenuationPattern,attenuationPair,bossCounterplay} from './enemies.mjs';
 import {readDivination} from './hint.mjs';
 import {createSound} from './sound.mjs';
+import {inheritCodex} from './catalog.mjs';
+import {codexContents,paintCodexEntries} from './codex-ui.mjs';
 const app=document.querySelector('#app');
 const dialog=document.querySelector('#dialog');
 const effect=document.querySelector('#effect');
 const book=load();
 let suspended=readCheckpoint(book.checkpoint);
+const previousCodex=JSON.stringify(book.codex??null);
+book.codex=inheritCodex(book.codex,book.runs,suspended?.run);
+const codexNeedsSave=previousCodex!==JSON.stringify(book.codex);
 let run=null, selected=null, storageWarning=false, notice='';
 let sequence=null, lastPage=null, craftResult=null, lastDeal=null, lastBattle=null;
 let deckFilter='all', deckPage=0, shopTab='cards', baseGlow=null;
+let codexTab='enemies',codexFilter='all',codexPage=0,codexSelected=null;
 const motionMode=()=>matchMedia('(prefers-reduced-motion: reduce)').matches?'off':book.prefs.motion||'full';
 const compactScreen=matchMedia('(max-width: 550px), (max-width: 850px) and (pointer: coarse), (max-height: 550px) and (max-width: 1100px) and (pointer: coarse)');
 const sound=createSound(globalThis.AudioContext??globalThis.webkitAudioContext,()=>book.prefs);
@@ -83,6 +89,7 @@ function saveProgress() {
   if(finished||run.phase==='clear') rememberRun();
   suspended=finished?null:{run,notice,craftResult};
   book.checkpoint=suspended?writeCheckpoint(suspended):null;
+  book.codex=inheritCodex(book.codex,book.runs,run);
   persist();
 }
 function modal(title,content) {
@@ -629,7 +636,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.5.3</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.6.0</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -658,7 +665,7 @@ function view() {
 function render() {
   const mode=motionMode();
   app.dataset.motion=mode;
-  app.innerHTML=`<header><div class="brand">◇ DAMAGE BREAKER</div><button type="button" class="menu-toggle" data-action="menu" aria-controls="game-nav" aria-expanded="false">メニュー</button><nav id="game-nav" aria-label="ゲームメニュー">${run&&run.phase!=='battle'?btn('デッキ '+run.deck.length,'deck'):''}${run&&suspended?btn('中断','pause'):''}${btn('遊び方','help')}${btn('数字の単位・読み方','numberUnits')}${btn('記録帳','records')}${btn('設定','settings')}</nav></header>${view()}
+  app.innerHTML=`<header><div class="brand">◇ DAMAGE BREAKER</div><button type="button" class="menu-toggle" data-action="menu" aria-controls="game-nav" aria-expanded="false">メニュー</button><nav id="game-nav" aria-label="ゲームメニュー">${run&&run.phase!=='battle'?btn('デッキ '+run.deck.length,'deck'):''}${run&&suspended?btn('中断','pause'):''}${btn('遊び方','help')}${btn('数字の単位・読み方','numberUnits')}${btn('記録帳','records')}${btn('図鑑','codex')}${btn('設定','settings')}</nav></header>${view()}
     ${storageWarning?'<p role="status" style="text-align:center">保存できませんでした。画面を閉じると、今回の進行や記録が失われる場合があります。</p>':''}`;
   if(baseGlow&&run?.phase==='map'&&!craftResult) app.querySelector('.map-heading')?.insertAdjacentHTML('afterend',baseBanner());
   const hero=app.querySelector('[data-sprite]');
@@ -756,6 +763,21 @@ function refreshDeck(focus) {
   dialog.querySelector('#deckContents').innerHTML=deckContents();
   (dialog.querySelector(focus)||dialog.querySelector('#deckFilter')).focus({preventScroll:true});
 }
+function updateCodex(focus) {
+  const content=dialog.querySelector('#codexContents');
+  if(!content) return;
+  content.innerHTML=codexContents(book.codex,{
+    tab:codexTab,filter:codexFilter,page:codexPage,selected:codexSelected
+  });
+  paintCodexEntries(content);
+  if(focus) dialog.querySelector(focus)?.focus({preventScroll:true});
+}
+function openCodex() {
+  codexTab='enemies';codexFilter='all';codexPage=0;codexSelected=null;
+  modal('巡歴の図鑑','<div id="codexContents"></div>');
+  dialog.classList.add('codex-dialog');
+  updateCodex();
+}
 function openRecords() {
   modal('記録帳',`<h3>歴代最高 ${fmt(BigInt(book.best.max))}</h3><p>${esc(book.best.formula||'記録なし')}</p>
     <h3>探索履歴</h3>${book.runs.map(r=>`<details><summary>${esc(r.seed)} · ${{loss:'敗北',clear:'通常クリア',win:'EXTRAクリア'}[r.outcome]} · 第${r.stage}戦 · ${fmt(BigInt(r.max))}</summary>
@@ -786,6 +808,7 @@ function action(command,target) {
     <p>次の盤に入る妨害は、指定枠が空なら一時的に末尾で処理します。種別封印は、次のBURSTまで指定の演算をすべて無効化します。HOLDの予測には新しく引くカードを含めません。</p>`);
   if(name==='settings') return modal('設定',prefsHTML());
   if(name==='records') return openRecords();
+  if(name==='codex') return openCodex();
   if(name==='numberUnits') {
     modal('数字の単位・読み方',`<dl class="number-units">${numberUnits.map(({name,reading,exponent})=>
       `<div><dt>${name}</dt><dd>${reading}</dd><dd>10<sup>${exponent}</sup></dd></div>`).join('')}</dl>
@@ -1027,6 +1050,10 @@ app.addEventListener('drop',e=>{
 });
 app.addEventListener('dragend',()=>{dragging=null;});
 dialog.addEventListener('change',e=>{
+  if(e.target.matches('[data-codex-filter]')) {
+    codexFilter=e.target.value;codexPage=0;codexSelected=null;
+    updateCodex('[data-codex-filter]');return;
+  }
   const {id,checked,value}=e.target;
   if(id==='craftDigit'&&crafting) {
     crafting.digit=Number(value);
@@ -1049,6 +1076,23 @@ dialog.addEventListener('change',e=>{
 });
 dialog.addEventListener('close',()=>{if(!dialog.open) enchantSelection=null;});
 dialog.addEventListener('click',e=>{
+  const codexTabButton=e.target.closest('[data-codex-tab]');
+  if(codexTabButton) {
+    codexTab=codexTabButton.dataset.codexTab;
+    codexFilter='all';codexPage=0;codexSelected=null;
+    updateCodex('[data-codex-tab="'+codexTab+'"]');return;
+  }
+  const codexPageButton=e.target.closest('[data-codex-page]');
+  if(codexPageButton&&!codexPageButton.disabled) {
+    const step=Number(codexPageButton.dataset.codexPage);
+    codexPage=step;codexSelected=null;
+    updateCodex('[data-codex-page="'+(step>0?step-1:step+1)+'"]');return;
+  }
+  const codexEntry=e.target.closest('[data-codex-entry]');
+  if(codexEntry) {
+    codexSelected=codexEntry.dataset.codexEntry;
+    updateCodex('[data-codex-entry="'+codexSelected+'"]');return;
+  }
   const enchantOption=e.target.closest('[data-enchant-target],[data-enchant-confirm]');
   if(enchantOption&&enchantSelection&&!enchantOption.disabled) {
     if(enchantOption.hasAttribute('data-enchant-confirm')) enchantSelection.confirm(enchantSelection.index);
@@ -1093,6 +1137,7 @@ dialog.addEventListener('input',e=>{
   persist();
 });
 
+if(codexNeedsSave) persist();
 render();
 
 function reactionText(move,message,hpLost,outcome) {
