@@ -29,9 +29,9 @@ export function codexContents(codex,{tab='enemies',filter='all',page=0,selected=
   ]:[['all','すべて'],['known','発見済み'],['acquired','取得済み'],['unknown','未発見'],
     ['rank0','コモン'],['rank1','レア'],['rank2','エピック'],['rank3','レジェンド']];
   const tiles=visible.map(entry=>{
-    if(!found(entry.id)) return `<div class="codex-entry is-locked" aria-label="${enemies?'未遭遇の敵':'未取得のレリック'}">
+    if(!found(entry.id)) return `<div class="codex-entry is-locked" aria-label="${enemies?'未遭遇の敵':'未発見のレリック'}">
       <div class="codex-art codex-placeholder" aria-hidden="true">?</div>
-      <b>？？？</b><small>${enemies?'未遭遇':'未取得'}</small></div>`;
+      <b>？？？</b><small>${enemies?'未遭遇':'未発見'}</small></div>`;
     const portrait=enemies?
       `<canvas data-codex-art="${entry.id}" width="88" height="64" aria-hidden="true"></canvas>`:
       relicIcon(entry.id);
