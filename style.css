@@ -1833,3 +1833,63 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
 @media (max-width:510px) {
   .enemy-rule .boss-counterplay { font-size:10px; line-height:1.35; }
 }
+
+
+/* v1.6.0 — compact pixel-art discovery codex (no battle HUD expansion). */
+.codex-dialog { max-width:min(840px,96vw); width:100%; max-height:min(88dvh,850px); padding:clamp(10px,2.5vw,22px); }
+.codex-dialog > h2 { margin:0 0 9px; color:#f7e2b4; font-size:clamp(19px,3vw,25px); }
+.codex-shell { min-width:0; }
+.codex-tabs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+.codex-tabs button { min-width:0; padding:9px 5px; border:1px solid #806c54; background:#272c2c; color:#d9d2bd; font:700 clamp(11px,1.7vw,14px)/1.25 var(--interface); }
+.codex-tabs button[aria-selected="true"] { border-color:#dfbc7c; background:#4b4032; color:#fff0c9; box-shadow:inset 0 -3px #cf9c5f; }
+.codex-toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 12px; margin:9px 0; font:12px/1.3 var(--interface); color:#e7d4b4; }
+.codex-toolbar select { margin-left:5px; min-height:34px; max-width:100%; background:#222c2a; color:#f5e5c5; border:1px solid #927c60; }
+.codex-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; min-width:0; }
+.codex-entry {
+  position:relative; display:flex; flex-direction:column; align-items:center; gap:3px;
+  min-width:0; min-height:135px; padding:6px 5px; text-align:center;
+  color:#ffefd5; border:1px solid #6f695b;
+  background:linear-gradient(155deg,#33383b,#212529 70%);
+  overflow-wrap:anywhere; font:12px/1.25 var(--interface);
+}
+.codex-entry b { font-size:clamp(11px,1.6vw,14px); line-height:1.32; }
+.codex-entry small { color:#c9bfae; font-size:10px; }
+.codex-entry.is-known { cursor:pointer; }
+.codex-entry.is-known:hover, .codex-entry.is-known[aria-pressed="true"] { border-color:#e5c28b; box-shadow:inset 0 0 0 1px #c49c6280; background:#363b3c; }
+.codex-entry:focus-visible,.codex-tabs button:focus-visible,.codex-pager button:focus-visible { outline:2px solid #ffe5b0; outline-offset:2px; }
+.codex-entry.is-locked { opacity:.62; border-style:dashed; background:#202429; color:#c2b8b0; }
+.codex-art {
+  display:grid; place-items:center;
+  min-width:0; width:100%; height:83px;
+  border:1px solid #50595c;
+  background:radial-gradient(ellipse at 50% 80%,#5360547a,transparent 65%),#171e24;
+  overflow:hidden;
+}
+.codex-art canvas {
+  display:block; width:min(100%,124px); height:auto;
+  image-rendering:pixelated; image-rendering:crisp-edges;
+  filter:drop-shadow(0 3px 1px #000b);
+}
+.codex-art .relic-icon { width:53px; height:53px; image-rendering:pixelated; filter:drop-shadow(0 2px 3px #0009); }
+.codex-placeholder { color:#7b8192; font:bold 36px/1 Georgia,serif; text-shadow:2px 2px #18151c; }
+.codex-detail { border-inline-start:3px solid #cba56b; background:#2b302e; margin-top:9px; padding:8px 12px; overflow-wrap:anywhere; }
+.codex-detail h3 { margin:0 0 5px; font-size:16px; color:#fce5b6; }
+.codex-detail p { margin:4px 0; font-size:13px; }
+.codex-detail small { color:#c6e3d3; }
+.codex-pager { display:flex; justify-content:center; align-items:center; gap:12px; margin:9px 0 5px; font:700 12px var(--interface); }
+.codex-pager button { min-height:36px; padding:5px 12px; }
+.codex-pager button:disabled { opacity:.4; }
+.codex-note { margin:7px 0 0; font:11px/1.5 var(--interface); color:#bcb7a6; }
+@media (max-width:550px) {
+  .codex-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px; }
+  .codex-entry { min-height:120px; padding:4px 3px; }
+  .codex-art { height:76px; }
+  .codex-art canvas { width:min(100%,114px); }
+  .codex-entry b { font-size:11px; }
+  .codex-dialog { max-height:89dvh; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .codex-entry,.codex-tabs button { transition:none; }
+}
+/* Shared battle and codex sprites stay on integer pixel boundaries when scaled. */
+.battle .foe canvas[data-enemy-art] { image-rendering:pixelated; image-rendering:crisp-edges; }

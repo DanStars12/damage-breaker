@@ -1,4 +1,5 @@
 import {drawFace} from './faces.mjs';
+import {paintEnemyFinish} from './enemy-finish.mjs';
 // Original low-resolution sprites. Forms use distinct silhouettes, weapons and anatomy.
 const beastPalettes=[
   [23,38],[204,38],[7,55],[37,67],[68,55],[253,42],
@@ -16,6 +17,7 @@ const paintOverrides={
 };
 export function paintEnemy(canvas,{form,palette}) {
   const c=canvas.getContext('2d');
+  c.imageSmoothingEnabled=false;
   const [h,s]=paintOverrides[form+':'+palette]??beastPalettes[palette];
   const ink='#100e1b',shade=`hsl(${h} ${s}% 19%)`,mid=`hsl(${h} ${s}% 37%)`,light=`hsl(${h} ${s}% 64%)`;
   const glow=`hsl(${(h+24)%360} 88% 79%)`;
@@ -240,6 +242,7 @@ export function paintEnemy(canvas,{form,palette}) {
       c.restore();
     }
   }
+  paintEnemyFinish(c,{form,palette},{ink,shade,mid,light,glow});
   for(let i=0;i<(big?13:5);i++) {
     const x=(i*23+12+palette*3)%84,y=(i*11+8)%51;
     box(i%3?light:glow,x,y,1,1);

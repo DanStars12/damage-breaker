@@ -283,9 +283,14 @@ async function relicExchange(options) {
   await page.locator('#exchangeSource').selectOption('grimoire');
   assert(await page.locator('[data-exchange-relic="grimoire"]').isVisible());
   assert.equal(await action(page,'eventExchange:1').locator('..').getAttribute('data-exchange-relic'),expected);
+  const beforeExchange=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).codex,storageKey);
+  assert(beforeExchange.relics.includes(expected),'viewed exchange offer must be recorded');
+  assert(!beforeExchange.acquired.includes(expected),'viewed offer is not yet acquired');
   await noOverflow(page,'exchange candidates');
   await action(page,'eventExchange:1').tap();
   assert.deepEqual((await readState(page)).owned,['chalk',expected]);
+  const afterExchange=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).codex,storageKey);
+  assert(afterExchange.acquired.includes(expected),'exchanged relic should now be marked acquired');
   assert.equal(await page.locator('.exchange-receipt [data-exchange-relic]').count(),2);
   await noOverflow(page,'exchange receipt');
   await page.reload();
@@ -561,6 +566,86 @@ async function attenuationFlow(options) {
   await page.close();
 }
 
+async function discoveryCodex(options) {
+  const run=fixture('fight');
+  run.owned=['sum','abacus'];
+  const {page,errors}=await openPage(options,run);
+  await action(page,'resume').click();
+  if(await action(page,'menu').isVisible()) await action(page,'menu').click();
+  await action(page,'codex').click();
+  assert.match(await page.locator('[data-codex-tab="enemies"]').innerText(),/1\/52/);
+  assert.equal(await page.locator('.codex-entry.is-known').count(),1);
+  assert.equal(await page.locator('.codex-art canvas').count(),1);
+  const pixels=await page.locator('.codex-art canvas').first().evaluate(canvas=>{
+    const data=canvas.getContext('2d').getImageData(0,0,88,64).data;
+    let count=0;for(let i=3;i<data.length;i+=4) if(data[i]) count++;
+    return count;
+  });
+  assert(pixels>150,'enemy portrait must be painted, not an empty canvas');
+  await page.locator('.codex-entry.is-known').first().click();
+  assert.match(await page.locator('.codex-detail').innerText(),/主な行動/);
+  await noOverflow(page,'enemy catalog modal');
+  await page.locator('[data-codex-tab="relics"]').click();
+  assert.match(await page.locator('[data-codex-tab="relics"]').innerText(),/2\//);
+  await page.locator('[data-codex-filter]').selectOption('known');
+  assert.equal(await page.locator('.codex-entry.is-known').count(),2);
+  await page.locator('.codex-entry.is-known').first().click();
+  assert.match(await page.locator('.codex-detail').innerText(),/取得済み/);
+  await noOverflow(page,'relic catalog modal');
+  await page.locator('#dialog form[method="dialog"] button').click();
+  await page.reload();
+  if(await action(page,'menu').isVisible()) await action(page,'menu').click();
+  await action(page,'codex').click();
+  assert.match(await page.locator('[data-codex-tab="enemies"]').innerText(),/1\/52/);
+  await page.locator('[data-codex-tab="relics"]').click();
+  assert.match(await page.locator('[data-codex-tab="relics"]').innerText(),/2\//);
+  assert.deepEqual(errors,[]);
+  await page.close();
+}
+
+async function offeredRelicCodex(options) {
+  const run=fixture('elite');
+  run.enemy.hp=1n;
+  run.enemy.barrier=0;
+  run.enemy.gates=[];
+  assert(run.burst());
+  assert.equal(run.phase,'reward');
+  assert(run.relicDrop);
+  const {page,errors}=await openPage(options,run);
+  if(await action(page,'menu').isVisible()) await action(page,'menu').tap();
+  await action(page,'codex').tap();
+  await page.locator('[data-codex-tab="relics"]').tap();
+  await page.locator('[data-codex-filter]').selectOption('known');
+  assert.equal(await page.locator('.codex-entry.is-known').count(),2);
+  await page.locator('.codex-entry.is-known').first().tap();
+  assert.match(await page.locator('.codex-detail').innerText(),/発見のみ/);
+  await page.locator('[data-codex-filter]').selectOption('acquired');
+  assert.equal(await page.locator('.codex-entry.is-known').count(),0);
+  await noOverflow(page,'relic reward encountered but not acquired');
+  assert.deepEqual(errors,[]);
+  await page.close();
+}
+
+async function freshDiscoveryCodex(options) {
+  const {page,errors}=await openPage(options);
+  if(await action(page,'menu').isVisible()) await action(page,'menu').tap();
+  await action(page,'codex').tap();
+  assert.match(await page.locator('[data-codex-tab="enemies"]').innerText(),/0\/52/);
+  assert.equal(await page.locator('.codex-art canvas').count(),0);
+  await page.locator('#dialog form[method="dialog"] button').tap();
+  await page.locator('#start input').fill('codex-first');
+  await page.locator('#start button').tap();
+  await settle(page);
+  await page.locator('.map-node.live').first().tap();
+  await settle(page);
+  if(await action(page,'menu').isVisible()) await action(page,'menu').tap();
+  await action(page,'codex').tap();
+  assert.match(await page.locator('[data-codex-tab="enemies"]').innerText(),/1\/52/);
+  await noOverflow(page,'newly discovered enemy');
+  assert.deepEqual(errors,[]);
+  await page.close();
+}
+
 async function desktopFlow() {
   const {page,errors}=await openPage({viewport:{width:1366,height:768},reducedMotion:'reduce'});
   assert(await action(page,'menu').isHidden());
@@ -623,7 +708,14 @@ try {
       await relicExchange(options);
       console.log(`PASS relic exchange ${width}×${height} comparison → reload receipt → decline`);
     }
-    if(width===320||width===390) await rewardRelicHints(options);
+    if(width===320||width===390) {
+      await rewardRelicHints(options);
+      await discoveryCodex(options);
+    }
+    if(width===390) {
+      await freshDiscoveryCodex(options);
+      await offeredRelicCodex(options);
+    }
     if(width===320||width===390||width===932) {
       await facilityFlow(options);
       console.log(`PASS ${name} ${width}×${height} rewards → shop → deck/removal → forge → event`);
@@ -631,7 +723,9 @@ try {
   }
   if(!useWebKit) {
     await desktopFlow();
+    await discoveryCodex({viewport:{width:1366,height:768},reducedMotion:'reduce'});
     console.log('PASS desktop Chrome 1366×768 drag placement → BURST, keyboard removal / reduced motion');
+    console.log('PASS persistent discovery codex with encounter portrait and relic detail');
   }
 } finally {
   await browser.close();

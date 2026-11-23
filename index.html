@@ -1840,6 +1840,66 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
 @media (max-width:510px) {
   .enemy-rule .boss-counterplay { font-size:10px; line-height:1.35; }
 }
+
+
+/* v1.6.0 — compact pixel-art discovery codex (no battle HUD expansion). */
+.codex-dialog { max-width:min(840px,96vw); width:100%; max-height:min(88dvh,850px); padding:clamp(10px,2.5vw,22px); }
+.codex-dialog > h2 { margin:0 0 9px; color:#f7e2b4; font-size:clamp(19px,3vw,25px); }
+.codex-shell { min-width:0; }
+.codex-tabs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+.codex-tabs button { min-width:0; padding:9px 5px; border:1px solid #806c54; background:#272c2c; color:#d9d2bd; font:700 clamp(11px,1.7vw,14px)/1.25 var(--interface); }
+.codex-tabs button[aria-selected="true"] { border-color:#dfbc7c; background:#4b4032; color:#fff0c9; box-shadow:inset 0 -3px #cf9c5f; }
+.codex-toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 12px; margin:9px 0; font:12px/1.3 var(--interface); color:#e7d4b4; }
+.codex-toolbar select { margin-left:5px; min-height:34px; max-width:100%; background:#222c2a; color:#f5e5c5; border:1px solid #927c60; }
+.codex-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; min-width:0; }
+.codex-entry {
+  position:relative; display:flex; flex-direction:column; align-items:center; gap:3px;
+  min-width:0; min-height:135px; padding:6px 5px; text-align:center;
+  color:#ffefd5; border:1px solid #6f695b;
+  background:linear-gradient(155deg,#33383b,#212529 70%);
+  overflow-wrap:anywhere; font:12px/1.25 var(--interface);
+}
+.codex-entry b { font-size:clamp(11px,1.6vw,14px); line-height:1.32; }
+.codex-entry small { color:#c9bfae; font-size:10px; }
+.codex-entry.is-known { cursor:pointer; }
+.codex-entry.is-known:hover, .codex-entry.is-known[aria-pressed="true"] { border-color:#e5c28b; box-shadow:inset 0 0 0 1px #c49c6280; background:#363b3c; }
+.codex-entry:focus-visible,.codex-tabs button:focus-visible,.codex-pager button:focus-visible { outline:2px solid #ffe5b0; outline-offset:2px; }
+.codex-entry.is-locked { opacity:.62; border-style:dashed; background:#202429; color:#c2b8b0; }
+.codex-art {
+  display:grid; place-items:center;
+  min-width:0; width:100%; height:83px;
+  border:1px solid #50595c;
+  background:radial-gradient(ellipse at 50% 80%,#5360547a,transparent 65%),#171e24;
+  overflow:hidden;
+}
+.codex-art canvas {
+  display:block; width:min(100%,124px); height:auto;
+  image-rendering:pixelated; image-rendering:crisp-edges;
+  filter:drop-shadow(0 3px 1px #000b);
+}
+.codex-art .relic-icon { width:53px; height:53px; image-rendering:pixelated; filter:drop-shadow(0 2px 3px #0009); }
+.codex-placeholder { color:#7b8192; font:bold 36px/1 Georgia,serif; text-shadow:2px 2px #18151c; }
+.codex-detail { border-inline-start:3px solid #cba56b; background:#2b302e; margin-top:9px; padding:8px 12px; overflow-wrap:anywhere; }
+.codex-detail h3 { margin:0 0 5px; font-size:16px; color:#fce5b6; }
+.codex-detail p { margin:4px 0; font-size:13px; }
+.codex-detail small { color:#c6e3d3; }
+.codex-pager { display:flex; justify-content:center; align-items:center; gap:12px; margin:9px 0 5px; font:700 12px var(--interface); }
+.codex-pager button { min-height:36px; padding:5px 12px; }
+.codex-pager button:disabled { opacity:.4; }
+.codex-note { margin:7px 0 0; font:11px/1.5 var(--interface); color:#bcb7a6; }
+@media (max-width:550px) {
+  .codex-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px; }
+  .codex-entry { min-height:120px; padding:4px 3px; }
+  .codex-art { height:76px; }
+  .codex-art canvas { width:min(100%,114px); }
+  .codex-entry b { font-size:11px; }
+  .codex-dialog { max-height:89dvh; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .codex-entry,.codex-tabs button { transition:none; }
+}
+/* Shared battle and codex sprites stay on integer pixel boundaries when scaled. */
+.battle .foe canvas[data-enemy-art] { image-rendering:pixelated; image-rendering:crisp-edges; }
 </style>
 </head>
 <body>
@@ -3900,6 +3960,159 @@ function drawFace(context,form,palette,x,y,scale,colors) {
   draw({p,b,d});
 }
 
+// Final authored 1px accents on the existing 88×64 sprite canvas.
+// The original form silhouette and 52 unique faces are left unchanged.
+function paintEnemyFinish(ctx,{form,palette},{ink,shade,mid,light,glow}) {
+  const px=(color,x,y,w=1,h=1)=>{
+    ctx.fillStyle=color;
+    ctx.fillRect(x,y,w,h);
+  };
+  const seam=(x,y,flip=false)=>{
+    const dir=flip?-1:1;
+    px(ink,x,y,5,1);
+    px(light,x+dir,y-1,3,1);
+    px(shade,x+dir,y+1,4,1);
+    px(glow,x+2,y-2);
+  };
+  const rivet=(x,y)=>{
+    px(ink,x-1,y-1,3,3);
+    px(mid,x,y,2,2);
+    px(glow,x,y);
+  };
+  const scale=(x,y)=>{
+    px(shade,x,y,5,2);
+    px(light,x+1,y,3,1);
+    px(glow,x+1,y-1);
+  };
+  const shadow=shade,shimmer=glow;
+  const metal=['golem','titan','colossus','idol','knight','lantern'];
+  const draconic=['dragon','hydra','wyrm'];
+  const beasts=['hound','boar','behemoth','leviathan'];
+  const insects=['beetle','mantis','moth'];
+  if(metal.includes(form)) {
+    // Riveted shoulder plates, beveled edges and etched armor seams.
+    seam(17,37);seam(63,37,true);
+    for(const [x,y] of [[25,45],[63,45]]) rivet(x,y);
+    px(mid,33,50,8,1);px(shimmer,34,49,5,1);
+    px(ink,49,50,5,1);px(light,50,49,3,1);
+    if(form==='golem'||form==='titan'||form==='colossus'||form==='idol') {
+      for(let k=0;k<3;k++) {
+        const x=29+7*k;
+        px(shadow,x,53,4,2);px(light,x+1,53,2,1);
+      }
+      // Faceted rock at the lower left and right, below the face.
+      px(ink,18,47,2,5);px(shimmer,19,46,3,1);
+      px(ink,67,47,2,5);px(shimmer,65,46,3,1);
+    }
+    if(form==='lantern') {
+      px(shimmer,12,44,2,2);px(light,10,46,6,1);
+      px(shadow,72,48,4,2);px(shimmer,75,47,1,1);
+    }
+  } else if(draconic.includes(form)) {
+    // Alternating scale highlights make the three dragon families read distinctly.
+    for(let i=0;i<5;i++) scale(31+i*7,35+(i%2)*5);
+    for(const [x,y] of [[20,38],[68,40]]) {
+      px(shadow,x,y,7,2);px(light,x+1,y,4,1);px(shimmer,x+4,y-2,1,2);
+    }
+    if(form==='hydra') {
+      px(light,19,42,5,1);px(shimmer,21,40,2,1);
+      px(light,64,42,5,1);px(shimmer,65,40,2,1);
+    } else if(form==='dragon') {
+      for(const x of [15,23,65,73]) {px(light,x,25,3,1);px(shimmer,x+1,23);}
+    } else {
+      px(light,39,54,11,1);px(shimmer,46,52,2,1);
+    }
+  } else if(beasts.includes(form)) {
+    // Layered fur or scales, visible claws and a sculpted back.
+    for(let i=0;i<5;i++) {
+      const x=30+i*8,y=34+(i%3)*2;
+      px(shadow,x,y,6,2);px(light,x+1,y,3,1);
+      px(shimmer,x+2,y-1);
+    }
+    for(const x of [21,28,59,68]) {
+      px(ink,x,54,5,2);px(light,x+1,54,2,1);
+      px(shimmer,x+2,53);
+    }
+    if(form==='leviathan') {
+      for(const [x,y] of [[11,31],[17,23],[72,24],[77,30]]) {
+        px(shimmer,x,y,2,1);px(light,x+1,y+1,2,1);
+      }
+    }
+    if(form==='boar') {px(light,14,40,4,1);px(shimmer,15,39,1,1);}
+  } else if(insects.includes(form)) {
+    // Symmetric veining, carapace facets, and small segmented joints.
+    for(const [x,y] of [[22,24],[64,24],[29,37],[57,37]]) {
+      px(ink,x,y,4,2);px(light,x+1,y,3,1);px(shimmer,x+1,y-2);
+    }
+    for(let i=0;i<4;i++) {
+      const y=33+i*5;
+      px(shadow,40,y,8,1);px(light,42,y-1,4,1);
+    }
+    if(form==='moth') {
+      for(const x of [13,24,62,74]) {px(shimmer,x,17,2,2);px(light,x+1,20,2,1);}
+    }
+    if(form==='mantis') {
+      px(light,75,22,7,1);px(shimmer,80,20,1,2);
+      px(light,7,29,5,1);px(shimmer,9,27,1,2);
+    }
+  } else if(['wisp','specter','eclipse'].includes(form)) {
+    // Floating void fragments and very small runic accents.
+    for(const [x,y] of [[26,42],[60,42],[33,49],[54,48]]) {
+      px(ink,x,y,4,2);px(light,x+1,y,2,1);px(shimmer,x+1,y-2,1,1);
+    }
+    px(light,39,52,7,1);px(shimmer,42,50,2,1);
+    for(const [x,y] of [[20,29],[28,52],[44,55],[60,51]]) {
+      px(shadow,x,y,3,1);px(shimmer,x+1,y-1,1,1);
+    }
+    if(form==='eclipse') {
+      for(const x of [13,73]) {px(shimmer,x,31,2,1);px(light,x+1,33,2,1);}
+    }
+  } else if(form==='mushroom') {
+    for(const [x,y] of [[29,28],[39,21],[52,30],[61,35]]) {
+      px(shadow,x,y,5,2);px(light,x+1,y,3,1);px(shimmer,x+2,y-1);
+    }
+    px(shadow,36,52,13,1);px(light,39,51,7,1);
+    for(const [x,y] of [[28,40],[54,42],[38,35]]) {
+      px(shadow,x,y,4,1);px(light,x+1,y-1,2,1);
+    }
+  } else if(form==='jelly') {
+    for(const [x,y] of [[27,26],[36,20],[52,22],[60,30]]) {
+      px(light,x,y,4,1);px(shimmer,x+1,y-1,2,1);
+    }
+    for(const x of [26,37,49,61]) {
+      px(shimmer,x,48,2,2);
+      px(shadow,x+1,54,3,1);px(light,x+1,52,1,2);
+    }
+  } else if(form==='mimic') {
+    for(const x of [22,33,55,67]) rivet(x,38);
+    px(ink,40,48,9,5);px(mid,42,48,5,3);px(shimmer,44,49,1,2);
+    px(light,24,51,14,1);px(light,54,51,12,1);
+    for(const [x,y] of [[27,31],[59,32]]) {
+      px(shadow,x,y,5,1);px(shimmer,x+2,y-1);
+    }
+  } else if(form==='harpy') {
+    for(let i=0;i<4;i++) {
+      const y=25+i*6;
+      for(const x of [15,65]) {px(light,x,y,7,1);px(shimmer,x+2,y-1);}
+    }
+    px(light,40,52,8,1);
+    for(const x of [20,29,59,68]) px(shimmer,x,43,2,1);
+  } else if(form==='reaper') {
+    for(let i=0;i<4;i++) {
+      px(shadow,31+i*6,43+i*2,3,3);
+      px(light,32+i*6,43+i*2,2,1);
+    }
+    px(shimmer,70,12,5,1);px(light,75,13,3,1);
+    for(const [x,y] of [[25,48],[31,52],[42,55],[52,51],[61,47]]) {
+      px(ink,x,y,3,1);px(shimmer,x+1,y-1);
+    }
+  }
+  // One-pixel glints are palette-dependent but deterministic; no runtime RNG or animation.
+  const offset=palette%5;
+  px(shimmer,7+offset*3,11+palette%3,2,1);
+  px(mid,76-offset*2,51-palette%4,2,1);
+}
+
 // Original low-resolution sprites. Forms use distinct silhouettes, weapons and anatomy.
 const beastPalettes=[
   [23,38],[204,38],[7,55],[37,67],[68,55],[253,42],
@@ -3917,6 +4130,7 @@ const paintOverrides={
 };
 function paintEnemy(canvas,{form,palette}) {
   const c=canvas.getContext('2d');
+  c.imageSmoothingEnabled=false;
   const [h,s]=paintOverrides[form+':'+palette]??beastPalettes[palette];
   const ink='#100e1b',shade=`hsl(${h} ${s}% 19%)`,mid=`hsl(${h} ${s}% 37%)`,light=`hsl(${h} ${s}% 64%)`;
   const glow=`hsl(${(h+24)%360} 88% 79%)`;
@@ -4141,12 +4355,170 @@ function paintEnemy(canvas,{form,palette}) {
       c.restore();
     }
   }
+  paintEnemyFinish(c,{form,palette},{ink,shade,mid,light,glow});
   for(let i=0;i<(big?13:5);i++) {
     const x=(i*23+12+palette*3)%84,y=(i*11+8)%51;
     box(i%3?light:glow,x,y,1,1);
   }
 }
 function ridge(i){return i===2?4:2;}
+
+
+// IDs use ACT, encounter type, and variant, never the changing display name or palette.
+const kinds=['fight','elite','boss'];
+const enemyCatalog=Object.freeze([
+  ...[1,2,3].flatMap(act=>kinds.flatMap(kind=>Array.from({length:encounterCount(act,kind)},(_,variant)=>{
+    const enemy=makeEnemy(act,kind,variant,2,0n);
+    return {id:act+':'+kind+':'+variant,act,kind,variant,
+      name:enemy.name,art:enemy.art,detail:enemy.detail,
+      moves:enemy.cycle,barrier:enemy.barrier,gates:enemy.gates.length,armor:enemy.armor};
+  }))),
+  (()=>{const enemy=makeEnemy(4,'extra',0,1,0n);
+    return {id:'4:extra:0',act:4,kind:'extra',variant:0,
+      name:enemy.name,art:enemy.art,detail:enemy.detail,
+      moves:enemy.cycle,barrier:enemy.barrier,gates:enemy.gates.length,armor:enemy.armor};})()
+]);
+const relicCatalog=Object.freeze(Object.keys(relics).map(id=>({
+  id,name:relics[id].name,description:relics[id].desc,rank:relics[id].rank,
+  rankName:relicRanks[relics[id].rank].name
+})));
+const enemyKeys=new Set(enemyCatalog.map(entry=>entry.id));
+const relicKeys=new Set(relicCatalog.map(entry=>entry.id));
+const uniqueAllowed=(values,allowed)=>[...new Set((Array.isArray(values)?values:[])
+  .filter(id=>typeof id==='string'&&allowed.has(id)))];
+const enemyKey=(act,kind,variant=0)=>act+':'+kind+':'+variant;
+function normalizeCodex(raw) {
+  const acquired=uniqueAllowed(raw?.acquired,relicKeys);
+  return {enemies:uniqueAllowed(raw?.enemies,enemyKeys),
+    relics:uniqueAllowed([...(Array.isArray(raw?.relics)?raw.relics:[]),...acquired],relicKeys),
+    acquired};
+}
+function discoverEnemy(codex,act,kind,variant=0) {
+  const id=enemyKey(act,kind,variant);
+  if(!enemyKeys.has(id)||codex.enemies.includes(id)) return false;
+  codex.enemies.push(id);
+  return true;
+}
+function discoverRelics(codex,ids) {
+  let changed=false;
+  for(const id of uniqueAllowed(ids,relicKeys)) if(!codex.relics.includes(id)) {
+    codex.relics.push(id);changed=true;
+  }
+  return changed;
+}
+// A seen offer unlocks its description; acquisition is tracked independently.
+function acquireRelics(codex,ids) {
+  let changed=discoverRelics(codex,ids);
+  for(const id of uniqueAllowed(ids,relicKeys)) if(!codex.acquired.includes(id)) {
+    codex.acquired.push(id);changed=true;
+  }
+  return changed;
+}
+// Backfill only provable information from old saves; never unlock all past encounters.
+function inheritCodex(raw,history=[],run=null) {
+  const codex=normalizeCodex(raw);
+  for(const record of Array.isArray(history)?history:[]) acquireRelics(codex,record?.relics);
+  if(run) {
+    acquireRelics(codex,run.owned);
+    if(run.phase==='reward'&&run.relicDecision==='pending')
+      discoverRelics(codex,[run.relicDrop,run.relicAlternative]);
+    if(run.phase==='facility') discoverRelics(codex,run.stockRelics);
+    if(['battle','reward','loss'].includes(run.phase)&&run.enemy)
+      discoverEnemy(codex,run.act,run.enemy.kind,run.enemy.variant??0);
+    if(Array.isArray(run.visited)&&Array.isArray(run.map))
+      for(const node of run.map.flat()) if(run.visited.includes(node.id)&&
+        (kinds.includes(node.kind)||node.kind==='extra'))
+        discoverEnemy(codex,run.act,node.kind,node.variant??0);
+  }
+  return codex;
+}
+const moveLabels={
+  sub:'減算妨害',pct:'割合妨害',div:'除算妨害',wither:'最大HP減少',
+  drain:'基礎値低下',lock:'演算封印',barrier:'バリア'
+};
+function catalogMoveName(move) {
+  const [kind,target]=move.split(':');
+  return attackPatterns[kind]?.name??(kind==='lock'&&target?
+    (operationNames[target]??'演算')+'封印':moveLabels[kind]??'演算妨害');
+}
+
+
+const codexPageSize=12;
+const escapeCodex=value=>String(value).replace(/[&<>"']/g,ch=>({
+  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+})[ch]);
+const kindNames={fight:'通常',elite:'強敵',boss:'ボス',extra:'EXTRA'};
+function codexContents(codex,{tab='enemies',filter='all',page=0,selected=null}={}) {
+  const enemies=tab==='enemies',source=enemies?enemyCatalog:relicCatalog;
+  const known=new Set(enemies?codex.enemies:codex.relics);
+  const acquired=new Set(codex.acquired??[]);
+  const found=id=>known.has(id);
+  const available=source.filter(entry=>{
+    if(filter==='known') return found(entry.id);
+    if(!enemies&&filter==='acquired') return acquired.has(entry.id);
+    if(filter==='unknown') return !found(entry.id);
+    if(enemies&&['fight','elite','boss','extra'].includes(filter)) return entry.kind===filter;
+    if(!enemies&&/^rank[0-3]$/.test(filter)) return entry.rank===Number(filter[4]);
+    return true;
+  });
+  const pages=Math.max(1,Math.ceil(available.length/codexPageSize));
+  const activePage=Math.max(0,Math.min(pages-1,page));
+  const visible=available.slice(activePage*codexPageSize,(activePage+1)*codexPageSize);
+  const filterOptions=enemies?[
+    ['all','すべて'],['known','遭遇済み'],['unknown','未遭遇'],
+    ['fight','通常'],['elite','強敵'],['boss','ボス'],['extra','EXTRA']
+  ]:[['all','すべて'],['known','発見済み'],['acquired','取得済み'],['unknown','未発見'],
+    ['rank0','コモン'],['rank1','レア'],['rank2','エピック'],['rank3','レジェンド']];
+  const tiles=visible.map(entry=>{
+    if(!found(entry.id)) return `<div class="codex-entry is-locked" aria-label="${enemies?'未遭遇の敵':'未発見のレリック'}">
+      <div class="codex-art codex-placeholder" aria-hidden="true">?</div>
+      <b>？？？</b><small>${enemies?'未遭遇':'未発見'}</small></div>`;
+    const portrait=enemies?
+      `<canvas data-codex-art="${entry.id}" width="88" height="64" aria-hidden="true"></canvas>`:
+      relicIcon(entry.id);
+    const category=enemies?`ACT ${entry.act===4?'EXTRA':entry.act} · ${kindNames[entry.kind]}`:
+      entry.rankName+' · '+(acquired.has(entry.id)?'取得済み':'発見済み');
+    return `<button type="button" class="codex-entry is-known" data-codex-entry="${entry.id}"
+      aria-pressed="${selected===entry.id}" aria-label="${escapeCodex(entry.name)}の詳細">
+      <span class="codex-art">${portrait}</span><b>${escapeCodex(entry.name)}</b>
+      <small>${escapeCodex(category)}</small></button>`;
+  }).join('');
+  const chosen=source.find(entry=>entry.id===selected&&known.has(entry.id));
+  const detail=chosen?`<section class="codex-detail" role="region" aria-label="図鑑の詳細">
+    <h3>${enemies?'敵':'レリック'} · ${escapeCodex(chosen.name)}</h3>
+    ${enemies?`<p>${escapeCodex(chosen.detail||'演算を妨害する敵。予告された攻撃に注意。')}</p>
+      <p><b>主な行動</b>　${escapeCodex([...new Set(chosen.moves.map(catalogMoveName))].join(' / '))}</p>
+      <small>ACT ${chosen.act} · ${kindNames[chosen.kind]} · 装甲 ÷${chosen.armor}${chosen.barrier?' · 開幕バリア '+chosen.barrier+'層':''}${chosen.gates?' · 耐久ライン '+chosen.gates+'本':''}</small>`:
+      `<p>${escapeCodex(chosen.description)}</p><small>${escapeCodex(chosen.rankName)} · ${acquired.has(chosen.id)?'取得済み':'発見のみ'}</small>`}
+  </section>`:'';
+  return `<div class="codex-shell">
+    <div class="codex-tabs" role="tablist" aria-label="図鑑の種類">
+      <button type="button" role="tab" data-codex-tab="enemies" aria-selected="${enemies}">敵図鑑　${codex.enemies.length}/${enemyCatalog.length}</button>
+      <button type="button" role="tab" data-codex-tab="relics" aria-selected="${!enemies}">レリック図鑑　${codex.relics.length}/${relicCatalog.length}</button>
+    </div>
+    <div class="codex-toolbar">
+      <label>表示 <select data-codex-filter aria-label="図鑑の絞り込み">${filterOptions.map(([value,name])=>
+        `<option value="${value}" ${filter===value?'selected':''}>${name}</option>`).join('')}</select></label>
+      <span>${enemies?'遭遇':'発見'} ${known.size} / ${source.length} · ${available.length}件表示</span>
+    </div>
+    ${detail}
+    <div class="codex-grid" role="tabpanel" aria-label="${enemies?'敵の一覧':'レリックの一覧'}">
+      ${tiles||'<p class="muted">該当する記録はまだありません。</p>'}
+    </div>
+    <div class="codex-pager">
+      <button type="button" data-codex-page="${activePage-1}" ${activePage===0?'disabled':''} aria-label="図鑑の前のページ">‹ 前へ</button>
+      <small>${activePage+1} / ${pages}</small>
+      <button type="button" data-codex-page="${activePage+1}" ${activePage===pages-1?'disabled':''} aria-label="図鑑の次のページ">次へ ›</button>
+    </div>
+    <p class="codex-note">未発見の内容は隠されています。遭遇した敵、報酬や店で見かけたレリックを記録し、取得済みかどうかも区別します。</p>
+  </div>`;
+}
+function paintCodexEntries(root) {
+  for(const canvas of root.querySelectorAll('canvas[data-codex-art]')) {
+    const entry=enemyCatalog.find(enemy=>enemy.id===canvas.dataset.codexArt);
+    if(entry) paintEnemy(canvas,entry.art);
+  }
+}
 
 
 const damageThresholds=[100n,10000n,10n**8n,10n**12n,10n**20n,10n**40n,CAP+1n];
@@ -4353,9 +4725,13 @@ const dialog=document.querySelector('#dialog');
 const effect=document.querySelector('#effect');
 const book=load();
 let suspended=readCheckpoint(book.checkpoint);
+const previousCodex=JSON.stringify(book.codex??null);
+book.codex=inheritCodex(book.codex,book.runs,suspended?.run);
+const codexNeedsSave=previousCodex!==JSON.stringify(book.codex);
 let run=null, selected=null, storageWarning=false, notice='';
 let sequence=null, lastPage=null, craftResult=null, lastDeal=null, lastBattle=null;
 let deckFilter='all', deckPage=0, shopTab='cards', baseGlow=null;
+let codexTab='enemies',codexFilter='all',codexPage=0,codexSelected=null;
 const motionMode=()=>matchMedia('(prefers-reduced-motion: reduce)').matches?'off':book.prefs.motion||'full';
 const compactScreen=matchMedia('(max-width: 550px), (max-width: 850px) and (pointer: coarse), (max-height: 550px) and (max-width: 1100px) and (pointer: coarse)');
 const sound=createSound(globalThis.AudioContext??globalThis.webkitAudioContext,()=>book.prefs);
@@ -4422,6 +4798,7 @@ function saveProgress() {
   if(finished||run.phase==='clear') rememberRun();
   suspended=finished?null:{run,notice,craftResult};
   book.checkpoint=suspended?writeCheckpoint(suspended):null;
+  book.codex=inheritCodex(book.codex,book.runs,run);
   persist();
 }
 function modal(title,content) {
@@ -4968,7 +5345,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.5.3</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.6.0</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -4997,7 +5374,7 @@ function view() {
 function render() {
   const mode=motionMode();
   app.dataset.motion=mode;
-  app.innerHTML=`<header><div class="brand">◇ DAMAGE BREAKER</div><button type="button" class="menu-toggle" data-action="menu" aria-controls="game-nav" aria-expanded="false">メニュー</button><nav id="game-nav" aria-label="ゲームメニュー">${run&&run.phase!=='battle'?btn('デッキ '+run.deck.length,'deck'):''}${run&&suspended?btn('中断','pause'):''}${btn('遊び方','help')}${btn('数字の単位・読み方','numberUnits')}${btn('記録帳','records')}${btn('設定','settings')}</nav></header>${view()}
+  app.innerHTML=`<header><div class="brand">◇ DAMAGE BREAKER</div><button type="button" class="menu-toggle" data-action="menu" aria-controls="game-nav" aria-expanded="false">メニュー</button><nav id="game-nav" aria-label="ゲームメニュー">${run&&run.phase!=='battle'?btn('デッキ '+run.deck.length,'deck'):''}${run&&suspended?btn('中断','pause'):''}${btn('遊び方','help')}${btn('数字の単位・読み方','numberUnits')}${btn('記録帳','records')}${btn('図鑑','codex')}${btn('設定','settings')}</nav></header>${view()}
     ${storageWarning?'<p role="status" style="text-align:center">保存できませんでした。画面を閉じると、今回の進行や記録が失われる場合があります。</p>':''}`;
   if(baseGlow&&run?.phase==='map'&&!craftResult) app.querySelector('.map-heading')?.insertAdjacentHTML('afterend',baseBanner());
   const hero=app.querySelector('[data-sprite]');
@@ -5095,6 +5472,21 @@ function refreshDeck(focus) {
   dialog.querySelector('#deckContents').innerHTML=deckContents();
   (dialog.querySelector(focus)||dialog.querySelector('#deckFilter')).focus({preventScroll:true});
 }
+function updateCodex(focus) {
+  const content=dialog.querySelector('#codexContents');
+  if(!content) return;
+  content.innerHTML=codexContents(book.codex,{
+    tab:codexTab,filter:codexFilter,page:codexPage,selected:codexSelected
+  });
+  paintCodexEntries(content);
+  if(focus) dialog.querySelector(focus)?.focus({preventScroll:true});
+}
+function openCodex() {
+  codexTab='enemies';codexFilter='all';codexPage=0;codexSelected=null;
+  modal('巡歴の図鑑','<div id="codexContents"></div>');
+  dialog.classList.add('codex-dialog');
+  updateCodex();
+}
 function openRecords() {
   modal('記録帳',`<h3>歴代最高 ${fmt(BigInt(book.best.max))}</h3><p>${esc(book.best.formula||'記録なし')}</p>
     <h3>探索履歴</h3>${book.runs.map(r=>`<details><summary>${esc(r.seed)} · ${{loss:'敗北',clear:'通常クリア',win:'EXTRAクリア'}[r.outcome]} · 第${r.stage}戦 · ${fmt(BigInt(r.max))}</summary>
@@ -5125,6 +5517,7 @@ function action(command,target) {
     <p>次の盤に入る妨害は、指定枠が空なら一時的に末尾で処理します。種別封印は、次のBURSTまで指定の演算をすべて無効化します。HOLDの予測には新しく引くカードを含めません。</p>`);
   if(name==='settings') return modal('設定',prefsHTML());
   if(name==='records') return openRecords();
+  if(name==='codex') return openCodex();
   if(name==='numberUnits') {
     modal('数字の単位・読み方',`<dl class="number-units">${numberUnits.map(({name,reading,exponent})=>
       `<div><dt>${name}</dt><dd>${reading}</dd><dd>10<sup>${exponent}</sup></dd></div>`).join('')}</dl>
@@ -5316,7 +5709,11 @@ app.addEventListener('click',e=>{
 
 });
 app.addEventListener('change',e=>{
-  if(e.target.id==='exchangeSource') app.querySelector('#exchangeChoices').innerHTML=exchangeChoices(e.target.value);
+  if(e.target.id==='exchangeSource') {
+    const source=e.target.value;
+    if(source&&discoverRelics(book.codex,run.eventExchanges(source))) persist();
+    app.querySelector('#exchangeChoices').innerHTML=exchangeChoices(source);
+  }
 });
 app.addEventListener('submit',e=>{
   if(e.target.id!=='start') return;
@@ -5366,6 +5763,10 @@ app.addEventListener('drop',e=>{
 });
 app.addEventListener('dragend',()=>{dragging=null;});
 dialog.addEventListener('change',e=>{
+  if(e.target.matches('[data-codex-filter]')) {
+    codexFilter=e.target.value;codexPage=0;codexSelected=null;
+    updateCodex('[data-codex-filter]');return;
+  }
   const {id,checked,value}=e.target;
   if(id==='craftDigit'&&crafting) {
     crafting.digit=Number(value);
@@ -5388,6 +5789,25 @@ dialog.addEventListener('change',e=>{
 });
 dialog.addEventListener('close',()=>{if(!dialog.open) enchantSelection=null;});
 dialog.addEventListener('click',e=>{
+  const codexTabButton=e.target.closest('[data-codex-tab]');
+  if(codexTabButton) {
+    codexTab=codexTabButton.dataset.codexTab;
+    codexFilter='all';codexPage=0;codexSelected=null;
+    updateCodex('[data-codex-tab="'+codexTab+'"]');return;
+  }
+  const codexPageButton=e.target.closest('[data-codex-page]');
+  if(codexPageButton&&!codexPageButton.disabled) {
+    const step=Number(codexPageButton.dataset.codexPage);
+    codexPage=step;codexSelected=null;
+    updateCodex('[data-codex-page="'+(step>0?step-1:step+1)+'"]');return;
+  }
+  const codexEntry=e.target.closest('[data-codex-entry]');
+  if(codexEntry) {
+    codexSelected=codexEntry.dataset.codexEntry;
+    updateCodex('[data-codex-entry="'+codexSelected+'"]');
+    dialog.querySelector('.codex-detail')?.scrollIntoView({block:'nearest'});
+    return;
+  }
   const enchantOption=e.target.closest('[data-enchant-target],[data-enchant-confirm]');
   if(enchantOption&&enchantSelection&&!enchantOption.disabled) {
     if(enchantOption.hasAttribute('data-enchant-confirm')) enchantSelection.confirm(enchantSelection.index);
@@ -5432,6 +5852,7 @@ dialog.addEventListener('input',e=>{
   persist();
 });
 
+if(codexNeedsSave) persist();
 render();
 
 function reactionText(move,message,hpLost,outcome) {

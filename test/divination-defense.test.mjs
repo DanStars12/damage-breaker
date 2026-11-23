@@ -22,7 +22,11 @@ test('divination places the relic-optimal card without consuming support or exis
   run.hand=[high,low,operation('ward',2)];
   run.energy=1;
   run.owned=['grimoire'];
-  assert.deepEqual(solve(run),{order:[a,low],damage:2822400n,cost:1});
+  const result=solve(run);
+  assert.deepEqual({order:result.order,damage:result.damage,cost:result.cost},
+    {order:[a,low],damage:2822400n,cost:1});
+  assert.equal(result.limited,false);
+  assert(Number.isInteger(result.visited)&&result.visited>0);
   assert.deepEqual(run.board,[a]);
   assert.equal(run.hand.length,3);
 });

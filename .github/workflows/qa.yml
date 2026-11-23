@@ -19,7 +19,9 @@ jobs:
         with:
           node-version: '22'
       - name: Run Node regression tests
-        run: node --test test/*.test.mjs 2>&1 | tee qa-test.log
+        run: |
+          set -o pipefail
+          node --test test/*.test.mjs 2>&1 | tee qa-test.log
       - name: Report failure details on PR
         if: ${{ failure() && github.event_name == 'pull_request' }}
         env:
