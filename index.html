@@ -5693,7 +5693,11 @@ app.addEventListener('click',e=>{
 
 });
 app.addEventListener('change',e=>{
-  if(e.target.id==='exchangeSource') app.querySelector('#exchangeChoices').innerHTML=exchangeChoices(e.target.value);
+  if(e.target.id==='exchangeSource') {
+    const source=e.target.value;
+    if(source&&discoverRelics(book.codex,run.eventExchanges(source))) persist();
+    app.querySelector('#exchangeChoices').innerHTML=exchangeChoices(source);
+  }
 });
 app.addEventListener('submit',e=>{
   if(e.target.id!=='start') return;
