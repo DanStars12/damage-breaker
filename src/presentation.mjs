@@ -40,13 +40,20 @@ export function timeline(result,armor) {
     const operation=step.op?label(step.op):label(step.card)+' 無効';
     const relic=divisorRelic(step);
     const name=relic?relics[relic].name+' · '+operation:operation;
-    const main={index,type:relic?'relic':type,name,value:step.firstResult??step.result,combo,...(relic?{relic}:{})};
-    return step.firstResult?[main,{index,type:'repeat',name:'再現 · '+operation,value:step.result,combo}]:[main];
+    const operationKind=step.op?.kind??'sealed';
+    const direction=operationKind==='pct'?(step.op.value<0?'down':'up'):null;
+    const visual={operationKind,...(direction?{direction}:{})};
+    const main={index,type:relic?'relic':type,name:step.firstResult?name+' · 1回目':name,
+      value:step.firstResult??step.result,combo,...visual,...(relic?{relic}:{})};
+    return step.firstResult?[main,{index,type:'repeat',name:'再現 · 2回目 · '+operation,
+      value:step.result,combo,...visual}]:[main];
   });
   for(const trigger of result.triggers) {
-    steps.push({type:'relic',name:relics[trigger.id].name+' · '+label(trigger.op),value:trigger.result,combo,relic:trigger.id});
+    steps.push({type:'relic',name:relics[trigger.id].name+' · '+label(trigger.op),
+      operationKind:trigger.op.kind,value:trigger.result,combo,relic:trigger.id});
   }
-  steps.push({type:'impact',name:armor>1?'装甲 ÷'+armor+' · ダメージ確定':'ダメージ確定',value:[result.final,1n],combo});
+  steps.push({type:'impact',name:armor>1?'装甲 ÷'+armor+' · ダメージ確定':'ダメージ確定',
+    operationKind:'impact',value:[result.final,1n],combo});
   return steps;
 }
 // For exact integer endpoints of a similar order, interpolate with integer arithmetic.
