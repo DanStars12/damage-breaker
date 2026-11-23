@@ -6,7 +6,7 @@ import {numberUnits} from './math.mjs';
 import {boardRelicStates} from './presentation.mjs';
 import {relicIcon} from './relic-art.mjs';
 import {relicRanks,relicRewardHints} from './relics.mjs';
-import {attackPatterns,attackHits,attenuationPattern,attenuationPair} from './enemies.mjs';
+import {attackPatterns,attackHits,attenuationPattern,attenuationPair,bossCounterplay} from './enemies.mjs';
 import {readDivination} from './hint.mjs';
 import {createSound} from './sound.mjs';
 const app=document.querySelector('#app');
@@ -262,6 +262,7 @@ function battle() {
   const move=run.next;
   const outcome=run.enemyOutcome(move);
   const response=run.burstResponse(p,move);
+  const counterplay=bossCounterplay(e,move);
   const pair=response.status==='success'?attenuationPair(move,p.steps):null;
   const lastStep=p.steps.at(-1);
   const awaiting=!run.attenuationUsed&&!pair&&!lastStep?.card?.enemy&&
@@ -297,7 +298,7 @@ function battle() {
         <span class="slash" aria-hidden="true"></span><span class="enemy-cast" aria-hidden="true"></span><span class="enemy-hit-fx" aria-hidden="true"></span><span id="incoming" aria-hidden="true"></span><span id="outgoing" aria-hidden="true"></span>
       </div>
       <div class="enemy-info">
-      ${e.detail?`<p class="enemy-rule">${e.detail}</p>`:''}
+      ${e.detail?`<p class="enemy-rule">${esc(e.detail)}${counterplay?` <span class="boss-counterplay" data-boss-tactic="${counterplay.kind}">✦ ${esc(counterplay.text)}</span>`:''}</p>`:''}
       <div class="enemy-defenses">${defenseStatus(e)}</div>
       <div class="intent" data-move="${move.kind}"><small>敵の次の行動 ${outcome.hp===0&&p.impact.dealt!==e.hp?'<b class="intent-danger">通常反撃は致命的</b>':''}</small><strong>${intentText(move)}</strong>${attenuationHint(move,response,Boolean(awaiting))}</div></div></section>
     <section class="frame board-frame"><div class="heading"><h2>演算盤</h2><small>${run.board.length} / ${run.slots} 枠 · コンボ ${run.board.length}${run.wardCharges?' · 結界 '+run.wardCharges:''}${run.guardPoints?' · 防御 '+run.guardPoints:''}</small></div>
@@ -628,7 +629,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.5.1</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.5.2</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
