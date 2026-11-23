@@ -598,6 +598,29 @@ async function discoveryCodex(options) {
   await page.close();
 }
 
+async function offeredRelicCodex(options) {
+  const run=fixture('elite');
+  run.enemy.hp=1n;
+  run.enemy.barrier=0;
+  run.enemy.gates=[];
+  assert(run.burst());
+  assert.equal(run.phase,'reward');
+  assert(run.relicDrop);
+  const {page,errors}=await openPage(options,run);
+  if(await action(page,'menu').isVisible()) await action(page,'menu').tap();
+  await action(page,'codex').tap();
+  await page.locator('[data-codex-tab="relics"]').tap();
+  await page.locator('[data-codex-filter]').selectOption('known');
+  assert.equal(await page.locator('.codex-entry.is-known').count(),2);
+  await page.locator('.codex-entry.is-known').first().tap();
+  assert.match(await page.locator('.codex-detail').innerText(),/発見のみ/);
+  await page.locator('[data-codex-filter]').selectOption('acquired');
+  assert.equal(await page.locator('.codex-entry.is-known').count(),0);
+  await noOverflow(page,'relic reward encountered but not acquired');
+  assert.deepEqual(errors,[]);
+  await page.close();
+}
+
 async function freshDiscoveryCodex(options) {
   const {page,errors}=await openPage(options);
   if(await action(page,'menu').isVisible()) await action(page,'menu').tap();
@@ -684,7 +707,10 @@ try {
       await rewardRelicHints(options);
       await discoveryCodex(options);
     }
-    if(width===390) await freshDiscoveryCodex(options);
+    if(width===390) {
+      await freshDiscoveryCodex(options);
+      await offeredRelicCodex(options);
+    }
     if(width===320||width===390||width===932) {
       await facilityFlow(options);
       console.log(`PASS ${name} ${width}×${height} rewards → shop → deck/removal → forge → event`);
