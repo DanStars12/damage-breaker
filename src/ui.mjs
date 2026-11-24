@@ -12,6 +12,7 @@ import {createSound} from './sound.mjs';
 import {inheritCodex,discoverRelics} from './catalog.mjs';
 import {codexContents,paintCodexEntries} from './codex-ui.mjs';
 import {helpGuide} from './help-guide.mjs';
+import {resolveMotionMode,motionSettings} from './motion.mjs';
 const app=document.querySelector('#app');
 const dialog=document.querySelector('#dialog');
 const effect=document.querySelector('#effect');
@@ -24,7 +25,8 @@ let run=null, selected=null, storageWarning=false, notice='';
 let sequence=null, lastPage=null, craftResult=null, lastDeal=null, lastBattle=null;
 let deckFilter='all', deckPage=0, shopTab='cards', baseGlow=null;
 let codexTab='enemies',codexFilter='all',codexPage=0,codexSelected=null;
-const motionMode=()=>matchMedia('(prefers-reduced-motion: reduce)').matches?'off':book.prefs.motion||'full';
+const reducedMotionQuery=matchMedia('(prefers-reduced-motion: reduce)');
+const motionMode=()=>resolveMotionMode(book.prefs.motion,reducedMotionQuery.matches);
 const compactScreen=matchMedia('(max-width: 550px), (max-width: 850px) and (pointer: coarse), (max-height: 550px) and (max-width: 1100px) and (pointer: coarse)');
 const sound=createSound(globalThis.AudioContext??globalThis.webkitAudioContext,()=>book.prefs);
 const cue=(id,options={})=>sound.play(id,{fast:motionMode()==='fast',signal:sequence?.signal,...options});
@@ -637,7 +639,7 @@ function mapView() {
 }
 const checkpointLabels={map:'地図',battle:'戦闘中',reward:'勝利報酬',facility:'施設',clear:'EXTRA挑戦前'};
 function view() {
-  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.6.1</div><div class="rule"></div>
+  if(!run) return `<main><section class="frame title"><div><div class="eyebrow">演算魔術譚 · v1.6.2</div><div class="rule"></div>
     <h1>DAMAGE<br>BREAKER</h1><p>数式を刻み、魔導書の力で無量門を破れ。</p>
     ${suspended?`<section class="continue-run">
       ${btn('つづきから','resume','primary')}
@@ -738,9 +740,14 @@ function burstFX(n,best) {
   if(best&&!inf) cue('record');
 }
 effect.addEventListener('animationend',()=>{effect.className='';});
+document.addEventListener('visibilitychange',()=>{
+  app.classList.toggle('motion-paused',document.hidden);
+  effect.classList.toggle('motion-paused',document.hidden);
+});
 const prefsHTML=()=>`<p><label><input type="checkbox" id="scientific" ${book.prefs.scientific?'checked':''}> 指数表記</label></p>
-  <p><label>演出 <select id="motion">${[['full','通常'],['fast','高速・軽量'],['off','スキップ']].map(([id,t])=>
-    `<option value="${id}" ${(book.prefs.motion||'full')===id?'selected':''}>${t}</option>`).join('')}</select></label></p>
+  <p><label>演出 <select id="motion">${motionSettings.map(([id,t])=>
+    `<option value="${id}" ${motionMode()===id?'selected':''}>${t}</option>`).join('')}</select></label></p>
+  <p class="motion-settings-note">OSの「動きを減らす」設定では初期状態を「穏やか」にします。重要な攻撃・数字・被弾は表示し、スキップは選択した場合だけ適用します。設定はこの端末に保存されます。</p>
   <p><label><input type="checkbox" id="mute" ${book.prefs.mute?'checked':''}> 効果音を消す</label></p>
   <p><label>効果音の音量 <input type="range" id="volume" min="0" max="100" value="${Number(book.prefs.volume??55)}"></label> <output for="volume">${Number(book.prefs.volume??55)}%</output></p>`;
 const deckKinds=['add','mul','pct','pow','exp','ward','clean','guard'];
@@ -1197,25 +1204,53 @@ async function showEnemyReaction(field,move,message,hpLost,outcome,signal) {
   }
   hero.dataset.defense=run.wardCharges?'ward':run.guardPoints?'guard':'none';
 }
+// Pause the logical sequence and CSS animations while the tab is hidden.
+// A throttled requestAnimationFrame uses a visible-tab timeout fallback, but never
+// silently consumes a combat animation in the background.
 function clock(duration,signal,update=()=>{}) {
   return new Promise(resolve=>{
     if(signal.aborted) {resolve();return;}
-    let frame,timer;
-    const start=performance.now();
-    const stop=()=>{
-      cancelAnimationFrame(frame);clearTimeout(timer);
-      signal.removeEventListener('abort',stop);
+    let elapsed=0,start=0,frame=null,timer=null,running=false,finished=false;
+    const stopFrames=()=>{
+      if(frame!==null) cancelAnimationFrame(frame);
+      if(timer!==null) clearTimeout(timer);
+      frame=timer=null;running=false;
+    };
+    const finish=()=>{
+      if(finished) return;
+      finished=true;stopFrames();
+      signal.removeEventListener('abort',finish);
+      document.removeEventListener('visibilitychange',visibility);
       resolve();
     };
-    const draw=now=>{
-      const progress=Math.min(1,Math.max(0,(now-start)/duration));
-      update(progress);
-      if(progress===1) stop();
-      else frame=requestAnimationFrame(draw);
+    const pause=()=>{
+      if(!running||finished) return;
+      elapsed=Math.min(duration,elapsed+performance.now()-start);
+      stopFrames();
     };
-    signal.addEventListener('abort',stop,{once:true});
-    timer=setTimeout(()=>{update(1);stop();},duration+40);
-    frame=requestAnimationFrame(draw);
+    const tick=now=>{
+      if(!running||finished) return;
+      if(document.hidden) {pause();return;}
+      const progress=Math.min(1,(elapsed+now-start)/duration);
+      update(progress);
+      if(progress>=1) finish();
+      else frame=requestAnimationFrame(tick);
+    };
+    const resume=()=>{
+      if(running||finished) return;
+      if(elapsed>=duration) {update(1);finish();return;}
+      running=true;start=performance.now();
+      update(elapsed/duration);
+      frame=requestAnimationFrame(tick);
+      timer=setTimeout(()=>{
+        if(document.hidden) {pause();return;}
+        update(1);finish();
+      },duration-elapsed+40);
+    };
+    const visibility=()=>{if(document.hidden) pause();else resume();};
+    signal.addEventListener('abort',finish,{once:true});
+    document.addEventListener('visibilitychange',visibility);
+    if(!document.hidden) resume();
   });
 }
 function updateHeroDisplay(field,hp=run.hp,maxHp=run.maxHp) {
