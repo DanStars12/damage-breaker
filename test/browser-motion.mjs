@@ -38,26 +38,44 @@ async function setup(browser,{width=390,reducedMotion='reduce',preference,seed='
   return {page,errors};
 }
 const mode=page=>page.locator('#app').getAttribute('data-motion');
-const opacity=(page,selector)=>page.locator(selector).evaluate(el=>Number(getComputedStyle(el).opacity));
 const display=(page,selector)=>page.locator(selector).evaluate(el=>getComputedStyle(el).display);
 async function runAnimatedScenario(engine,browser,{reducedMotion,preference,width,expected,label}) {
   const {page,errors}=await setup(browser,{reducedMotion,preference,width,seed:engine+'-'+label});
   assert.equal(await mode(page),expected,engine+' '+label+' effective mode');
   assert.notEqual(await display(page,'.enemy .burst-scene'),'none',engine+' '+label+' effect layer');
+  // Sample short-lived CSS states via MutationObserver rather than slow polling.
+  // This is especially important for Fast mode at 30Hz or under WebKit.
+  await page.evaluate(()=>{
+    const field=document.querySelector('.enemy');
+    window.__motionStates={launch:null,impact:null};
+    new MutationObserver(()=>{
+      if(field.classList.contains('burst-firing')&&!window.__motionStates.launch) {
+        const bolt=getComputedStyle(field.querySelector('.burst-bolt'));
+        window.__motionStates.launch={opacity:Number(bolt.opacity),display:bolt.display};
+      }
+      if(field.classList.contains('player-strike')&&!window.__motionStates.impact) {
+        window.__motionStates.impact={
+          text:field.querySelector('#outgoing').textContent,
+          opacity:Number(getComputedStyle(field.querySelector('#outgoing')).opacity),
+          ring:Number(getComputedStyle(field.querySelector('.burst-ring:not(.echo)')).opacity)
+        };
+      }
+    }).observe(field,{attributes:true,attributeFilter:['class']});
+  });
   await page.locator('[data-action="burst"]').click();
   await page.locator('#reel:not([hidden])').waitFor({state:'visible'});
   assert(await page.locator('#reelNumber').isVisible(),engine+' '+label+' readable numeric reel');
-  await page.locator('.enemy.burst-firing').waitFor({state:'attached'});
-  if(expected==='calm') {
-    assert((await opacity(page,'.enemy.burst-firing .burst-bolt'))>.5,engine+' calm launch appears');
-    assert.notEqual(await display(page,'.enemy.burst-firing .burst-bolt'),'none');
-  }
-  await page.locator('.enemy.player-strike').waitFor({state:'attached'});
-  if(expected==='calm') {
-    assert((await opacity(page,'.enemy.player-strike #outgoing'))>.9,engine+' calm damage text persists');
-    assert((await opacity(page,'.enemy.player-strike .burst-ring:not(.echo)'))>.5,engine+' calm impact symbol persists');
-  }
   await page.locator('.last-strike').waitFor();
+  const states=await page.evaluate(()=>window.__motionStates);
+  assert(states.launch,engine+' '+label+' launch was rendered');
+  assert(states.impact,engine+' '+label+' impact was rendered');
+  assert.match(states.impact.text,/−|段階|バリア/,engine+' impact communicates damage');
+  if(expected==='calm') {
+    assert(states.launch.opacity>.5,engine+' calm launch appears');
+    assert.notEqual(states.launch.display,'none');
+    assert(states.impact.opacity>.9,engine+' calm damage text persists');
+    assert(states.impact.ring>.5,engine+' calm impact ring persists');
+  }
   assert.match(await page.locator('.last-strike').innerText(),/BURST/);
   assert.deepEqual(errors,[],engine+' '+label+' JS errors');
   await page.close();
