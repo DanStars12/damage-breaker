@@ -24,7 +24,7 @@ function battleFixture(seed) {
 async function setup(browser,{width=390,reducedMotion='reduce',preference,seed='default'}={}) {
   const page=await browser.newPage({
     viewport:{width,height:width===390?844:768},
-    hasTouch:width===390, isMobile:width===390, reducedMotion
+    hasTouch:width===390, reducedMotion
   });
   page.setDefaultTimeout(9000);
   const errors=[];
