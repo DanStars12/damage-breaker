@@ -85,7 +85,7 @@ export function reelTiming(from,to,kind,fast) {
   const change=Math.max(0,burstVisual(to).digits-burstVisual(from).digits);
   const samples=Math.min(74,Math.max(12,change+2));
   const base=kind==='impact'?245:kind==='relic'?335:240;
-  return {samples,duration:fast?Math.min(460,105+change*6):Math.min(1630,base+change*21)};
+  return {samples,duration:fast?Math.min(460,Math.max(170,105+change*6)):Math.min(1630,base+change*21)};
 }
 
 export function impactForce({final,impact}) {
