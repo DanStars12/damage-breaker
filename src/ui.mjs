@@ -734,7 +734,7 @@ function burstFX(n,best) {
     void effect.offsetWidth;
     effect.dataset.tier=tier;
     effect.style.setProperty('--burst-hue',visual.hue);
-    effect.className='flash'+(inf||tier>=4?' high':'')+(tier>=3&&mode==='full'?' shake':'')+(mode==='fast'?' fast':'');
+    effect.className='flash'+(inf||tier>=4?' high':'')+(tier>=3&&mode==='full'?' shake':'')+(mode==='fast'?' fast':'')+(mode==='calm'?' calm':'');
   }
   cue(inf?'infinity':tier>=3?'impactNova':'hit',{level:tier});
   if(best&&!inf) cue('record');
@@ -1200,7 +1200,7 @@ async function showEnemyReaction(field,move,message,hpLost,outcome,signal) {
     }
     else updateHeroDisplay(field);
     enemyReaction(move,last?outcome:{},hit);
-    await clock(fast?170:details.length>1?330:580,signal);
+    await clock(fast?260:details.length>1?330:580,signal);
   }
   hero.dataset.defense=run.wardCharges?'ward':run.guardPoints?'guard':'none';
 }
@@ -1400,7 +1400,7 @@ async function showBurst() {
         field.style.setProperty('--cast-angle',attack.angle+'deg');
         field.style.setProperty('--cast-lift',-attack.lift+'px');
         field.style.setProperty('--attack-time',attack.impact+'ms');
-        field.style.setProperty('--flight',(mode==='fast'?65:attack.flight)+'ms');
+        field.style.setProperty('--flight',(mode==='fast'?180:attack.flight)+'ms');
         const sparkLimit=compactScreen.matches?(mode==='fast'?8:16):(mode==='fast'?10:28);
         field.querySelector('.burst-sparks').innerHTML=Array.from({length:Math.min(sparkLimit,attack.sparks)},(_,i)=>{
           const angle=i*2.39996+attack.digits*.17,r=attack.reach*(.48+(i%5)*.13);
@@ -1410,7 +1410,7 @@ async function showBurst() {
           field.classList.add('burst-firing');
           const heavy=p.impact.kind==='hit'&&Number(field.dataset.burstLevel)>=3;
           cue(heavy?'launchNova':'launch');
-          await clock(mode==='fast'?65:attack.flight,signal);
+          await clock(mode==='fast'?180:attack.flight,signal);
           field.classList.remove('burst-firing');
         }
       }
@@ -1445,7 +1445,7 @@ async function showBurst() {
         if(impact==='hit') burstFX(p.final,best);
         else cue(impact);
         if(e.hp===0n) cue('victory');
-        await clock(mode==='fast'?160:impact==='hit'?attack.impact:695,signal);
+        await clock(mode==='fast'?260:impact==='hit'?attack.impact:695,signal);
         field.querySelector('.foe').dataset.defense=e.barrier?'ward':'none';
         if(e.hp>0n&&!signal.aborted) {
           await showEnemyReaction(field,move,prediction,hpLost,outcome,signal);
