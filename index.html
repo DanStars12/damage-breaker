@@ -314,7 +314,7 @@ main{position:relative;perspective:1300px}
 @keyframes beast-lunge{37%{transform:translate(-23px,-5px) skewX(-8deg) scale(1.07)}}
 @keyframes relic-arrival{0%{filter:brightness(1.7);transform:translateY(7px)}100%{filter:none;transform:none}}
 @media(max-width:510px){.hero canvas{height:78px}.foe canvas{height:106px}.enemy[data-rank] .foe canvas{max-height:132px}.route-map{height:535px}}
-@media(prefers-reduced-motion:reduce){.relic-drop{animation:none!important}}
+/* Explicit player mode owns this animation; calm remains static. */
 .enemy[data-form="moth"].enemy-magic .foe canvas{animation:moth-hover .52s both}
 .enemy[data-form="eclipse"].enemy-magic .foe canvas{animation:eclipse-cast .57s both}
 .enemy[data-form="leviathan"].enemy-strike .foe canvas,.enemy[data-form="behemoth"].enemy-strike .foe canvas{animation:ground-rush .56s both}
@@ -1186,9 +1186,7 @@ header nav { flex-wrap: wrap; }
 @keyframes foe-hover {
   50% { transform: translateY(-5px) rotate(-1deg); }
 }
-@media (prefers-reduced-motion: reduce) {
-  #app[data-motion="full"] .enemy .idle-sprite { animation: none; }
-}
+/* Explicit player mode owns this animation; calm remains static. */
 
 /* Touch layout */
 .menu-toggle { display:none; }
