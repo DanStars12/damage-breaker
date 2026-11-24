@@ -721,7 +721,8 @@ async function desktopFlow() {
   await confirm.press('Enter');
   await s.locator('.removal-scene').waitFor();
   assert.equal((await readState(s)).deck.length,14);
-  assert.equal(await s.locator('.removal-sparks i').first().evaluate(el=>getComputedStyle(el).animationName),'none');
+  assert.equal(await s.locator('.removal-sparks i').first().evaluate(el=>getComputedStyle(el).animationName),'erase-sparks',
+    'explicit fast mode must remain animated when OS requests reduced motion');
   assert.deepEqual(shop.errors,[]);
   await s.close();
 }

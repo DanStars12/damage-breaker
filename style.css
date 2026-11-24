@@ -307,7 +307,7 @@ main{position:relative;perspective:1300px}
 @keyframes beast-lunge{37%{transform:translate(-23px,-5px) skewX(-8deg) scale(1.07)}}
 @keyframes relic-arrival{0%{filter:brightness(1.7);transform:translateY(7px)}100%{filter:none;transform:none}}
 @media(max-width:510px){.hero canvas{height:78px}.foe canvas{height:106px}.enemy[data-rank] .foe canvas{max-height:132px}.route-map{height:535px}}
-@media(prefers-reduced-motion:reduce){.relic-drop{animation:none!important}}
+/* Explicit player mode owns this animation; calm remains static. */
 .enemy[data-form="moth"].enemy-magic .foe canvas{animation:moth-hover .52s both}
 .enemy[data-form="eclipse"].enemy-magic .foe canvas{animation:eclipse-cast .57s both}
 .enemy[data-form="leviathan"].enemy-strike .foe canvas,.enemy[data-form="behemoth"].enemy-strike .foe canvas{animation:ground-rush .56s both}
@@ -467,9 +467,9 @@ header nav { flex-wrap: wrap; }
   59% { opacity: 1; transform: translateY(4px) scale(1.045); }
   100% { opacity: 1; transform: none; }
 }
-#app[data-motion="fast"] .enemy { --flight: 65ms; --impact: 150ms; }
+#app[data-motion="fast"] .enemy { --flight: 180ms; --impact: 250ms; }
 #app[data-motion="fast"] .enemy :is(canvas,.slash,.enemy-cast,#incoming,#outgoing) {
-  animation-duration: .15s;
+  animation-duration: .22s;
   animation-iteration-count: 1;
 }
 #app[data-motion="fast"] .enemy.charging canvas,
@@ -485,10 +485,8 @@ header nav { flex-wrap: wrap; }
   animation: none;
   transition: none;
 }
-@media (prefers-reduced-motion: reduce) {
-  #app .burst-scene,
-  #effect.flash { display: none; }
-}
+/* Reduced-motion users still see the important attack and number cues.
+   Only the player's explicit "off" preference can skip the sequence. */
 
 .enemy-defeated.player-landed .foe canvas {
   animation: enemy-defeated .64s ease-out both;
@@ -1181,9 +1179,7 @@ header nav { flex-wrap: wrap; }
 @keyframes foe-hover {
   50% { transform: translateY(-5px) rotate(-1deg); }
 }
-@media (prefers-reduced-motion: reduce) {
-  #app[data-motion="full"] .enemy .idle-sprite { animation: none; }
-}
+/* Explicit player mode owns this animation; calm remains static. */
 
 /* Touch layout */
 .menu-toggle { display:none; }
@@ -1546,7 +1542,7 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
   67% { transform:translateX(calc(4px * var(--attack-power))) rotate(var(--cast-angle)) scale(calc(1 + .045 * var(--attack-power))); filter:brightness(calc(1 + .36 * var(--attack-power))); }
   100% { transform:none; }
 }
-#app[data-motion="fast"] .player-landed :is(.burst-glyph,.burst-sparks i) { animation-duration:135ms; animation-delay:0ms; }
+#app[data-motion="fast"] .player-landed :is(.burst-glyph,.burst-sparks i) { animation-duration:220ms; animation-delay:0ms; }
 @media (max-width:550px), (max-width:850px) and (pointer:coarse), (max-height:550px) and (max-width:1100px) and (pointer:coarse) {
   .battle-commands { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .enemy-defenses .defense-status { font-size:11px; }
@@ -1956,3 +1952,64 @@ button:not(:disabled):active { box-shadow:inset 2px 2px #100c1b90,inset -1px -1p
   .guide-equation > :is(.guide-base,.guide-add,.guide-mul) { padding:4px 5px; }
 }
 @media(prefers-reduced-motion:reduce) { .guide-section,.guide-section summary { transition:none; } }
+
+
+/* v1.6.2 — Cross-browser motion visibility and accessibility. */
+.motion-settings-note { max-width:70ch; margin:6px 0 10px; font:12px/1.5 var(--interface); color:#d6c1a7; }
+#app.motion-paused *,#app.motion-paused *::before,#app.motion-paused *::after,
+#effect.motion-paused { animation-play-state:paused!important; transition-duration:0s!important; }
+
+/* Calm is an illustrated sequence, not an invisible or instant sequence. */
+#app[data-motion="calm"] .enemy .idle-sprite,
+#app[data-motion="calm"] .dealing .card,
+#app[data-motion="calm"] .charging .hero canvas,
+#app[data-motion="calm"] .burst-firing .hero canvas,
+#app[data-motion="calm"] .player-strike .hero canvas,
+#app[data-motion="calm"] .player-strike .foe canvas,
+#app[data-motion="calm"] .enemy-strike :is(.hero canvas,.foe canvas),
+#app[data-motion="calm"] .enemy-magic .foe canvas,
+#app[data-motion="calm"] .enemy-defeated.player-landed .foe canvas,
+#app[data-motion="calm"] .reel #reelNumber,
+#app[data-motion="calm"] .reel-display i { animation:none!important; transform:none!important; }
+#app[data-motion="calm"] .charging .burst-seal {
+  animation:none!important; opacity:.55; transform:translate(-50%,-50%);
+}
+#app[data-motion="calm"] .burst-firing .burst-bolt {
+  animation:none!important; opacity:.95; left:52%; transform:translate(-50%,-50%);
+  width:clamp(28px,10vw,90px); height:12px;
+}
+#app[data-motion="calm"] .burst-firing .burst-wake,
+#app[data-motion="calm"] .burst-ring.echo,
+#app[data-motion="calm"] .burst-crown,
+#app[data-motion="calm"] .burst-sparks i { display:none!important; }
+#app[data-motion="calm"] .player-strike:not(.player-miss) .burst-ring:not(.echo) {
+  animation:none!important; opacity:.88; transform:translate(-50%,-50%); border-width:3px;
+}
+#app[data-motion="calm"] .player-strike .slash {
+  animation:none!important; opacity:.62; transform:none; filter:none;
+}
+#app[data-motion="calm"] .player-strike #outgoing,
+#app[data-motion="calm"] .enemy-strike #incoming,
+#app[data-motion="calm"] .enemy-magic #incoming {
+  animation:none!important; opacity:1!important; transform:none!important;
+  background:#201824eb; border:1px solid #917b6580; padding:4px 6px; text-shadow:none;
+}
+#app[data-motion="calm"] .enemy-strike .enemy-cast,
+#app[data-motion="calm"] .enemy-magic .enemy-cast {
+  animation:none!important; opacity:.72; transform:none!important;
+}
+#app[data-motion="calm"] .player-landed .burst-glyph {
+  animation:none!important; opacity:.65; transform:translate(-50%,-50%) scale(.95)!important;
+}
+#app[data-motion="calm"] .player-landed .duel::after,
+#app[data-motion="calm"] .player-blocked .duel::after { animation:none!important; opacity:.45; }
+#app[data-motion="calm"] .enemy-strike .hero canvas { filter:brightness(1.18); }
+#app[data-motion="calm"] .player-strike .foe canvas { filter:brightness(1.12); }
+#effect.flash.calm {
+  animation:calm-burst .8s ease-out both!important;
+  background:none!important; box-shadow:none!important;
+  text-shadow:0 2px 8px #101317!important;
+}
+@keyframes calm-burst {
+  0% { opacity:0; } 20%,75% { opacity:1; } 100% { opacity:0; }
+}

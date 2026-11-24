@@ -73,9 +73,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install Chromium test dependencies
+      - name: Install cross-browser test dependencies
         run: |
           npm install --no-save --no-package-lock playwright
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium firefox webkit
       - name: Test desktop and mobile viewports
         run: node test/browser-mobile.mjs
+      - name: Test animation visibility across browser engines and OS preferences
+        run: node test/browser-motion.mjs
